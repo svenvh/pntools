@@ -1,0 +1,66 @@
+PNTools
+
+This directory contains various experimental tools for use with PN/ISA. Most
+likely any tool found in here is in a very premature state, with a strong
+dependence on the current phase of the moon.
+
+
+
+
+Compilation Instructions
+========================
+./autogen.sh
+./configure --with-pngen=XXX --with-isa=YYY
+  Replace XXX with your pngen top level directory (i.e., the directory
+  containing SUIF, Syck, etc.).
+  Replace YYY with the your directory (containing pn, pn2espam etc.).
+make
+
+
+
+
+Adding New Tools
+================
+1. Open up Makefile.am and add appropriate _LDADD, _SOURCES lines. Add the tool
+   executable name to bin_PROGRAMS.
+2. Rerun autogen.sh, configure and make.
+3. Add your tool to the list below. :-)
+
+
+
+
+Current Tools
+=============
+This is a list of tools currently included in this directory. If you add a new
+tool, please add an appropriate description to this list as well.
+
+
+pdg1ana
+-------
+  Purpose: Example of how to extract information from a PDG.
+  Authors: Sven van Haastregt
+  Tested:  ISA 0.10
+
+
+pdg1trans
+---------
+  Purpose: Integrates work of BSc. student Giso Dal, who worked on implementing
+           modulo unfolding and plane cutting transformations.
+  Authors: Giso Dal, Sven van Haastregt
+  Notes:   Result may be plain wrong. See thesis for restrictions.
+  Tested:  ISA 0.10
+
+
+ppnta
+-----
+  Purpose: Do some throughput analysis on a PPN.
+  Authors: Teddy Zhai, Sven van Haastregt
+  Notes:   Under development.
+  Tested:  ISA 0.10
+
+
+
+2010-10-05
+Sven van Haastregt,
+Leiden Embedded Research Center
+LIACS, Leiden University
