@@ -69,8 +69,102 @@ void toposort(PDG *pdg, pdg::node **topo) {
 }
 
 
+// TODO: needs to be tested with pw_qpolynomial with at least 2 pieces
+int countCard(isl_set *set, isl_qpolynomial *qp, void *user) {
+  int *count = (int*)user;
+  isl_int n, d;
+  isl_int_init(n);
+  isl_int_init(d);
+
+  if (isl_qpolynomial_is_cst(qp, &n, &d) == 1) {
+    if (isl_int_get_si(d) != 1) {
+      fprintf(stderr, "Set cardinality seems fractional!\n");
+    }
+    *count = isl_int_get_si(n);
+  }
+  else {
+    fprintf(stderr, "At least one qpolynomial is not constant!\n");
+  }
+  return 0;
+}
+
+int getCardinality(isl_ctx *ctx, pdg::UnionSet *s) {
+  int count = 0;
+  isl_pw_qpolynomial *pwqp = isl_set_card(s->get_isl_set(ctx));
+  isl_pw_qpolynomial_foreach_piece(pwqp, &countCard, &count);
+  return count;
+}
+
+
 // Implementation of Algorithm 1 in Sjoerd Meijer's thesis.
-void throughput(PDG *pdg) {
+void throughput(PPN *ppn) {
+  isl_ctx *ctx = isl_ctx_alloc();
+  assert(ctx);
+
+  int workload[10] = {10, 10, 10, 20, 10, 10, 10, 10, 10, 10};
+  barvinok_options *b_options = barvinok_options_new_with_defaults();
+  Value bres;
+  value_init(bres);
+
+  // TODO:
+  //toposort(pdg, topo);
+
+  int n = ppn->nodes.size();
+  for (int i = 0; i < n; i++) {
+    printf("-- Process %d (%s)\n", i, ppn->nodes[i]->statement->top_function->name->s.c_str());
+
+    // Step 1:
+    int t_isolated = workload[i];
+
+
+    // Step 2:
+    for (int c = 0; c < ppn->edges.size(); c++) {
+      ppn::edge *e = ppn->edges[c];
+      if (e->from_node && e->to_node && e->to_node->nr == i) {
+        printf(" Edge %d -> %d; |IPD| = %d\n", e->from_node->nr, e->to_node->nr, getCardinality(ctx, e->from_domain));
+        // TODO: (4.7) t_Rd = |IPD| / |D| * t_isolated
+
+        /* // Ye olde way of counting with barvinok:
+         Polyhedron *pol = *(e->from_domain);
+        barvinok_count_with_options(pol, &bres, b_options);
+        value_print(stdout, P_VALUE_FMT"\n", bres);*/
+      }
+    }
+
+/*
+    // Step 3:
+    for (int r = 0; r < pdg->dependences.size(); r++) {
+      pdg::dependence *dep = pdg->dependences[r];
+      if (dep->from && dep->to && dep->to->nr == i) {
+        // TODO:       t_f = min(t_Rd)
+      }
+    }
+
+
+    // Step 4:
+    // TODO: compute F_aggr
+
+
+    // Step 5:
+    // TODO: T_i = min(t_isolated, F_aggr)
+
+
+    // Step 6:
+    for (int r = 0; r < pdg->dependences.size(); r++) {
+      pdg::dependence *dep = pdg->dependences[r];
+      if (dep->from && dep->to && dep->from->nr == i) {
+        // TODO:       t_Wr = ...
+      }
+    }*/
+  }
+}
+
+
+// Implementation of Algorithm 1 in Sjoerd Meijer's thesis.
+// 
+// OBSOLETE, PDG-based
+//
+/*void throughput(PDG *pdg) {
   int n = pdg->nodes.size();
   pdg::node **topo = new pdg::node*[n];
 
@@ -141,35 +235,27 @@ void throughput(PDG *pdg) {
 
   delete[] topo;
 }
-
+*/
 
 int main(int argc, char * argv[])
 {
   FILE *in = stdin, *out = stdout;
   int c, ind = 0;
-  PDG *pdg;
   bool evaluate = true;
 
   PPN *ppn = new PPN;
-  ppn->Dump(stdout);
-  printf("Bullshit follows now\n");
+  ppn = yaml::Load<PPN>(in);
 
-  pdg = yaml::Load<PDG>(in);
-  if (!pdg) {
+  if (!ppn) {
     fprintf(stderr, "No PPN specified or PPN invalid.\n");
     fprintf(stderr, "Usage: ppnta < file.yaml\n");
     exit(1);
   }
 
-  if (pdg->dependences.size() == 0) {
-    fprintf(stderr, "Error: input does not contain dependence information.\n");
-    exit(1);
-  }
+  throughput(ppn);
 
-  throughput(pdg);
-
-  pdg->free();
-  delete pdg;
+  ppn->free();
+  delete ppn;
 
   return 0;
 }

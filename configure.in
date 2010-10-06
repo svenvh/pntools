@@ -97,11 +97,22 @@ fi
 AC_ARG_WITH(isa,
   AS_HELP_STRING([--with-isa=DIR],[directory containing ISA tool set]) )
 if test "x$with_isa" != "x"; then
-  CPPFLAGS="$CPPFLAGS -I$with_isa -I$with_isa/barvinok -I$with_isa/polylib/include -I$with_isa/isl/include"
+  CPPFLAGS="$CPPFLAGS -I$with_isa -I$with_isa/barvinok -I$with_isa/polylib/include"
+  CPPFLAGS="$CPPFLAGS -I$with_isa/isl/include -I$with_isa/isl-polylib/include"
   LDFLAGS="$LDFLAGS -L$with_isa/lib -L$with_isa/polylib"
 fi
 ISA_DIR="$with_isa"
 AC_SUBST(ISA_DIR)
+
+CPPFLAGS="$CPPFLAGS -I$ISA_DIR/barvinok/omega/omega_lib/include"
+CPPFLAGS="$CPPFLAGS -I$ISA_DIR/barvinok/omega/basic/include"
+CPPFLAGS="$CPPFLAGS -I$ISA_DIR/barvinok/omega/code_gen/include"
+CPPFLAGS="$CPPFLAGS -I$ISA_DIR/barvinok/omega/omega_calc/include"
+CPPFLAGS="$CPPFLAGS -I$ISA_DIR/barvinok/omega/omega_interface"
+
+AC_SUBST(OMEGA_LIBS)
+OMEGA_LIBS="-L$ISA_DIR/barvinok/omega/omega_lib"
+OMEGA_LIBS="$OMEGA_LIBS -lomega"
 
 
 #AC_CONFIG_HEADERS(config.h)
