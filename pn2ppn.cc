@@ -723,6 +723,10 @@ int main(int argc, char * argv[])
     PDG *pdg;
     pdg = yaml::Load<PDG>(in);
 
+    if (pdg->dependences.size() == 0) {
+      fprintf(stderr, "Error: PDG does not contain dependence information.\n");
+      exit(1);
+    }
     writeADG(pdg);
 
     if (output && strcmp(output, "-")) {

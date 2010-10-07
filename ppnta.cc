@@ -25,8 +25,8 @@ using namespace std;
 
 
 // Topological sort
-void toposort(PDG *pdg, pdg::node **topo) {
-  int n = pdg->nodes.size();
+void toposort(PPN *ppn, pdg::node **topo) {
+  int n = ppn->nodes.size();
   bool *marks = new bool[n];
   int prev, ins = 0;
 
@@ -40,17 +40,17 @@ void toposort(PDG *pdg, pdg::node **topo) {
     for (int i = 0; i < n; i++) {
       bool haspred = false;
       if (!marks[i]) {
-        for (int r = 0; r < pdg->dependences.size(); r++) {
-          pdg::dependence *dep = pdg->dependences[r];
-          if (dep->from && dep->to && dep->to->nr == i) {
-            if (marks[dep->from->nr] == false) {
+        for (int r = 0; r < ppn->edges.size(); r++) {
+          ppn::edge *e = ppn->edges[r];
+          if (e->from_node && e->to_node && e->to_node->nr == i) {
+            if (marks[e->from_node->nr] == false) {
               haspred = true;
               continue;
             }
           }
         }
         if (!haspred) {
-          topo[ins++] = pdg->nodes[i];
+          topo[ins++] = ppn->nodes[i];
           marks[i] = true;
         }
       }
@@ -60,7 +60,7 @@ void toposort(PDG *pdg, pdg::node **topo) {
     }
     printf("\n");*/
     if (prev == ins) {
-      fprintf(stderr, "Toposort not making any progress, perhaps your PDG is cyclic?\n");
+      fprintf(stderr, "Toposort not making any progress, perhaps your PPN is cyclic?\n");
       exit(1);
     }
   }
@@ -69,12 +69,14 @@ void toposort(PDG *pdg, pdg::node **topo) {
 }
 
 
-// TODO: needs to be tested with pw_qpolynomial with at least 2 pieces
 int countCard(isl_set *set, isl_qpolynomial *qp, void *user) {
   int *count = (int*)user;
   isl_int n, d;
   isl_int_init(n);
   isl_int_init(d);
+
+  // The resulting pw_qpolynomial should consist of only a single piece:
+  assert(*count == 0);
 
   if (isl_qpolynomial_is_cst(qp, &n, &d) == 1) {
     if (isl_int_get_si(d) != 1) {
@@ -98,6 +100,9 @@ int getCardinality(isl_ctx *ctx, pdg::UnionSet *s) {
 
 // Implementation of Algorithm 1 in Sjoerd Meijer's thesis.
 void throughput(PPN *ppn) {
+  int n = ppn->nodes.size();
+  pdg::node **topo = new pdg::node*[n];
+
   isl_ctx *ctx = isl_ctx_alloc();
   assert(ctx);
 
@@ -106,12 +111,16 @@ void throughput(PPN *ppn) {
   Value bres;
   value_init(bres);
 
-  // TODO:
-  //toposort(pdg, topo);
-
-  int n = ppn->nodes.size();
+  toposort(ppn, topo);
+  printf("Topological sort:\n");
   for (int i = 0; i < n; i++) {
-    printf("-- Process %d (%s)\n", i, ppn->nodes[i]->statement->top_function->name->s.c_str());
+    printf("%2d %s\n", topo[i]->nr, topo[i]->statement->top_function->name->s.c_str());
+  }
+
+
+  for (int i = 0; i < n; i++) {
+    pdg::node *node = topo[i];     // Current node respecting topological order
+    printf("-- Process %d (%s)\n", i, node->statement->top_function->name->s.c_str());
 
     // Step 1:
     int t_isolated = workload[i];
@@ -120,7 +129,7 @@ void throughput(PPN *ppn) {
     // Step 2:
     for (int c = 0; c < ppn->edges.size(); c++) {
       ppn::edge *e = ppn->edges[c];
-      if (e->from_node && e->to_node && e->to_node->nr == i) {
+      if (e->from_node && e->to_node && e->to_node->nr == node->nr) {
         printf(" Edge %d -> %d; |IPD| = %d\n", e->from_node->nr, e->to_node->nr, getCardinality(ctx, e->from_domain));
         // TODO: (4.7) t_Rd = |IPD| / |D| * t_isolated
 
@@ -157,6 +166,7 @@ void throughput(PPN *ppn) {
       }
     }*/
   }
+  delete[] topo;
 }
 
 
