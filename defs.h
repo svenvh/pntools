@@ -8,6 +8,11 @@
 #ifndef DEF_H_
 #define DEF_H_
 
+#include <iostream>
+#include <vector>
+
+#include "isl_set.h"
+
 typedef double THR_t;
 
 #endif /* DEF_H_ */

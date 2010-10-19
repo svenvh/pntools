@@ -16,7 +16,7 @@
 
 #include "isl_set_polylib.h"
 #include "isl_map_polylib.h"
-//#include "isl_set.h"
+#include "isl_set.h"
 //#include "isl_map.h"
 
 using namespace yaml;
@@ -56,7 +56,7 @@ public:
 	pdg::node    *to_node;
 	seq<pdg::access>  from_access;
 	seq<pdg::access>  to_access;
-  pdg::Matrix *map;
+	pdg::Matrix *map;
 	pdg::array *array;
 	int		reordering;
 	int		multiplicity;
@@ -100,6 +100,7 @@ public:
 
 PPN *import_ppn(pdg::PDG *pdg, std::vector<espam_edge*> edges);
 
+static pdg::UnionSet *isl_set_to_UnionSet(isl_set *s) ;
 } //namespace
 
 

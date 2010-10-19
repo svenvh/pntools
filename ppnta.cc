@@ -1,32 +1,33 @@
 //
 // Implementation of throughput analysis
-// Sven van Haastregt, September 2010
+// Sven van Haastregt, Teddy Zhai
+// September 2010
 // LERC, LIACS, Leiden University
 //
 #include <iostream>
-//#include <set>
-
 //#include <isl_set_polylib.h>
 
 #include "barvinok/barvinok.h"
 
+#include "defs.h"
 #include "yaml.h"
 #include "pdg.h"
 #include "ppn.h"
+#include "isl_set.h"
 //extern "C" {
 //#include "isl_util.h"
 //}
+
+#define DEBUG_PPNTA
 
 using pdg::PDG;
 using ppn::PPN;
 using namespace std;
 
-
-
-
 // Topological sort
 void toposort(PPN *ppn, pdg::node **topo) {
   int n = ppn->nodes.size();
+
   bool *marks = new bool[n];
   int prev, ins = 0;
 
@@ -106,10 +107,14 @@ void throughput(PPN *ppn) {
   isl_ctx *ctx = isl_ctx_alloc();
   assert(ctx);
 
-  int workload[10] = {10, 10, 10, 20, 10, 10, 10, 10, 10, 10};
-  barvinok_options *b_options = barvinok_options_new_with_defaults();
-  Value bres;
-  value_init(bres);
+  // TODO: workload and cost for communication need to be read from external files.
+  // For now, the size of the array shoul be equal to the number of processes
+  const THR_t workload[10] = {10, 10, 10, 20, 10, 10, 10, 10, 10, 10};
+  const THR_t commu_cost[10] = {10, 10, 10, 20, 10, 10, 10, 10, 10, 10};
+
+//  barvinok_options *b_options = barvinok_options_new_with_defaults();
+//  Value bres;
+//  value_init(bres);
 
   toposort(ppn, topo);
   printf("Topological sort:\n");
@@ -121,22 +126,42 @@ void throughput(PPN *ppn) {
   for (int i = 0; i < n; i++) {
     pdg::node *node = topo[i];     // Current node respecting topological order
     printf("-- Process %d (%s)\n", i, node->statement->top_function->name->s.c_str());
+    pdg::UnionSet* d_node = isl_set_to_UnionSet(node->source);
+#ifdef DEBUG_PPNTA
+    cout << "node domain:" <<endl;\
+    d_node->get_isl_set(ctx);
+    isl_set_print(d_node->get_isl_set(ctx), stdout, 1);
+#endif
 
-    // Step 1:
-    int t_isolated = workload[i];
+    /********************************************************************************
+     * Step 1
+     */
+    vector<THR_t>  ppn_iso_thrs(ppn->nodes.v.size(), 0.0);
+    // get # input arguments
+    THR_t x = ppn->nodes[i]->statement->top_function->arguments.size();
+#ifdef DEBUG_PPNTA
+    cout<<"nr input arguments: " << endl;
+#endif
+    // get # output ports
+    THR_t y = ppn->nodes[i]->statement->accesses.v.size();
+#ifdef DEBUG_PPNTA
+    cout<<"nr ouput ports: " << endl;
+#endif
+    THR_t c_iso = workload[node->nr] + x * commu_cost[node->nr] + y * commu_cost[node->nr];
+    ppn_iso_thrs[node->nr] = 1.0 / c_iso;
 
 
-    // Step 2:
+    /********************************************************************************
+     * Step 2
+     */
     for (int c = 0; c < ppn->edges.size(); c++) {
       ppn::edge *e = ppn->edges[c];
       if (e->from_node && e->to_node && e->to_node->nr == node->nr) {
-        printf(" Edge %d -> %d; |IPD| = %d\n", e->from_node->nr, e->to_node->nr, getCardinality(ctx, e->from_domain));
-        // TODO: (4.7) t_Rd = |IPD| / |D| * t_isolated
+        printf(" Edge %d -> %d; |IPD| = %d\n",
+        		e->from_node->nr, e->to_node->nr, getCardinality(ctx, e->from_domain));
+        // TODO: (4.7) t_Rd = |IPD| * t_isolated / |D|
+        THR_t t_rd = getCardinality(ctx, e->from_domain) * c_iso / getCardinality(ctx, d_node);
 
-        /* // Ye olde way of counting with barvinok:
-         Polyhedron *pol = *(e->from_domain);
-        barvinok_count_with_options(pol, &bres, b_options);
-        value_print(stdout, P_VALUE_FMT"\n", bres);*/
       }
     }
 
@@ -178,7 +203,9 @@ void throughput(PPN *ppn) {
   int n = pdg->nodes.size();
   pdg::node **topo = new pdg::node*[n];
 
-  int workload[10] = {10, 10, 10, 20, 10, 10, 10, 10, 10, 10};
+  // workload and cost for communication need to be read from external files
+  THR_t workload[10] = {10, 10, 10, 20, 10, 10, 10, 10, 10, 10};
+
 
   toposort(pdg, topo);
 
@@ -208,7 +235,8 @@ void throughput(PPN *ppn) {
       if (dep->from && dep->to && dep->to->nr == i) {
         // TODO: (4.7) t_Rd = |IPD| / |D| * t_isolated
         //TODO: dep->from->source->constraints is NOT the IPD!!!!
-        // TODO: use isl_set_card 
+        // TODO: use isl_set_card
+    	  isl_set_card();
         Polyhedron *pol = *(dep->from->source);
         barvinok_count_with_options(pol, &bres, b_options);
         value_print(stdout, P_VALUE_FMT"\n", bres);
