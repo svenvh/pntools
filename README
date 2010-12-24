@@ -64,7 +64,7 @@ ppnta
 -----
   Purpose: Do some throughput analysis on a PPN.
   Authors: Teddy Zhai, Sven van Haastregt
-  Notes:   Under development.
+  Notes:   Implemented, needs further verification.
   Tested:  ISA 0.10
 
 

@@ -100,7 +100,6 @@ public:
 
 PPN *import_ppn(pdg::PDG *pdg, std::vector<espam_edge*> edges);
 
-static pdg::UnionSet *isl_set_to_UnionSet(isl_set *s) ;
 } //namespace
 
 
