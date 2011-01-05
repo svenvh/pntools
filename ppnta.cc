@@ -2,7 +2,7 @@
 // Implementation of throughput analysis
 // Sven van Haastregt, September-December 2010
 // LERC, LIACS, Leiden University
-// $Id: ppnta.cc,v 1.7 2011/01/04 17:31:52 tzhai Exp $
+// $Id: ppnta.cc,v 1.8 2011/01/05 09:05:03 tzhai Exp $
 //
 #include <iostream>
 
@@ -13,6 +13,10 @@
 #include "ppn.h"
 #include "defs.h"
 #include "utility.h"
+
+using pdg::PDG;
+using ppn::PPN;
+using namespace std;
 
 // Aggregate all incoming FIFOs of a node
 THR_t aggregateFifos(PPN *ppn, pdg::node *node, THR_t tFifo[]) {

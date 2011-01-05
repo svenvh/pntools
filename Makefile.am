@@ -25,7 +25,7 @@ pn2ppn_SOURCES = \
 
 ppnta_LDADD = $(ISADIR)/libpdg.la $(BARVINOK_DIR)/libbarvinok.la @SYCK_LIBS@
 ppnta_SOURCES = \
-	ppnta.cc ppn.h ppn.cc
+	ppnta.cc ppn.h ppn.cc utility.cc utility.h
 
 bin_PROGRAMS = pdg1ana pdg1trans ppnta pn2ppn
 
