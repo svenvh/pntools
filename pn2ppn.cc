@@ -1,3 +1,8 @@
+// pn2ppn.cc
+// Converts a pn-generated YAML file into a PPN.
+// This is a stripped version of pn2espam.cc which was written by Sven Verdoolaege.
+// Authors: Teddy Zhai, Sven van Haastregt
+
 #include <getopt.h>
 #include <algorithm>
 #include <set>
@@ -726,6 +731,7 @@ int main(int argc, char * argv[])
 
     if (pdg->dependences.size() == 0) {
       fprintf(stderr, "Error: PDG does not contain dependence information.\n");
+      fprintf(stderr, "Usage: pn2ppn < file_pn.yaml > file.ppn\n");
       exit(1);
     }
     writeADG(pdg);

@@ -3,7 +3,7 @@
  *
  *  	Created on: Sep 30, 2010
  *      Author: Teddy Zhai, Sven van Haastregt
- *      $Id: ppn.h,v 1.5 2011/01/06 14:12:58 tzhai Exp $
+ *      $Id: ppn.h,v 1.6 2011/01/06 16:15:03 svhaastr Exp $
  *
  */
 
@@ -19,12 +19,12 @@
 #include "isl_set_polylib.h"
 #include "isl_map_polylib.h"
 #include "isl_set.h"
-//#include "isl_map.h"
 
 #include "defs.h"
 
 using namespace yaml;
 
+// espam_edge; structure used during conversion of a pn2ppn. Original definition is in pn2espam.cc .
 struct espam_edge {
     char    *name;
     char    *from_port;
@@ -48,6 +48,9 @@ struct espam_edge {
 
 namespace ppn{
 
+// Edge; serializable class
+// After pn2ppn conversion, pdg::dependences are transformed into edges. This edge class contains additional fields (such as
+// from_domain, to_domain representing OPD, IPD resp.) that are used during further PPN analysis.
 class edge:public structure{
 	static serialize *create(void *user) { return new edge(); }
 public:
@@ -84,6 +87,8 @@ public:
 };
 
 
+// PPN; serializable class
+// This is the base class representing the PPN (graph).
 class PPN:public structure{
 	static serialize *create(void *user) { return new PPN(); }
 private:
@@ -91,24 +96,46 @@ private:
 	seq<edge> edges;
 
 public:
+  ////////////////////////////////////////////////////////////////////////////
+  //// Constructors/destructors
 	PPN() {}
 	PPN(const seq<pdg::node>* nodes, const seq<edge>* edges);
 	~PPN(){};
 
-	// YAML stuff
+
+  ////////////////////////////////////////////////////////////////////////////
+	//// YAML stuff
 	static PPN *Load(char *str, void *user = NULL);
 	static PPN *Load(FILE *fp, void *user = NULL);
 	static void register_type();
 	void dump(emitter& e);
 
-	// Loading / importing
+
+  ////////////////////////////////////////////////////////////////////////////
+	//// Loading / importing
+  // Constructs a PPN from a PDG and vector of espam_edges
+  // Probably only pn2ppn will use this one
 	void import_pn(pdg::PDG *pdg, std::vector<espam_edge*> edges);
 
-	// Operations
+
+  ////////////////////////////////////////////////////////////////////////////
+	//// Data access
+  // Returns the list of edges
 	std::vector<edge*> getEdges();
+
+  // Returns the list of nodes
 	std::vector<pdg::node*> getNodes();
+
+
+  ////////////////////////////////////////////////////////////////////////////
+  //// Graph operations
+  // Returns a node* array representing a topological sort of the PPN
 	void toposort(pdg::node **topo);
+
+  // Finds all cycles in a PPN
 	PPNgraphCycles findPPNgraphCycles(const PPN *ppn);
+
+  // Returns a list of processes that are adjacent to the given process
 	PPNprocesses getAdjacentProcesses(const PPN *ppn, const Process *process);
 
 };

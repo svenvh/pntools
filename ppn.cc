@@ -11,7 +11,7 @@
 using namespace ppn;
 using namespace pdg;
 /*using namespace std;*/
-//using pdg::PDG;
+using pdg::PDG;
 
 
 PPN::PPN(const seq<pdg::node>* nodes, const seq<edge>* edges){

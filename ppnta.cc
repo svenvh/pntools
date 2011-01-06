@@ -2,7 +2,7 @@
 // Implementation of throughput analysis
 // Sven van Haastregt, September-December 2010
 // LERC, LIACS, Leiden University
-// $Id: ppnta.cc,v 1.9 2011/01/06 14:12:58 tzhai Exp $
+// $Id: ppnta.cc,v 1.10 2011/01/06 16:15:03 svhaastr Exp $
 //
 #include <iostream>
 
@@ -30,7 +30,6 @@ THR_t aggregateFifos(PPN *ppn, pdg::node *node, THR_t tFifo[]) {
     pdg::access *acc = node->statement->accesses[a];
     if (acc->type == pdg::access::read) {
       printf(" Aggregating arg %d with incoming FIFOs: ", a);
-
       for (int c = 0; c < ppn->getEdges().size(); c++) {
         ppn::edge *e = ppn->getEdges()[c];
         if (e->from_node && e->to_node && e->to_node->nr == node->nr) {
@@ -155,7 +154,7 @@ int main(int argc, char * argv[])
 
   if (!ppn) {
     fprintf(stderr, "No PPN specified or PPN invalid.\n");
-    fprintf(stderr, "Usage: ppnta < file.yaml\n");
+    fprintf(stderr, "Usage: ppnta < file.ppn\n");
     exit(1);
   }
 
