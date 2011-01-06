@@ -678,7 +678,8 @@ static void writeADG(pdg::PDG *pdg)
       //delete stripped; // TODO
     }
 
-    ppn::PPN *ppn = ppn::import_ppn(pdg, split_edges);
+    ppn::PPN *ppn = new ppn::PPN;
+    ppn->import_pn(pdg, split_edges);
     ppn->Dump(stdout);
 
     for (int i = 0; i < pdg->nodes.size(); ++i)

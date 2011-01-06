@@ -1,8 +1,10 @@
 /*
  * ppn.h
  *
- *  Created on: Sep 30, 2010
+ *  	Created on: Sep 30, 2010
  *      Author: Teddy Zhai, Sven van Haastregt
+ *      $Id: ppn.h,v 1.5 2011/01/06 14:12:58 tzhai Exp $
+ *
  */
 
 #ifndef PPN_H_
@@ -18,6 +20,8 @@
 #include "isl_map_polylib.h"
 #include "isl_set.h"
 //#include "isl_map.h"
+
+#include "defs.h"
 
 using namespace yaml;
 
@@ -82,23 +86,32 @@ public:
 
 class PPN:public structure{
 	static serialize *create(void *user) { return new PPN(); }
-public:
+private:
 	seq<pdg::node> nodes;
 	seq<edge> edges;
 
+public:
 	PPN() {}
 	PPN(const seq<pdg::node>* nodes, const seq<edge>* edges);
 	~PPN(){};
 
+	// YAML stuff
 	static PPN *Load(char *str, void *user = NULL);
 	static PPN *Load(FILE *fp, void *user = NULL);
 	static void register_type();
 	void dump(emitter& e);
+
+	// Loading / importing
+	void import_pn(pdg::PDG *pdg, std::vector<espam_edge*> edges);
+
+	// Operations
+	std::vector<edge*> getEdges();
+	std::vector<pdg::node*> getNodes();
+	void toposort(pdg::node **topo);
+	PPNgraphCycles findPPNgraphCycles(const PPN *ppn);
+	PPNprocesses getAdjacentProcesses(const PPN *ppn, const Process *process);
+
 };
-
-
-
-PPN *import_ppn(pdg::PDG *pdg, std::vector<espam_edge*> edges);
 
 } //namespace
 

@@ -2,7 +2,7 @@
 // Implementation of throughput analysis
 // Sven van Haastregt, September-December 2010
 // LERC, LIACS, Leiden University
-// $Id: ppnta.cc,v 1.8 2011/01/05 09:05:03 tzhai Exp $
+// $Id: ppnta.cc,v 1.9 2011/01/06 14:12:58 tzhai Exp $
 //
 #include <iostream>
 
@@ -30,8 +30,9 @@ THR_t aggregateFifos(PPN *ppn, pdg::node *node, THR_t tFifo[]) {
     pdg::access *acc = node->statement->accesses[a];
     if (acc->type == pdg::access::read) {
       printf(" Aggregating arg %d with incoming FIFOs: ", a);
-      for (int c = 0; c < ppn->edges.size(); c++) {
-        ppn::edge *e = ppn->edges[c];
+
+      for (int c = 0; c < ppn->getEdges().size(); c++) {
+        ppn::edge *e = ppn->getEdges()[c];
         if (e->from_node && e->to_node && e->to_node->nr == node->nr) {
           assert(e->to_access.size() == 1);  // [svh] I didn't test multiple to_accesses
           if (e->to_access[0] == acc) {
@@ -63,13 +64,13 @@ THR_t aggregateFifos(PPN *ppn, pdg::node *node, THR_t tFifo[]) {
 void throughput(PPN *ppn) {
   int workload[10] = {5, 8, 6, 20, 10, 10, 10, 10, 10, 10};
 
-  int n = ppn->nodes.size();
+  int n = ppn->getNodes().size();
   pdg::node **topo = new pdg::node*[n];
 
   isl_ctx *ctx = isl_ctx_alloc();
   assert(ctx);
 
-  toposort(ppn, topo);
+  ppn->toposort(topo);
   printf("Topological sort:\n");
   for (int i = 0; i < n; i++) {
     printf("%2d %s\n", topo[i]->nr, topo[i]->statement->top_function->name->s.c_str());
@@ -79,9 +80,9 @@ void throughput(PPN *ppn) {
   // Storage for intermediate results
   THR_t *tIso = new THR_t[n];
   THR_t *tP = new THR_t[n];
-  THR_t *tFifo_Rd = new THR_t[ppn->edges.size()];
-  THR_t *tFifo_Wr = new THR_t[ppn->edges.size()];
-  THR_t *tFifo = new THR_t[ppn->edges.size()];
+  THR_t *tFifo_Rd = new THR_t[ppn->getEdges().size()];
+  THR_t *tFifo_Wr = new THR_t[ppn->getEdges().size()];
+  THR_t *tFifo = new THR_t[ppn->getEdges().size()];
 
   // Process nodes in topological order
   for (int i = 0; i < n; i++) {
@@ -91,8 +92,8 @@ void throughput(PPN *ppn) {
     // Step 1:
     tIso[node->nr] = 1.0 / workload[node->nr];
 
-    for (int c = 0; c < ppn->edges.size(); c++) {
-      ppn::edge *e = ppn->edges[c];
+    for (int c = 0; c < ppn->getEdges().size(); c++) {
+      ppn::edge *e = ppn->getEdges()[c];
       if (e->from_node && e->to_node && e->to_node->nr == node->nr) {
         // Step 2:
         // (4.7) t_Rd = |IPD| / |D| * t_isolated
@@ -121,8 +122,8 @@ void throughput(PPN *ppn) {
 
 
     // Step 6:
-    for (int c = 0; c < ppn->edges.size(); c++) {
-      ppn::edge *e = ppn->edges[c];
+    for (int c = 0; c < ppn->getEdges().size(); c++) {
+      ppn::edge *e = ppn->getEdges()[c];
       if (e->from_node && e->to_node && e->from_node->nr == node->nr) {
         // (4.6) t_Wr = |OPD| / |D| * t_node
         tFifo_Wr[c] = ((double)getCardinality(ctx, e->to_domain) / (double)getCardinality(ctx, node->source)) * tP[node->nr];

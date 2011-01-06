@@ -7,7 +7,7 @@
 
 //#include "isl_set_polylib.h"
 #include "ppn.h"
-
+#include "yaml.h"
 using namespace ppn;
 using namespace pdg;
 /*using namespace std;*/
@@ -160,11 +160,10 @@ static void copy_accesses(seq<pdg::access> *dst, std::vector<pdg::access * > *sr
 }
 
 
-PPN *ppn::import_ppn(PDG *pdg, std::vector<espam_edge*> edges) {
-  PPN *ret = new PPN;
-
+void
+PPN::import_pn(PDG *pdg, std::vector<espam_edge*> edges) {
   for (int i = 0; i < pdg->nodes.size(); i++) {
-    ret->nodes.push_back(pdg->nodes[i]);
+    this->nodes.push_back(pdg->nodes[i]);
   }
 
   for (int i = 0; i < edges.size(); i++) {
@@ -188,8 +187,62 @@ PPN *ppn::import_ppn(PDG *pdg, std::vector<espam_edge*> edges) {
     e->sticky       = edges[i]->sticky;
     e->shift_register = edges[i]->shift_register;
 
-    ret->edges.push_back(e);
+    this->edges.push_back(e);
   }
 
-  return ret;
+}
+
+std::vector<edge*>
+PPN::getEdges(){
+		return this->edges.v;
+}
+
+std::vector<pdg::node*>
+PPN::getNodes(){
+	return this->nodes.v;
+}
+
+void
+PPN::toposort(pdg::node **topo) {
+  int n = this->nodes.size();
+
+  bool *marks = new bool[n];
+  int prev, ins = 0;
+
+  for (int i = 0; i < n; i++) {
+    marks[i] = false;
+  }
+
+  while (ins < n) {
+    prev = ins;
+    //for (int i = n-1; i >= 0; i--) {
+    for (int i = 0; i < n; i++) {
+      bool haspred = false;
+      if (!marks[i]) {
+        for (int r = 0; r < this->edges.size(); r++) {
+          ppn::edge *e = this->edges[r];
+          if (e->from_node && e->to_node && e->to_node->nr == i) {
+            if (marks[e->from_node->nr] == false) {
+              haspred = true;
+              break;
+            }
+          }
+        }
+        if (!haspred) {
+          topo[ins++] = this->nodes[i];
+          marks[i] = true;
+        }
+      }
+    }
+/*    for (int p=0; p < n; p++) {
+      printf("%d ", marks[p]);
+    }
+    printf("\n");*/
+    if (prev == ins) {
+      fprintf(stderr, "Toposort not making any progress, perhaps your PPN is cyclic?\n");
+      exit(1);
+    }
+  }
+
+  delete[] marks;
 }
