@@ -246,3 +246,42 @@ PPN::toposort(pdg::node **topo) {
 
   delete[] marks;
 }
+
+
+PPNgraphCycles
+PPN::findPPNgraphCycles(){
+
+	PPNgraphCycles cycles;
+
+// 	int size = ppn->nodes.size();
+// 	for (int i = 0; i < size; ++i) {
+// 		const pdg::node *proc = ppn->nodes[i];
+//
+// 		PPNprocesses adj_processes = getAdjacentProcesses(ppn, proc);
+//
+// 	} // all nodes
+
+
+	return cycles;
+}
+
+
+PPNprocesses
+PPN::getAdjacentProcesses(const Process *process){
+	PPNprocesses processes;
+
+// 	PPNprocessIter pit = find(this->nodes.v.begin(), this->nodes.v.end(), process);
+// 	assert(pit != this->nodes.v.end());
+// 	const Process* procs = *pit;
+// 	int procsNr = procs->nr;
+//
+// 	//
+// 	for (int i = 0; i < this->edges.v.size(); ++i) {
+// 		this->edges.v[i];
+// 	}
+
+	// get input/output ports
+
+
+	return processes;
+}

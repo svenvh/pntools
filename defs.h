@@ -3,6 +3,7 @@
  *
  *  	Created on: Oct 6, 2010
  *      Author: Teddy Zhai, Sven van Haastregt
+ *      $Id: defs.h,v 1.5 2011/01/07 13:29:36 tzhai Exp $
  *
  */
 
@@ -25,13 +26,17 @@ struct PPNgraphCycle{
 
 };
 
-typedef pdg::node Process;
+typedef pdg::node* Process;
 
-typedef std::list<pdg::node> PPNprocesses;
-typedef std::list<pdg::node>::iterator PPNprocessIter;
-typedef std::list<pdg::node>::const_iterator PPNprocessCIter;
+typedef std::vector<pdg::node*> PPNprocesses;
+typedef std::vector<pdg::node*>::iterator PPNprocessIter;
+typedef std::vector<pdg::node*>::const_iterator PPNprocessCIter;
 
-typedef list<PPNgraphCycle*> PPNgraphCycles;
+typedef vector<PPNprocesses> PPNgraphSCCs;
+typedef PPNgraphSCCs::iterator PPNgraphSCCIter;
+typedef PPNgraphSCCs::const_iterator PPNgraphSCCCIter;
+
+typedef vector<PPNprocesses> PPNgraphCycles;
 typedef PPNgraphCycles::iterator PPNgraphIter;
 typedef PPNgraphCycles::const_iterator PPNgraphCIter;
 
