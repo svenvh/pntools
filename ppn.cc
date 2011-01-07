@@ -8,8 +8,10 @@
 //#include "isl_set_polylib.h"
 #include "ppn.h"
 #include "yaml.h"
+#include "tarjan.h"
+
 using namespace ppn;
-using namespace pdg;
+//using namespace pdg;
 /*using namespace std;*/
 using pdg::PDG;
 
@@ -126,8 +128,8 @@ void edge::register_type()
 }
 
 
-static UnionSet *isl_set_to_UnionSet(isl_set *s) {
-  UnionSet *ret = new UnionSet();
+static pdg::UnionSet *isl_set_to_UnionSet(isl_set *s) {
+  pdg::UnionSet *ret = new pdg::UnionSet();
   Polyhedron *D = isl_set_to_polylib(s);
   for (Polyhedron *P = D; P; P = P->next) {
     pdg::Matrix *M = new pdg::Matrix(P);
@@ -248,6 +250,15 @@ PPN::toposort(pdg::node **topo) {
 }
 
 
+node *PPN::getNodeFromNr(int nr) {
+ 	int size = this->getNodes().size();
+ 	for (int i = 0; i < size; ++i) {
+    if (this->getNodes()[i]->nr == nr)
+      return this->getNodes()[i];
+  }
+}
+
+
 PPNgraphCycles
 PPN::findPPNgraphCycles(){
 
@@ -284,4 +295,13 @@ PPN::getAdjacentProcesses(const Process *process){
 
 
 	return processes;
+}
+
+
+PPNgraphSCCs PPN::findSCCs() {
+  PPNgraphSCCs ret;
+  Tarjan::TarjanClass tc;
+  ret = tc.runTarjansAlgorithm(this);
+
+  return ret;
 }

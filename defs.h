@@ -3,12 +3,12 @@
  *
  *  	Created on: Oct 6, 2010
  *      Author: Teddy Zhai, Sven van Haastregt
- *      $Id: defs.h,v 1.5 2011/01/07 13:29:36 tzhai Exp $
+ *      $Id: defs.h,v 1.6 2011/01/07 16:32:52 svhaastr Exp $
  *
  */
 
-#ifndef DEF_H_
-#define DEF_H_
+#ifndef DEFS_H_
+#define DEFS_H_
 
 #include "global.h"
 #include <limits>
@@ -32,7 +32,7 @@ typedef std::vector<pdg::node*> PPNprocesses;
 typedef std::vector<pdg::node*>::iterator PPNprocessIter;
 typedef std::vector<pdg::node*>::const_iterator PPNprocessCIter;
 
-typedef vector<PPNprocesses> PPNgraphSCCs;
+typedef std::vector<PPNprocesses> PPNgraphSCCs;
 typedef PPNgraphSCCs::iterator PPNgraphSCCIter;
 typedef PPNgraphSCCs::const_iterator PPNgraphSCCCIter;
 
@@ -43,4 +43,4 @@ typedef PPNgraphCycles::const_iterator PPNgraphCIter;
 } // namespace
 
 
-#endif /* DEF_H_ */
+#endif /* DEFS_H_ */

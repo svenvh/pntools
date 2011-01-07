@@ -3,7 +3,7 @@
  *
  *  	Created on: Jan 4, 2011
  *      Author: Sven van Haastregt, Teddy Zhai
- *     $Id: utility.cc,v 1.2 2011/01/06 14:13:53 tzhai Exp $
+ *     $Id: utility.cc,v 1.3 2011/01/07 16:32:52 svhaastr Exp $
  */
 
 #include <iostream>
@@ -55,4 +55,7 @@ int getCardinality(isl_ctx *ctx, pdg::UnionSet *s) {
   isl_pw_qpolynomial_free(pwqp);
   return count;
 }
+
+
+
 
