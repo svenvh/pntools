@@ -2,7 +2,7 @@
 // Implementation of throughput analysis
 // Sven van Haastregt, September-December 2010
 // LERC, LIACS, Leiden University
-// $Id: ppnta.cc,v 1.10 2011/01/06 16:15:03 svhaastr Exp $
+// $Id: ppnta.cc,v 1.11 2011/01/10 13:25:30 svhaastr Exp $
 //
 #include <iostream>
 
@@ -59,7 +59,7 @@ THR_t aggregateFifos(PPN *ppn, pdg::node *node, THR_t tFifo[]) {
 }
 
 
-// Implementation of Algorithm 1 in Sjoerd Meijer's thesis.
+// Implementation of Algorithm 1 in Sjoerd Meijer's thesis (December 2010).
 void throughput(PPN *ppn) {
   int workload[10] = {5, 8, 6, 20, 10, 10, 10, 10, 10, 10};
 
@@ -145,9 +145,7 @@ void throughput(PPN *ppn) {
 
 int main(int argc, char * argv[])
 {
-  FILE *in = stdin, *out = stdout;
-  int c, ind = 0;
-  bool evaluate = true;
+  FILE *in = stdin;
 
   PPN *ppn = new PPN;
   ppn = yaml::Load<PPN>(in);

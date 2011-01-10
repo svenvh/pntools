@@ -37,10 +37,10 @@ int main(int argc, char * argv[])
     exit(1);
   }
 
-  if (pdg->dependences.size() != 0) {
+  /*if (pdg->dependences.size() != 0) {
     fprintf(stderr, "Error: input already contains dependence information.\n");
     exit(1);
-  }
+  }*/
 
   int i;
   for (i = 0; i < pdg->nodes.size(); i++) {
