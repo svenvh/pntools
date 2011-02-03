@@ -204,6 +204,10 @@ PPN::getNodes(){
 	return this->nodes.v;
 }
 
+AST *PPN::getAST() {
+  return &ast;
+}
+
 void
 PPN::toposort(pdg::node **topo) {
   int n = this->nodes.size();

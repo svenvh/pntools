@@ -14,6 +14,8 @@ BARVINOK_DIR = $(ISADIR)/barvinok
 
 lib_LTLIBRARIES = libppn.la
 libppn_la_SOURCES = \
+	ast.cc \
+	ast.h \
 	ppn.cc \
 	ppn.h \
 	tarjan.cc \

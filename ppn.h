@@ -3,7 +3,7 @@
  *
  *    Created on: Sep 30, 2010
  *      Author: Teddy Zhai, Sven van Haastregt
- *      $Id: ppn.h,v 1.8 2011/01/07 16:32:52 svhaastr Exp $
+ *      $Id: ppn.h,v 1.9 2011/02/03 14:36:16 svhaastr Exp $
  *
  */
 
@@ -22,6 +22,7 @@
 
 #include "global.h"
 #include "defs.h"
+#include "ast.h"
 
 using namespace yaml;
 
@@ -90,6 +91,8 @@ public:
 
 typedef pdg::node node;
 
+
+
 // PPN; serializable class
 // This is the base class representing the PPN (graph).
 class PPN:public structure{
@@ -97,6 +100,7 @@ class PPN:public structure{
 private:
   seq<pdg::node> nodes;
   seq<edge> edges;
+  AST ast;
 
 public:
   ////////////////////////////////////////////////////////////////////////////
@@ -128,6 +132,9 @@ public:
 
   // Returns the list of nodes
   std::vector<pdg::node*> getNodes();
+
+  // Returns pointer to AST
+  AST *getAST();
 
   // Returns pointer to Node with the specified nr
   node *getNodeFromNr(const int nr);
