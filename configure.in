@@ -105,16 +105,6 @@ fi
 ISA_DIR="$with_isa"
 AC_SUBST(ISA_DIR)
 
-CPPFLAGS="$CPPFLAGS -I$ISA_DIR/barvinok/omega/omega_lib/include"
-CPPFLAGS="$CPPFLAGS -I$ISA_DIR/barvinok/omega/basic/include"
-CPPFLAGS="$CPPFLAGS -I$ISA_DIR/barvinok/omega/code_gen/include"
-CPPFLAGS="$CPPFLAGS -I$ISA_DIR/barvinok/omega/omega_calc/include"
-CPPFLAGS="$CPPFLAGS -I$ISA_DIR/barvinok/omega/omega_interface"
-
-AC_SUBST(OMEGA_LIBS)
-OMEGA_LIBS="-L$ISA_DIR/barvinok/omega/omega_lib"
-OMEGA_LIBS="$OMEGA_LIBS -lomega"
-
 AC_SUBST(CLOOG_LIBS)
 CLOOG_LIBS="-lcloog-isl"
 

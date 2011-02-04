@@ -34,10 +34,8 @@ pdg1trans_LDADD = $(ISADIR)/libpdg.la $(BARVINOK_DIR)/libbarvinok.la @SYCK_LIBS@
 pdg1trans_SOURCES = \
 	pdg1trans.cc transgdal.cc transgdal.h
 
-pn2ppn_LDADD = libppn.la $(ISADIR)/libpdg.la @SYCK_LIBS@ @OMEGA_LIBS@ @CLOOG_LIBS@
+pn2ppn_LDADD = libppn.la $(ISADIR)/libpdg.la @SYCK_LIBS@ @CLOOG_LIBS@
 pn2ppn_SOURCES = \
-	$(ISADIR)/Exit.cc \
-	$(ISADIR)/pdgutil.cc \
 	pn2ppn.cc
 
 ppnta_LDADD = libppn.la $(ISADIR)/libpdg.la $(BARVINOK_DIR)/libbarvinok.la @SYCK_LIBS@
