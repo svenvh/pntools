@@ -8,6 +8,7 @@
 #include "pdg.h"
 //#include "xml_AST.h"
 #include "ppn.h"
+#include "pn2ppn_util.h"
 
 struct option options[] = {
     { "input",  required_argument,  0,  'i' },
@@ -449,7 +450,7 @@ struct less_output_port :
 };
 
 static CloogInput *writeADG(pdg::PDG *pdg,
-                                CloogOptions *options)
+                                CloogOptions *options, vector<espam_edge*> &split_edges)
 {
     //int rc;
     isl_set **scattered_domains = NULL;
@@ -505,7 +506,7 @@ static CloogInput *writeADG(pdg::PDG *pdg,
     for (int i = 0; i < pdg->nodes.size(); ++i)
         scattered_domains[i] = scatter_node(pdg, pdg->nodes[i]);
 
-    vector<espam_edge*> split_edges;
+    //vector<espam_edge*> split_edges;
 
     for (int i = 0; i < pdg->dependences.size(); ++i) {
         pdg::dependence *dep = pdg->dependences[i];
@@ -694,10 +695,6 @@ static CloogInput *writeADG(pdg::PDG *pdg,
 
     }
 
-    ppn::PPN *ppn = new ppn::PPN;
-    ppn->import_pn(pdg, split_edges);
-    ppn->Dump(stdout);
-
     pdg->dimension++;
     for (int i = 0; i < nparam; ++i) {
         const char *s = strdup(pdg->params[i]->name->s.c_str());
@@ -756,7 +753,14 @@ int main(int argc, char * argv[])
       exit(1);
     }
 
-    CloogInput *cloog_input = writeADG(pdg, cloog_options);
+    vector<espam_edge*> split_edges;
+    CloogInput *cloog_input = writeADG(pdg, cloog_options, split_edges);
+    ppn::AST *ast = cloog_clast_to_AST(cloog_input, pdg->dimension, cloog_options);
+
+    ppn::PPN *ppn = new ppn::PPN;
+    ppn->import_pn(pdg, split_edges, ast);
+    ppn->Dump(stdout);
+
 
     //writeAST(writer, cloog_input, pdg->dimension, cloog_options);
     cloog_options_free(cloog_options);

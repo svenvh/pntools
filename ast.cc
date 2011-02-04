@@ -3,7 +3,7 @@
  *
  *  	Created on: Feb 2, 2011
  *      Author: Teddy Zhai
- *      $Id: ast.cc,v 1.1 2011/02/03 14:36:16 svhaastr Exp $
+ *      $Id: ast.cc,v 1.2 2011/02/04 16:31:36 svhaastr Exp $
  */
 
 #include "global.h"
@@ -123,7 +123,7 @@ void ASTNode_Stmt::register_type(){
 
 	structure::register_type("perl/ast_stmt", &typeid(ASTNode_Stmt), &ast_stmt.d);
 }
-
+/*
 AST*
 AST::Load(char *str, void *user)
 {
@@ -134,15 +134,15 @@ AST*
 AST::Load(FILE* fp, void* user){
 	 return yaml::Load<AST>(fp, user);
 }
-
+*/
 static at_init register_ast(AST::register_type);
 
 void
 AST::register_type(){
 	static struct_description ast_d = { create };
-	YAML_PTR_FIELD(ast_d, AST, root, ASTNode_Block);
+	//YAML_PTR_FIELD(ast_d, AST, root, ASTNode_Block); //TODO: reenable once root is set properly
 
-	structure::register_type("perl/ast", &typeid(AST), &ast_d.d);
+	structure::register_type("perl/AST", &typeid(AST), &ast_d.d);
 }
 
 void

@@ -3,7 +3,7 @@
  *
  *    Created on: Sep 30, 2010
  *      Author: Teddy Zhai, Sven van Haastregt
- *      $Id: ppn.h,v 1.10 2011/02/04 13:49:28 svhaastr Exp $
+ *      $Id: ppn.h,v 1.11 2011/02/04 16:31:36 svhaastr Exp $
  *
  */
 
@@ -99,13 +99,13 @@ class PPN:public structure{
 private:
   seq<pdg::node> nodes;
   seq<edge> edges;
-  AST ast;
+  AST *ast;
 
 public:
   ////////////////////////////////////////////////////////////////////////////
   //// Constructors/destructors
   PPN() {}
-  PPN(const seq<pdg::node>* nodes, const seq<edge>* edges);
+  PPN(const seq<pdg::node>* nodes, const seq<edge>* edges, AST *ast);
   ~PPN(){};
 
 
@@ -121,7 +121,7 @@ public:
   //// Loading / importing
   // Constructs a PPN from a PDG and vector of espam_edges
   // Probably only pn2ppn will use this one
-  void import_pn(pdg::PDG *pdg, std::vector<espam_edge*> edges);
+  void import_pn(pdg::PDG *pdg, std::vector<espam_edge*> edges, AST *ast);
 
 
   ////////////////////////////////////////////////////////////////////////////

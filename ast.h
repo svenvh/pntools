@@ -3,7 +3,7 @@
  *
  *  	Created on: Feb 2, 2011
  *      Author: Sven van Haastregt, Teddy Zhai
- *      $Id: ast.h,v 1.1 2011/02/03 14:36:16 svhaastr Exp $
+ *      $Id: ast.h,v 1.2 2011/02/04 16:31:36 svhaastr Exp $
  */
 
 #ifndef AST_H_
@@ -153,8 +153,8 @@ public:
 
   ////////////////////////////////////////////////////////////////////////////
   //// YAML stuff
-  static AST* Load(char *str, void *user = NULL);
-  static AST* Load(FILE *fp, void *user = NULL);
+/*  static AST* Load(char *str, void *user = NULL);
+  static AST* Load(FILE *fp, void *user = NULL);*/
   static void register_type();
   void dump(emitter& e);
 

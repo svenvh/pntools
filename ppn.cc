@@ -15,9 +15,10 @@ using namespace ppn;
 using pdg::PDG;
 
 
-PPN::PPN(const seq<pdg::node>* nodes, const seq<edge>* edges){
+PPN::PPN(const seq<pdg::node>* nodes, const seq<edge>* edges, AST *ast){
 	this->nodes = *nodes;
 	this->edges = *edges;
+  this->ast = ast;
 }
 
 PPN *PPN::Load(char *str, void *user)
@@ -37,6 +38,7 @@ void PPN::register_type()
     static struct_description ppn_d = { create };
     YAML_SEQ_FIELD(ppn_d, PPN, edges, edge);
     YAML_SEQ_FIELD(ppn_d, PPN, nodes, node);
+    YAML_PTR_FIELD(ppn_d, PPN, ast, AST);
 
     structure::register_type("perl/PPN", &typeid(PPN), &ppn_d.d);
 }
@@ -226,7 +228,7 @@ static void copy_accesses(seq<pdg::access> *dst, std::vector<pdg::access * > *sr
 
 
 void
-PPN::import_pn(PDG *pdg, std::vector<espam_edge*> edges) {
+PPN::import_pn(PDG *pdg, std::vector<espam_edge*> edges, AST *ast) {
   for (int i = 0; i < pdg->nodes.size(); i++) {
     this->nodes.push_back(pdg->nodes[i]);
   }
@@ -255,6 +257,7 @@ PPN::import_pn(PDG *pdg, std::vector<espam_edge*> edges) {
     this->edges.push_back(e);
   }
 
+  this->ast = ast;
 }
 
 std::vector<edge*>
@@ -268,7 +271,7 @@ PPN::getNodes(){
 }
 
 AST *PPN::getAST() {
-  return &ast;
+  return ast;
 }
 
 void

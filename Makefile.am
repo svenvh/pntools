@@ -36,6 +36,7 @@ pdg1trans_SOURCES = \
 
 pn2ppn_LDADD = libppn.la $(ISADIR)/libpdg.la @SYCK_LIBS@ @CLOOG_LIBS@
 pn2ppn_SOURCES = \
+	pn2ppn_util.cc \
 	pn2ppn.cc
 
 ppnta_LDADD = libppn.la $(ISADIR)/libpdg.la $(BARVINOK_DIR)/libbarvinok.la @SYCK_LIBS@
