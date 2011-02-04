@@ -88,7 +88,7 @@ POLYLIB_LIBS="-lpolylibgmp"
 SYCK_LIBS="-lsyck"
 
 AC_ARG_WITH(pngen,
-  AS_HELP_STRING([--with-pngen=DIR],[directory containing all other tools such as syck]) )
+  AS_HELP_STRING([--with-pngen=DIR],[directory containing all other pn-related tools such as syck and gmp]) )
 if test "x$with_pngen" != "x"; then
   CPPFLAGS="$CPPFLAGS -I$with_pngen -I$with_pngen/include"
   LDFLAGS="$LDFLAGS -L$with_pngen/lib"
@@ -97,9 +97,10 @@ fi
 AC_ARG_WITH(isa,
   AS_HELP_STRING([--with-isa=DIR],[directory containing ISA tool set]) )
 if test "x$with_isa" != "x"; then
-  CPPFLAGS="$CPPFLAGS -I$with_isa -I$with_isa/barvinok -I$with_isa/polylib/include"
-  CPPFLAGS="$CPPFLAGS -I$with_isa/isl/include -I$with_isa/isl-polylib/include"
-  LDFLAGS="$LDFLAGS -L$with_isa/lib -L$with_isa/polylib"
+  CPPFLAGS="$CPPFLAGS -I$with_isa -I$with_isa/barvinok"
+  CPPFLAGS="$CPPFLAGS -I$with_isa/isl/include -I$with_isa/barvinok/polylib/include"
+  CPPFLAGS="$CPPFLAGS -I$with_isa/cloog/include"
+  LDFLAGS="$LDFLAGS -L$with_isa/lib -L$with_isa/barvinok/polylib -L$with_isa/cloog"
 fi
 ISA_DIR="$with_isa"
 AC_SUBST(ISA_DIR)
@@ -114,6 +115,8 @@ AC_SUBST(OMEGA_LIBS)
 OMEGA_LIBS="-L$ISA_DIR/barvinok/omega/omega_lib"
 OMEGA_LIBS="$OMEGA_LIBS -lomega"
 
+AC_SUBST(CLOOG_LIBS)
+CLOOG_LIBS="-lcloog-isl"
 
 #AC_CONFIG_HEADERS(config.h)
 AC_CONFIG_FILES(Makefile)

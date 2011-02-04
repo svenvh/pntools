@@ -3,7 +3,7 @@
  *
  *    Created on: Sep 30, 2010
  *      Author: Teddy Zhai, Sven van Haastregt
- *      $Id: ppn.h,v 1.9 2011/02/03 14:36:16 svhaastr Exp $
+ *      $Id: ppn.h,v 1.10 2011/02/04 13:49:28 svhaastr Exp $
  *
  */
 
@@ -16,9 +16,8 @@
 #include "yaml.h"
 #include "pdg.h"
 
-#include "isl_set_polylib.h"
-#include "isl_map_polylib.h"
-#include "isl_set.h"
+#include "isl/mat.h"
+#include "isl/set.h"
 
 #include "global.h"
 #include "defs.h"

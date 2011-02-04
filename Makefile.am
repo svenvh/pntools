@@ -20,7 +20,7 @@ libppn_la_SOURCES = \
 	ppn.h \
 	tarjan.cc \
 	tarjan.h
-libppn_la_LIBADD = $(ISADIR)/libpdg.la
+libppn_la_LIBADD = $(ISADIR)/libpdg.la $(ISADIR)/isl/libisl.la
 libppn_la_LDFLAGS = -release @VERSION@
 
 
@@ -34,7 +34,7 @@ pdg1trans_LDADD = $(ISADIR)/libpdg.la $(BARVINOK_DIR)/libbarvinok.la @SYCK_LIBS@
 pdg1trans_SOURCES = \
 	pdg1trans.cc transgdal.cc transgdal.h
 
-pn2ppn_LDADD = libppn.la $(ISADIR)/libpdg.la @SYCK_LIBS@ @OMEGA_LIBS@
+pn2ppn_LDADD = libppn.la $(ISADIR)/libpdg.la @SYCK_LIBS@ @OMEGA_LIBS@ @CLOOG_LIBS@
 pn2ppn_SOURCES = \
 	$(ISADIR)/Exit.cc \
 	$(ISADIR)/pdgutil.cc \

@@ -2214,13 +2214,14 @@ void handle::pdg_copy_node(int copy)
 
         int input = pdg->nodes[copy]->statement->accesses[i]->map->input;
   
+        printf("[transgdal] access map is no longer being set due to removal of polylib. This routine will not work anymore.\n");
 //      access->map = new pdg::UnionMap(pdg->nodes[copy]->statement->accesses[i]->map->get_isl_map(pdg->get_isl_ctx()),
 //              pdg->nodes[copy]->statement->accesses[i]->map->params);
-        access->map = new pdg::UnionMap(
+/*        access->map = new pdg::UnionMap(
                 pdg->nodes[copy]->statement->accesses[i]->map->input,
                 pdg->nodes[copy]->statement->accesses[i]->map->output,
                 constraints2polyhedron(pdg->nodes[copy]->statement->accesses[i]->map->constraints),
-                pdg->nodes[copy]->statement->accesses[i]->map->params);
+                pdg->nodes[copy]->statement->accesses[i]->map->params);*/
 
         // FIXME: fugly hack.. constraint2polyhedron or constructor of unionmap makes polyhedron with values times -1
         for(int j = 0; j < access->map->constraints[0]->el.size(); j++)
