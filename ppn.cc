@@ -68,14 +68,14 @@ edge::edge() {
   shift_register = 0;
 }
 
-edge::edge(const char *name, const char *from_port, const char *to_port,
+/*edge::edge(const char *name, const char *from_port, const char *to_port,
 			const isl_set *from_domain, const isl_set	*to_domain,
 			const pdg::node* from_node, const pdg::node* to_node,
 			const seq<pdg::access>& from_access, const seq<pdg::access>& to_access,
 			const isl_mat* map, const pdg::array* array,
 			const int& reordering, const int& multiplicity, const integer* size, const int& nr,
 			const int& sticky, const int& shift_register){
-/*	this->name = name;
+*	this->name = name;
 	this->from_port = from_port;
 	this->to_port = to_port;
 	this->from_domain = from_domain;
@@ -91,7 +91,10 @@ edge::edge(const char *name, const char *from_port, const char *to_port,
 	this->size = size;
 	this->nr = nr;
 	this->sticky = sticky;
-	this->shift_register = shift_register;*/
+	this->shift_register = shift_register;
+}*/
+
+edge::~edge() {
 }
 
 static at_init register_edge(edge::register_type);
@@ -199,6 +202,9 @@ static int handle_bset(__isl_take isl_basic_set *bset, void *user) {
   pdg::Matrix *mat = isl_mat_to_PdgMatrix(mateq);
   append_rows_to_PdgMatrix(mat, matineq);
 
+  isl_mat_free(mateq);
+  isl_mat_free(matineq);
+
   us->constraints.push_back(mat);
 
   isl_basic_set_free(bset);
@@ -207,14 +213,11 @@ static int handle_bset(__isl_take isl_basic_set *bset, void *user) {
 
 // Converts an isl_set to a pdg::UnionSet
 static pdg::UnionSet *isl_set_to_UnionSet(isl_set *s) {
-  isl_ctx *ctx = isl_ctx_alloc();
-
   pdg::UnionSet *ret = new pdg::UnionSet();
 
   isl_set_foreach_basic_set(s, handle_bset, ret);
   ret->dim = isl_set_dim(s, isl_dim_set);
 
-  isl_ctx_free(ctx);
   return ret;
 }
 

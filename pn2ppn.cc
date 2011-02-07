@@ -641,7 +641,7 @@ static CloogInput *writeADG(pdg::PDG *pdg,
             unsigned dim = isl_set_dim(domain, isl_dim_set);
             to_domain = isl_set_project_out(to_domain, isl_dim_set,
                                             dim, to_dim - dim);
-            ud = add_domain(ud, to_domain, port_name,
+            ud = add_domain(ud, isl_set_copy(to_domain), port_name,
                  (3*node->nr+0)*max_access+split_edges[i]->to_access[0]->nr);
         }
 
@@ -662,7 +662,7 @@ static CloogInput *writeADG(pdg::PDG *pdg,
             unsigned dim = isl_set_dim(domain, isl_dim_set);
             from_domain = isl_set_project_out(from_domain, isl_dim_set,
                                               dim, from_dim - dim);
-            ud = add_domain(ud, from_domain, port_name,
+            ud = add_domain(ud, isl_set_copy(from_domain), port_name,
                  (3*node->nr+2)*max_access+split_edges[i]->from_access[0]->nr);
         }
 
@@ -747,7 +747,7 @@ int main(int argc, char * argv[])
     PDG *pdg;
     pdg = yaml::Load<PDG>(in);
 
-    if (pdg->dependences.size() == 0) {
+    if (!pdg || pdg->dependences.size() == 0) {
       fprintf(stderr, "Error: PDG does not contain dependence information.\n");
       fprintf(stderr, "Usage: pn2ppn < file_pn.yaml > file.ppn\n");
       exit(1);
@@ -767,8 +767,14 @@ int main(int argc, char * argv[])
     cloog_state_free(cloog_state);
 
     if (output && strcmp(output, "-")) {
-        out = fopen(output, "w");
-        assert(out);
+      out = fopen(output, "w");
+      assert(out);
+    }
+
+    for (int i = 0; i < split_edges.size(); ++i) {
+      isl_set_free(split_edges[i]->from_domain);
+      isl_set_free(split_edges[i]->to_domain);
+      delete split_edges[i]->map_stripped;
     }
 
     pdg->free();

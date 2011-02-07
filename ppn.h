@@ -3,7 +3,7 @@
  *
  *    Created on: Sep 30, 2010
  *      Author: Teddy Zhai, Sven van Haastregt
- *      $Id: ppn.h,v 1.11 2011/02/04 16:31:36 svhaastr Exp $
+ *      $Id: ppn.h,v 1.12 2011/02/07 09:43:12 svhaastr Exp $
  *
  */
 
@@ -75,14 +75,14 @@ public:
   int shift_register;
 
   edge();
-  edge(const char *name, const char *from_port, const char *to_port,
+/*  edge(const char *name, const char *from_port, const char *to_port,
       const isl_set *from_domain, const isl_set *to_domain,
       const pdg::node* from_node, const pdg::node* to_node,
       const seq<pdg::access>& from_access, const seq<pdg::access>& to_access,
       const isl_mat* map, const pdg::array* array,
       const int& reordering, const int& multiplicity, const integer* size, const int& nr,
-      const int& sticky, const int& shift_register);
-  ~edge() {};
+      const int& sticky, const int& shift_register);*/
+  ~edge();
 
   static void register_type();
 };

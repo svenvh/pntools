@@ -4,7 +4,7 @@
  *
  *    Created on: Sep 30, 2010
  *      Author: Teddy Zhai, Sven van Haastregt
- *      $Id: pn2ppn_util.cc,v 1.1 2011/02/04 16:31:36 svhaastr Exp $
+ *      $Id: pn2ppn_util.cc,v 1.2 2011/02/07 09:43:12 svhaastr Exp $
  *
  */
 
@@ -15,8 +15,7 @@
 using namespace ppn;
 
 AST *cloog_clast_to_AST(CloogInput *input, int dim, CloogOptions *options) {
-  printf("Hi there! Please implement me!\n"); // TODO
-  AST *ret = new AST;
+  fprintf(stderr, "[cloog_clast_to_AST] Hi there! Please implement me!\n"); // TODO
 
   options->override = 1;
   options->f = -1;
@@ -25,7 +24,8 @@ AST *cloog_clast_to_AST(CloogInput *input, int dim, CloogOptions *options) {
   options->sh = 1;
 
   //cloog_input_dump_cloog(stdout, input, options);
-/*
+  // TODO: enabling the following block results in a segfault, but the current function successfully returns
+
   struct clast_stmt *stmt = cloog_clast_create_from_input(input, options);
   cloog_util_simple_guards(stmt);
   stmt = cloog_util_hoist_ifs(stmt);
@@ -33,8 +33,10 @@ AST *cloog_clast_to_AST(CloogInput *input, int dim, CloogOptions *options) {
   //TODO: traverse stmt
 
   cloog_clast_free(stmt);
-*/
+
+
   printf("Done\n");
 
+  AST *ret = new AST;
   return ret;
 }
