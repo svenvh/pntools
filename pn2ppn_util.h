@@ -1,10 +1,10 @@
 /*
  * pn2ppn_util.h
- * pn2ppn utilities are kept in a separate file to reduce the dependence of the PPN class on external libs.
+ * pn2ppn utilities are kept in this file to reduce the dependence of the PPN class on external libs.
  *
  *    Created on: Sep 30, 2010
  *      Author: Teddy Zhai, Sven van Haastregt
- *      $Id: pn2ppn_util.h,v 1.1 2011/02/04 16:31:36 svhaastr Exp $
+ *      $Id: pn2ppn_util.h,v 1.2 2011/02/07 09:55:34 svhaastr Exp $
  *
  */
 

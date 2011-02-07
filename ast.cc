@@ -3,7 +3,7 @@
  *
  *  	Created on: Feb 2, 2011
  *      Author: Teddy Zhai
- *      $Id: ast.cc,v 1.2 2011/02/04 16:31:36 svhaastr Exp $
+ *      $Id: ast.cc,v 1.3 2011/02/07 09:55:34 svhaastr Exp $
  */
 
 #include "global.h"
@@ -155,5 +155,18 @@ AST::dump(emitter& e)
 
 
 
+// End of YAML stuff
+//////////////////////////////////////////////////////////
+// Begin of actual class implementations
+
+
+ASTNode_Block * AST::getRoot() {
+  return this->root;
+}
+
+
+void AST::setRoot(ASTNode_Block * newroot) {
+  this->root = newroot;
+}
 
 

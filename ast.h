@@ -3,7 +3,7 @@
  *
  *  	Created on: Feb 2, 2011
  *      Author: Sven van Haastregt, Teddy Zhai
- *      $Id: ast.h,v 1.2 2011/02/04 16:31:36 svhaastr Exp $
+ *      $Id: ast.h,v 1.3 2011/02/07 09:55:34 svhaastr Exp $
  */
 
 #ifndef AST_H_
@@ -150,6 +150,15 @@ public:
   //// Constructors/destructors
   AST() {};
   ~AST() {};
+
+  ////////////////////////////////////////////////////////////////////////////
+  //// Accessors
+  ASTNode_Block * getRoot();
+  void setRoot(ASTNode_Block *newroot);
+
+  ////////////////////////////////////////////////////////////////////////////
+  //// Other methods
+  void dumpCProgram(FILE *out);
 
   ////////////////////////////////////////////////////////////////////////////
   //// YAML stuff
