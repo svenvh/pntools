@@ -7,7 +7,9 @@ SUBDIRS = .
 ACLOCAL_AMFLAGS = -I m4
 
 ISADIR = @ISA_DIR@
-BARVINOK_DIR = $(ISADIR)/barvinok
+ISALIB = $(ISADIR)/libpdg.la @SYCK_LIBS@
+BARVINOKDIR = $(ISADIR)/barvinok
+BARVINOKLIB = $(BARVINOKDIR)/libbarvinok.la
 
 
 ### Libraries
@@ -20,26 +22,26 @@ libppn_la_SOURCES = \
 	ppn.h \
 	tarjan.cc \
 	tarjan.h
-libppn_la_LIBADD = $(ISADIR)/libpdg.la $(ISADIR)/isl/libisl.la
+libppn_la_LIBADD = $(ISALIB) $(ISADIR)/isl/libisl.la
 libppn_la_LDFLAGS = -release @VERSION@
 
 
 ### Applications
 
-pdg1ana_LDADD = $(ISADIR)/libpdg.la @SYCK_LIBS@
+pdg1ana_LDADD = $(ISALIB)
 pdg1ana_SOURCES = \
 	pdg1ana.cc
 
-pdg1trans_LDADD = $(ISADIR)/libpdg.la $(BARVINOK_DIR)/libbarvinok.la @SYCK_LIBS@
+pdg1trans_LDADD = $(ISALIB) $(BARVINOKLIB)
 pdg1trans_SOURCES = \
 	pdg1trans.cc transgdal.cc transgdal.h
 
-pn2ppn_LDADD = libppn.la $(ISADIR)/libpdg.la @SYCK_LIBS@ @CLOOG_LIBS@
+pn2ppn_LDADD = libppn.la $(ISALIB) @CLOOG_LIBS@
 pn2ppn_SOURCES = \
 	pn2ppn_util.cc \
 	pn2ppn.cc
 
-ppnta_LDADD = libppn.la $(ISADIR)/libpdg.la $(BARVINOK_DIR)/libbarvinok.la @SYCK_LIBS@
+ppnta_LDADD = libppn.la $(ISALIB) $(BARVINOKLIB)
 ppnta_SOURCES = \
 	ppnta.cc utility.cc utility.h
 
