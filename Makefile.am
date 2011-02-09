@@ -36,6 +36,10 @@ pdg1trans_LDADD = $(ISALIB) $(BARVINOKLIB)
 pdg1trans_SOURCES = \
 	pdg1trans.cc transgdal.cc transgdal.h
 
+pn2loopo_LDADD = $(ISALIB)
+pn2loopo_SOURCES = \
+	pn2loopo.cc
+
 pn2ppn_LDADD = libppn.la $(ISALIB) @CLOOG_LIBS@
 pn2ppn_SOURCES = \
 	pn2ppn_util.cc \
@@ -45,7 +49,7 @@ ppnta_LDADD = libppn.la $(ISALIB) $(BARVINOKLIB)
 ppnta_SOURCES = \
 	ppnta.cc utility.cc utility.h
 
-bin_PROGRAMS = pdg1ana pdg1trans ppnta pn2ppn
+bin_PROGRAMS = pdg1ana pdg1trans ppnta pn2ppn pn2loopo
 
 include local.am
 

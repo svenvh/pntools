@@ -1,5 +1,5 @@
 PNTools
-$Id: README,v 1.4 2011/01/05 09:15:11 tzhai Exp $
+$Id: README,v 1.5 2011/02/09 15:19:02 svhaastr Exp $
 
 This directory contains various experimental tools for use with PN/ISA. Most
 likely any tool found in here is in a very premature state, with a strong
@@ -50,6 +50,19 @@ pdg1trans
   Authors: Giso Dal, Sven van Haastregt
   Notes:   Result may be plain wrong. See thesis for restrictions.
   Tested:  ISA 0.10
+
+
+pn2loopo
+------
+  Purpose: Dumps the dependence information in a PN to LooPo-compatible format.
+           The output can be given to the LooPo scheduler (which contains an
+           implementation of Feautrier's multi-dimensional scheduling
+           algorithm).
+  Authors: Sven van Haastregt
+  Input:   XXX_pn.yaml
+  Output:  XXX.dep
+           XXX.ispc
+  Status:  NOT WORKING, REQUIRES IMPLEMENTATION
 
 
 pn2ppn
