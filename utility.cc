@@ -3,10 +3,9 @@
  *
  *  	Created on: Jan 4, 2011
  *      Author: Sven van Haastregt, Teddy Zhai
- *     $Id: utility.cc,v 1.3 2011/01/07 16:32:52 svhaastr Exp $
+ *     $Id: utility.cc,v 1.4 2011/03/02 10:22:15 tzhai Exp $
  */
 
-#include <iostream>
 
 #include "barvinok/barvinok.h"
 
@@ -56,6 +55,23 @@ int getCardinality(isl_ctx *ctx, pdg::UnionSet *s) {
   return count;
 }
 
+// Mainly for ESPAM simulation
+// Currently ESPAM does not accept the platform file that has more processors than needed.
+// MBs only and p2p connections
+void writePLA(ofstream& pla_file, signed int nr_proc){
+	pla_file << "<?xml version=\"1.0\" standalone=\"no\"?>" << endl;
+	pla_file << "<!DOCTYPE platform PUBLIC \"-//LIACS//DTD ESPAM 1//EN\""  << endl;
+	pla_file << "\"http://www.liacs.nl/~cserc/dtd/espam_1.dtd\">"  << endl;
 
+	pla_file << endl << "<platform name=\"myPlatform\">" << endl << endl;
+
+	for (int i=0; i < nr_proc; i++) {
+		  pla_file << "    <processor name=\"MB_" << i << "\" type=\"MB\" data_memory=\"4096\" program_memory=\"4096\">" << endl;
+		  pla_file << "    </processor>" << endl << endl;
+	  }
+
+	  pla_file << endl << "</platform>" << endl;
+
+}
 
 
