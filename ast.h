@@ -3,7 +3,7 @@
  *
  *  	Created on: Feb 2, 2011
  *      Author: Sven van Haastregt, Teddy Zhai
- *      $Id: ast.h,v 1.3 2011/02/07 09:55:34 svhaastr Exp $
+ *      $Id: ast.h,v 1.4 2011/03/21 15:48:33 svhaastr Exp $
  */
 
 #ifndef AST_H_
@@ -85,6 +85,9 @@ public:
 class ASTNode: public structure {
 private:
   ASTNode *parent;
+public:
+  ASTNode();
+  ~ASTNode();
 };
 
 
@@ -96,6 +99,7 @@ private:
 public:
 	ASTNode_Block(){};
 	~ASTNode_Block() {};
+  void append(ASTNode* node);
 	static void register_type();
 };
 
@@ -111,6 +115,14 @@ private:
 public:
 	ASTNode_If(){};
 	~ASTNode_If() {};
+  ASTExpression * getLHS();
+  void setLHS(ASTExpression *newLHS);
+  ASTExpression * getRHS();
+  void setRHS(ASTExpression *newRHS);
+  int  getSign();
+  void setSign(int newsign);
+  ASTNode_Block * getThen();
+  void setThen(ASTNode_Block *newthen);
 	static void register_type();
 };
 
@@ -125,21 +137,39 @@ private:
 
   static serialize *create(void *user) { return new ASTNode_For(); }
 public:
-	ASTNode_For(){};
+	ASTNode_For();
 	~ASTNode_For() {};
+
+  str * getIterator();
+  void setIterator(str *newiterator);
+  ASTExpression * getLb();
+  void setLb(ASTExpression *newlb);
+  ASTExpression * getUb();
+  void setUb(ASTExpression *newub);
+  int  getStride();
+  void setStride(int newstride);
+  ASTNode_Block * getBody();
+  void setBody(ASTNode_Block *newbody);
+
 	static void register_type();
 };
 
 
+typedef enum type {unset = -1, Stmt_IPD, Stmt_OPD, Stmt_Function} Stmt_type;
+
 class ASTNode_Stmt: public ASTNode {
 private:
   str *name;
-  enum type {unset = -1, Stmt_IPD, Stmt_OPD, Stmt_exec} type;
+  Stmt_type type;
 
   static serialize *create(void *user) { return new ASTNode_Stmt(); }
 public:
-  ASTNode_Stmt(){};
+  ASTNode_Stmt();
   ~ASTNode_Stmt(){};
+  str * getName();
+  void setName(str *newname);
+  Stmt_type getType();
+  void setType(Stmt_type newtype);
   static void register_type();
 };
 
