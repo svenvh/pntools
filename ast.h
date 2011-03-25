@@ -3,7 +3,7 @@
  *
  *    Created on: Feb 2, 2011
  *      Author: Sven van Haastregt, Teddy Zhai
- *      $Id: ast.h,v 1.5 2011/03/25 13:06:34 svhaastr Exp $
+ *      $Id: ast.h,v 1.6 2011/03/25 13:08:34 svhaastr Exp $
  */
 
 #ifndef AST_H_
@@ -18,7 +18,9 @@ using namespace yaml;
 
 namespace ppn {
 
-///////////////////////////////////////////////////////////////// Pure virtual / Abstract
+///////////////////////////////////////////////////////////////
+
+// Pure virtual / Abstract
 class ASTExpression: public structure {
 public:
   bool isConstant();
@@ -99,7 +101,9 @@ public:
 };
 
 
-//////////////////////////////////////////////////////// Pure virtual / Abstract
+//////////////////////////////////////////////////////
+
+// Pure virtual / Abstract
 class ASTNode: public structure {
 private:
   ASTNode *parent;
