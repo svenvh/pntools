@@ -3,7 +3,7 @@
  *
  *  	Created on: Feb 2, 2011
  *      Author: Teddy Zhai
- *      $Id: ast.cc,v 1.4 2011/03/21 15:48:33 svhaastr Exp $
+ *      $Id: ast.cc,v 1.5 2011/03/25 13:06:34 svhaastr Exp $
  */
 
 #include <limits>
@@ -41,14 +41,15 @@ static at_init register_ast_binop(ASTBinop::register_type);
 void ASTBinop::register_type(){
 	static struct_description ast_binop = { create };
 
-	static const char *op_names[ASTBinop::OP_CEILDIV];
-	op_names[OP_MODULO] = "OP_MODULO";
-	op_names[OP_DIV] = "OP_DIV";
-	op_names[OP_FLOORDIV] = "OP_FLOORDIV";
+	static const char *op_names[5];
+	op_names[BINOP_MODULO] = "BINOP_MODULO";
+	op_names[BINOP_DIV] = "BINOP_DIV";
+	op_names[BINOP_FLOORDIV] = "BINOP_FLOORDIV";
+	op_names[BINOP_CEILDIV] = "BINOP_CEILDIV";
 
 	YAML_ENUM_FIELD(ast_binop, ASTBinop, type, op_names);
-	YAML_PTR_FIELD(ast_binop, ASTBinop, LHS, ASTTerm);
-	YAML_PTR_FIELD(ast_binop, ASTBinop, RHS, ASTTerm);
+	YAML_PTR_FIELD(ast_binop, ASTBinop, LHS, ASTExpression);
+	YAML_INT_FIELD(ast_binop, ASTBinop, RHS);
 
 	structure::register_type("perl/ast_binop", &typeid(ASTBinop), &ast_binop.d);
 }
@@ -59,12 +60,12 @@ static at_init register_ast_reduc(ASTReduction::register_type);
 void ASTReduction::register_type(){
 	static struct_description ast_reduc = { create };
 
-	static const char *reduc_names[ASTReduction::RED_MAX];
+	static const char *reduc_names[4];
 	reduc_names[RED_SUM] = "RED_SUM";
 	reduc_names[RED_MIN] = "RED_MIN";
+	reduc_names[RED_MAX] = "RED_MAX";
 
 	YAML_ENUM_FIELD(ast_reduc, ASTReduction, type, reduc_names);
-	YAML_INT_FIELD(ast_reduc, ASTReduction, n);
 	YAML_SEQ_FIELD(ast_reduc, ASTReduction, elts, ASTExpression);
 
 	structure::register_type("perl/ast_reduc", &typeid(ASTReduction), &ast_reduc.d);
@@ -86,9 +87,8 @@ static at_init register_ast_if(ASTNode_If::register_type);
 void ASTNode_If::register_type(){
 	static struct_description ast_if = { create };
 
-  //TODO: reenable all fields
-	//YAML_PTR_FIELD(ast_if, ASTNode_If, LHS, ASTExpression);
-	//YAML_PTR_FIELD(ast_if, ASTNode_If, RHS, ASTExpression);
+	YAML_PTR_FIELD(ast_if, ASTNode_If, LHS, ASTExpression);
+	YAML_PTR_FIELD(ast_if, ASTNode_If, RHS, ASTExpression);
 	YAML_INT_FIELD(ast_if, ASTNode_If, sign);
 	YAML_PTR_FIELD(ast_if, ASTNode_If, then, ASTNode_Block);
 
@@ -101,10 +101,9 @@ static at_init register_ast_for(ASTNode_For::register_type);
 void ASTNode_For::register_type(){
 	static struct_description ast_for = { create };
 
-  //TODO: reenable all fields
 	YAML_PTR_FIELD(ast_for, ASTNode_For, iterator, str);
-	//YAML_PTR_FIELD(ast_for, ASTNode_For, lb, ASTExpression);
-	//YAML_PTR_FIELD(ast_for, ASTNode_For, ub, ASTExpression);
+	YAML_PTR_FIELD(ast_for, ASTNode_For, lb, ASTExpression);
+	YAML_PTR_FIELD(ast_for, ASTNode_For, ub, ASTExpression);
 	YAML_INT_FIELD(ast_for, ASTNode_For, stride);
 	YAML_PTR_FIELD(ast_for, ASTNode_For, body, ASTNode_Block);
 
@@ -128,18 +127,7 @@ void ASTNode_Stmt::register_type(){
 
 	structure::register_type("perl/ast_stmt", &typeid(ASTNode_Stmt), &ast_stmt.d);
 }
-/*
-AST*
-AST::Load(char *str, void *user)
-{
-    return yaml::Load<AST>(str, user);
-}
 
-AST*
-AST::Load(FILE* fp, void* user){
-	 return yaml::Load<AST>(fp, user);
-}
-*/
 static at_init register_ast(AST::register_type);
 
 void
@@ -153,8 +141,8 @@ AST::register_type(){
 void
 AST::dump(emitter& e)
 {
-    yll_emitter_set_transfer(e.e, "perl/AST");
-    structure::dump(e);
+  yll_emitter_set_transfer(e.e, "perl/AST");
+  structure::dump(e);
 }
 
 
@@ -164,6 +152,84 @@ AST::dump(emitter& e)
 //////////////////////////////////////////////////////////
 // Begin of actual class implementations
 
+
+///
+str * ASTName::getName() {
+  return this->name;
+}
+void ASTName::setName(str * newname) {
+  this->name = newname;
+}
+
+
+///
+int  ASTTerm::getCoeff() {
+  return this->coeff;
+}
+void ASTTerm::setCoeff(int  newcoeff) {
+  this->coeff = newcoeff;
+}
+
+
+ASTExpression * ASTTerm::getVar() {
+  return this->var;
+}
+void ASTTerm::setVar(ASTExpression * newvar) {
+  this->var = newvar;
+}
+
+
+///
+ASTBinop::ASTBinop() {
+  this->type = BINOP_UNSET;
+  this->LHS = NULL;
+  this->RHS = NULL;
+}
+
+ASTBinop_type ASTBinop::getType() {
+  return this->type;
+}
+void ASTBinop::setType(ASTBinop_type newtype) {
+  this->type = newtype;
+}
+
+
+ASTExpression *ASTBinop::getLHS() {
+  return this->LHS;
+}
+void ASTBinop::setLHS(ASTExpression * newLHS) {
+  this->LHS = newLHS;
+}
+
+
+int ASTBinop::getRHS() {
+  return this->RHS;
+}
+void ASTBinop::setRHS(int newRHS) {
+  this->RHS = newRHS;
+}
+
+
+///
+ASTReduction::ASTReduction() {
+  this->type = RED_UNSET;
+}
+
+ASTReduction_type ASTReduction::getType() {
+  return this->type;
+}
+void ASTReduction::setType(ASTReduction_type newtype) {
+  this->type = newtype;
+}
+
+void ASTReduction::append(ASTExpression* expr) {
+  elts.v.push_back(expr);
+}
+
+
+
+
+///
 ASTNode::ASTNode() {
   parent = NULL;
 }
@@ -177,6 +243,12 @@ void ASTNode_Block::append(ASTNode* node) {
 
 
 ///
+ASTNode_If::ASTNode_If() {
+  this->LHS = NULL;
+  this->RHS = NULL;
+  this->then = NULL;
+}
+
 ASTExpression * ASTNode_If::getLHS() {                             
   return this->LHS;
 }

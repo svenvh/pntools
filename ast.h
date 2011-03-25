@@ -1,9 +1,9 @@
 /*
  * AST.h
  *
- *  	Created on: Feb 2, 2011
+ *    Created on: Feb 2, 2011
  *      Author: Sven van Haastregt, Teddy Zhai
- *      $Id: ast.h,v 1.4 2011/03/21 15:48:33 svhaastr Exp $
+ *      $Id: ast.h,v 1.5 2011/03/25 13:06:34 svhaastr Exp $
  */
 
 #ifndef AST_H_
@@ -36,6 +36,8 @@ private:
 public:
   ASTName() {};
   ~ASTName() {};
+  str * getName();
+  void setName(str *newname);
   static void register_type();
 };
 
@@ -49,34 +51,50 @@ private:
 public:
   ASTTerm() {};
   ~ASTTerm() {};
+  int  getCoeff();
+  void setCoeff(int newcoeff);
+  ASTExpression * getVar();
+  void setVar(ASTExpression *newvar);
   static void register_type();
 };
 
+
+typedef enum {BINOP_UNSET = -1, BINOP_MODULO, BINOP_DIV, BINOP_FLOORDIV, BINOP_CEILDIV} ASTBinop_type;
 
 class ASTBinop: public ASTExpression {
 private:
-  enum type {unset = -1, OP_MODULO, OP_DIV, OP_FLOORDIV, OP_CEILDIV} type;
-  ASTTerm *LHS;
-  ASTTerm *RHS;
+  ASTBinop_type type;
+  ASTExpression *LHS;
+  int RHS;
 
   static serialize *create(void *user) { return new ASTBinop(); }
 public:
-  ASTBinop() {};
+  ASTBinop();
   ~ASTBinop() {};
+  ASTBinop_type getType();
+  void setType(ASTBinop_type newtype);
+  ASTExpression *getLHS();
+  void setLHS(ASTExpression *newLHS);
+  int getRHS();
+  void setRHS(int newRHS);
   static void register_type();
 };
 
 
+typedef enum {RED_UNSET = -1, RED_SUM, RED_MIN, RED_MAX} ASTReduction_type;
+
 class ASTReduction: public ASTExpression {
 private:
-  enum type {unset = -1, RED_SUM, RED_MIN, RED_MAX} type;
-  int n;
+  ASTReduction_type type;
   seq<ASTExpression> elts;
 
   static serialize *create(void *user) { return new ASTReduction(); }
 public:
-  ASTReduction() {};
+  ASTReduction();
   ~ASTReduction() {};
+  ASTReduction_type getType();
+  void setType(ASTReduction_type newtype);
+  void append(ASTExpression* expr);
   static void register_type();
 };
 
@@ -93,14 +111,14 @@ public:
 
 class ASTNode_Block: public ASTNode {
 private:
-	seq<ASTNode> stmts;
+  seq<ASTNode> stmts;
 
-	static serialize *create(void *user) { return new ASTNode_Block(); }
+  static serialize *create(void *user) { return new ASTNode_Block(); }
 public:
-	ASTNode_Block(){};
-	~ASTNode_Block() {};
+  ASTNode_Block(){};
+  ~ASTNode_Block() {};
   void append(ASTNode* node);
-	static void register_type();
+  static void register_type();
 };
 
 
@@ -111,10 +129,10 @@ private:
   int sign;
   ASTNode_Block *then;
 
-	static serialize *create(void *user) { return new ASTNode_If(); }
+  static serialize *create(void *user) { return new ASTNode_If(); }
 public:
-	ASTNode_If(){};
-	~ASTNode_If() {};
+  ASTNode_If();
+  ~ASTNode_If() {};
   ASTExpression * getLHS();
   void setLHS(ASTExpression *newLHS);
   ASTExpression * getRHS();
@@ -123,7 +141,7 @@ public:
   void setSign(int newsign);
   ASTNode_Block * getThen();
   void setThen(ASTNode_Block *newthen);
-	static void register_type();
+  static void register_type();
 };
 
 
@@ -137,8 +155,8 @@ private:
 
   static serialize *create(void *user) { return new ASTNode_For(); }
 public:
-	ASTNode_For();
-	~ASTNode_For() {};
+  ASTNode_For();
+  ~ASTNode_For() {};
 
   str * getIterator();
   void setIterator(str *newiterator);
@@ -151,7 +169,7 @@ public:
   ASTNode_Block * getBody();
   void setBody(ASTNode_Block *newbody);
 
-	static void register_type();
+  static void register_type();
 };
 
 
@@ -192,8 +210,6 @@ public:
 
   ////////////////////////////////////////////////////////////////////////////
   //// YAML stuff
-/*  static AST* Load(char *str, void *user = NULL);
-  static AST* Load(FILE *fp, void *user = NULL);*/
   static void register_type();
   void dump(emitter& e);
 
