@@ -3,7 +3,7 @@
  *
  *    Created on: Feb 2, 2011
  *      Author: Sven van Haastregt, Teddy Zhai
- *      $Id: ast.h,v 1.6 2011/03/25 13:08:34 svhaastr Exp $
+ *      $Id: ast.h,v 1.7 2011/03/29 10:07:05 svhaastr Exp $
  */
 
 #ifndef AST_H_
@@ -103,13 +103,19 @@ public:
 
 //////////////////////////////////////////////////////
 
+typedef enum {NODE_UNSET = -1, NODE_BLOCK, NODE_IF, NODE_FOR, NODE_STMT} ASTNodeType;
+
 // Pure virtual / Abstract
 class ASTNode: public structure {
 private:
+  ASTNodeType nodetype;
   ASTNode *parent;
+  static serialize *create(void *user);
 public:
   ASTNode();
   ~ASTNode();
+  virtual void dumpCProgram(FILE *out, int indent) =0;
+  static void register_type();
 };
 
 
@@ -119,9 +125,10 @@ private:
 
   static serialize *create(void *user) { return new ASTNode_Block(); }
 public:
-  ASTNode_Block(){};
+  ASTNode_Block();
   ~ASTNode_Block() {};
   void append(ASTNode* node);
+  void dumpCProgram(FILE *out, int indent);
   static void register_type();
 };
 
@@ -145,6 +152,8 @@ public:
   void setSign(int newsign);
   ASTNode_Block * getThen();
   void setThen(ASTNode_Block *newthen);
+
+  void dumpCProgram(FILE *out, int indent);
   static void register_type();
 };
 
@@ -173,6 +182,8 @@ public:
   ASTNode_Block * getBody();
   void setBody(ASTNode_Block *newbody);
 
+  void dumpCProgram(FILE *out, int indent);
+
   static void register_type();
 };
 
@@ -192,6 +203,8 @@ public:
   void setName(str *newname);
   Stmt_type getType();
   void setType(Stmt_type newtype);
+
+  void dumpCProgram(FILE *out, int indent);
   static void register_type();
 };
 
