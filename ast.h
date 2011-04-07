@@ -3,7 +3,7 @@
  *
  *    Created on: Feb 2, 2011
  *      Author: Sven van Haastregt, Teddy Zhai
- *      $Id: ast.h,v 1.7 2011/03/29 10:07:05 svhaastr Exp $
+ *      $Id: ast.h,v 1.8 2011/04/07 16:10:13 svhaastr Exp $
  */
 
 #ifndef AST_H_
@@ -23,7 +23,8 @@ namespace ppn {
 // Pure virtual / Abstract
 class ASTExpression: public structure {
 public:
-  bool isConstant();
+  virtual bool isConstant();
+  virtual void dumpCProgram(FILE *out) =0;
 
 private:
 
@@ -40,6 +41,7 @@ public:
   ~ASTName() {};
   str * getName();
   void setName(str *newname);
+  void dumpCProgram(FILE *out);
   static void register_type();
 };
 
@@ -57,6 +59,8 @@ public:
   void setCoeff(int newcoeff);
   ASTExpression * getVar();
   void setVar(ASTExpression *newvar);
+  bool isConstant();
+  void dumpCProgram(FILE *out);
   static void register_type();
 };
 
@@ -79,6 +83,7 @@ public:
   void setLHS(ASTExpression *newLHS);
   int getRHS();
   void setRHS(int newRHS);
+  void dumpCProgram(FILE *out);
   static void register_type();
 };
 
@@ -97,6 +102,7 @@ public:
   ASTReduction_type getType();
   void setType(ASTReduction_type newtype);
   void append(ASTExpression* expr);
+  void dumpCProgram(FILE *out);
   static void register_type();
 };
 
@@ -107,23 +113,31 @@ typedef enum {NODE_UNSET = -1, NODE_BLOCK, NODE_IF, NODE_FOR, NODE_STMT} ASTNode
 
 // Pure virtual / Abstract
 class ASTNode: public structure {
-private:
+protected:
   ASTNodeType nodetype;
-  ASTNode *parent;
   static serialize *create(void *user);
+private:
+  ASTNode *parent;
 public:
   ASTNode();
   ~ASTNode();
+  ASTNodeType  getNodetype();
+  void setNodetype(ASTNodeType newnodetype);
   virtual void dumpCProgram(FILE *out, int indent) =0;
+  static void registerbase_ASTNode(struct_description &sd);
   static void register_type();
+  //void init(SyckParser *p, SyckNode *n);
 };
-
 
 class ASTNode_Block: public ASTNode {
 private:
   seq<ASTNode> stmts;
+  ASTExpression *LHS;
+  ASTExpression *RHS;
+  int sign;
+  ASTNode_Block *then;
 
-  static serialize *create(void *user) { return new ASTNode_Block(); }
+  static serialize *create(void *user) { printf("BLK\n"); return new ASTNode_Block(); }
 public:
   ASTNode_Block();
   ~ASTNode_Block() {};
@@ -140,7 +154,7 @@ private:
   int sign;
   ASTNode_Block *then;
 
-  static serialize *create(void *user) { return new ASTNode_If(); }
+  static serialize *create(void *user) { printf("IF\n"); return new ASTNode_If(); }
 public:
   ASTNode_If();
   ~ASTNode_If() {};
@@ -166,7 +180,7 @@ private:
   int stride;
   ASTNode_Block *body;
 
-  static serialize *create(void *user) { return new ASTNode_For(); }
+  static serialize *create(void *user) { printf("FOR\n"); return new ASTNode_For(); }
 public:
   ASTNode_For();
   ~ASTNode_For() {};
@@ -234,6 +248,29 @@ public:
 private:
   ASTNode_Block *root;
   static serialize *create(void *user) { return new AST(); }
+};
+
+// Hack to deserialize using YAML:
+class ASTNode_YAML: public ASTNode {
+  public:
+    seq<ASTNode> stmts;
+
+    ASTExpression *LHS;
+    ASTExpression *RHS;
+    int sign;
+    ASTNode_Block *then;
+
+    str *iterator;
+    ASTExpression *lb;
+    ASTExpression *ub;
+    int stride;
+    ASTNode_Block *body;
+
+    str *name;
+    Stmt_type type;
+
+    void dumpCProgram(FILE *out, int indent);
+    static void register_type();
 };
 
 } // end namespace ppn

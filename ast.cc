@@ -3,7 +3,7 @@
  *
  *  	Created on: Feb 2, 2011
  *      Author: Teddy Zhai
- *      $Id: ast.cc,v 1.6 2011/03/29 10:07:05 svhaastr Exp $
+ *      $Id: ast.cc,v 1.7 2011/04/07 16:10:13 svhaastr Exp $
  */
 
 #include <limits>
@@ -74,22 +74,25 @@ void ASTReduction::register_type(){
 
 static at_init register_ast_node(ASTNode::register_type);
 
-void ASTNode::register_type(){
-	static struct_description ast_node_d = { create };
-
+void ASTNode::registerbase_ASTNode(struct_description &sd) {
 	static const char *nodetype_names[5];
   nodetype_names[NODE_BLOCK] = "NODE_BLOCK";
   nodetype_names[NODE_IF] = "NODE_IF";
   nodetype_names[NODE_FOR] = "NODE_FOR";
   nodetype_names[NODE_STMT] = "NODE_STMT";
 
-	YAML_ENUM_FIELD(ast_node_d, ASTNode, nodetype, nodetype_names);
+	YAML_ENUM_FIELD(sd, ASTNode, nodetype, nodetype_names);
+}
+
+void ASTNode::register_type(){
+	static struct_description ast_node_d = { create };
+
+  registerbase_ASTNode(ast_node_d);
 
 	structure::register_type("perl/ast_node", &typeid(ASTNode), &ast_node_d.d);
 }
 
 serialize *ASTNode::create(void *user) {
-  std::cout << "TODO: do differentiation here" << std::endl;
   return new ASTNode_Block();
 }
 
@@ -98,6 +101,8 @@ static at_init register_ast_block(ASTNode_Block::register_type);
 void ASTNode_Block::register_type(){
 	static struct_description ast_block_d = { create };
 	YAML_SEQ_FIELD(ast_block_d, ASTNode_Block, stmts, ASTNode);
+
+  registerbase_ASTNode(ast_block_d);
 
 	structure::register_type("perl/ast_block", &typeid(ASTNode_Block), &ast_block_d.d);
 	//structure::register_type("perl/ast_node", &typeid(ASTNode), &ast_block_d.d);
@@ -108,6 +113,8 @@ static at_init register_ast_if(ASTNode_If::register_type);
 
 void ASTNode_If::register_type(){
 	static struct_description ast_if = { create };
+
+  registerbase_ASTNode(ast_if);
 
 	YAML_PTR_FIELD(ast_if, ASTNode_If, LHS, ASTExpression);
 	YAML_PTR_FIELD(ast_if, ASTNode_If, RHS, ASTExpression);
@@ -122,6 +129,8 @@ static at_init register_ast_for(ASTNode_For::register_type);
 
 void ASTNode_For::register_type(){
 	static struct_description ast_for = { create };
+
+  registerbase_ASTNode(ast_for);
 
 	YAML_PTR_FIELD(ast_for, ASTNode_For, iterator, str);
 	YAML_PTR_FIELD(ast_for, ASTNode_For, lb, ASTExpression);
@@ -138,6 +147,8 @@ static at_init register_ast_stmt(ASTNode_Stmt::register_type);
 void ASTNode_Stmt::register_type(){
 	static struct_description ast_stmt = { create };
 
+  registerbase_ASTNode(ast_stmt);
+  
 	static const char *stmt_names[4];
 	stmt_names[unset] = "unset";
 	stmt_names[Stmt_IPD] = "Stmt_IPD";
@@ -149,6 +160,41 @@ void ASTNode_Stmt::register_type(){
 
 	structure::register_type("perl/ast_stmt", &typeid(ASTNode_Stmt), &ast_stmt.d);
 }
+
+/*
+static at_init register_ast_yaml(ASTNode_YAML::register_type);
+
+void ASTNode_YAML::register_type(){
+	static struct_description sd = { create };
+
+  registerbase_ASTNode(sd);
+
+	YAML_SEQ_FIELD(sd, ASTNode_YAML, stmts, ASTNode);
+
+	YAML_PTR_FIELD(sd, ASTNode_YAML, LHS, ASTExpression);
+	YAML_PTR_FIELD(sd, ASTNode_YAML, RHS, ASTExpression);
+	YAML_INT_FIELD(sd, ASTNode_YAML, sign);
+	YAML_PTR_FIELD(sd, ASTNode_YAML, then, ASTNode_Block);
+  
+	YAML_PTR_FIELD(sd, ASTNode_YAML, iterator, str);
+	YAML_PTR_FIELD(sd, ASTNode_YAML, lb, ASTExpression);
+	YAML_PTR_FIELD(sd, ASTNode_YAML, ub, ASTExpression);
+	YAML_INT_FIELD(sd, ASTNode_YAML, stride);
+	YAML_PTR_FIELD(sd, ASTNode_YAML, body, ASTNode_Block);
+
+	static const char *stmt_names[4];
+	stmt_names[unset] = "unset";
+	stmt_names[Stmt_IPD] = "Stmt_IPD";
+	stmt_names[Stmt_OPD] = "Stmt_OPD";
+	stmt_names[Stmt_Function] = "Stmt_Function";
+
+	YAML_PTR_FIELD(sd, ASTNode_YAML, name, str);
+	YAML_ENUM_FIELD(sd, ASTNode_YAML, type, stmt_names);
+
+	structure::register_type("perl/ast_nodeyaml", &typeid(ASTNode_YAML), &sd.d);
+	structure::register_type("perl/ast_node", &typeid(ASTNode), &sd.d);
+}
+*/
 
 static at_init register_ast(AST::register_type);
 
@@ -176,12 +222,25 @@ AST::dump(emitter& e)
 
 const int c_indent = 2;
 
+
+///
+// If not overridden, assume not constant
+bool ASTExpression::isConstant() {
+  return false;
+}
+
+
+
 ///
 str * ASTName::getName() {
   return this->name;
 }
 void ASTName::setName(str * newname) {
   this->name = newname;
+}
+
+void ASTName::dumpCProgram(FILE *out) {
+  fprintf(out, "%s", this->getName()->s.c_str());
 }
 
 
@@ -199,6 +258,18 @@ ASTExpression * ASTTerm::getVar() {
 }
 void ASTTerm::setVar(ASTExpression * newvar) {
   this->var = newvar;
+}
+void ASTTerm::dumpCProgram(FILE *out) {
+  fprintf(out, "%d", this->getCoeff());
+  if (this->getVar()) {
+    fprintf(out, "*(");
+    this->getVar()->dumpCProgram(out);
+    fprintf(out, ")");
+  }
+}
+
+bool ASTTerm::isConstant() {
+  return (this->getVar() == NULL);
 }
 
 
@@ -232,6 +303,10 @@ void ASTBinop::setRHS(int newRHS) {
   this->RHS = newRHS;
 }
 
+void ASTBinop::dumpCProgram(FILE *out) {
+  fprintf(out, "(TODO:binop)");
+}
+
 
 ///
 ASTReduction::ASTReduction() {
@@ -249,23 +324,32 @@ void ASTReduction::append(ASTExpression* expr) {
   elts.v.push_back(expr);
 }
 
+void ASTReduction::dumpCProgram(FILE *out) {
+  fprintf(out, "(TODO:red)");
+}
+
 
 
 
 ///
 ASTNode::ASTNode() {
   parent = NULL;
-  //classtype = NULL;
 }
 
 ASTNode::~ASTNode() {
 }
 
+ASTNodeType  ASTNode::getNodetype() {
+  return this->nodetype;
+}
+void ASTNode::setNodetype(ASTNodeType  newnodetype) {
+  this->nodetype = newnodetype;
+}
 
 
 ///
 ASTNode_Block::ASTNode_Block() {
-  //classtype = &typeid(ASTNode_Block);
+  this->setNodetype(NODE_BLOCK);
 }
 
 void ASTNode_Block::append(ASTNode* node) {
@@ -273,13 +357,15 @@ void ASTNode_Block::append(ASTNode* node) {
 }
 
 void ASTNode_Block::dumpCProgram(FILE *out, int indent) {
+  if (indent > 0)
+    fprintf(out, "{\n");
   indent+=c_indent;
   for (int i = 0; i < stmts.size(); i++) {
-    ASTNode_For *f = dynamic_cast<ASTNode_For*>( stmts[i] );
-    fprintf(out, "%*s..%s %08X %s", indent, "", typeid(stmts[i]).name(), f, typeid(f).name());
     stmts[i]->dumpCProgram(out, indent);
-    fprintf(out, "\n");
   }
+  indent-=c_indent;
+  if (indent > 0)
+    fprintf(out, "%*s}\n", indent, " ");
 }
 
 
@@ -288,6 +374,7 @@ ASTNode_If::ASTNode_If() {
   this->LHS = NULL;
   this->RHS = NULL;
   this->then = NULL;
+  setNodetype(NODE_IF);
 }
 
 ASTExpression * ASTNode_If::getLHS() {                             
@@ -322,7 +409,13 @@ void ASTNode_If::setThen(ASTNode_Block * newthen) {
 }
 
 void ASTNode_If::dumpCProgram(FILE *out, int indent) {
-  fprintf(out, "IF\n");
+  fprintf(out, "%*sif (", indent, " ");
+  this->getLHS()->dumpCProgram(out);
+  fprintf(out, " %s ", this->getSign()==0 ? "==" : this->getSign()==-1 ? ">=" : "<=");
+  this->getRHS()->dumpCProgram(out);
+  fprintf(out, ") ");
+  //fprintf(out, "/*LHS:%d  RHS:%d*/", this->getLHS()->isConstant(), this->getRHS()->isConstant());
+  this->getThen()->dumpCProgram(out, indent);
 }
 
 
@@ -333,6 +426,7 @@ ASTNode_For::ASTNode_For() {
   lb = NULL;
   ub = NULL;
   body = NULL;
+  setNodetype(NODE_FOR);
 }
 
 str * ASTNode_For::getIterator() {                                  
@@ -375,13 +469,21 @@ void ASTNode_For::setBody(ASTNode_Block * newbody) {
 }
 
 void ASTNode_For::dumpCProgram(FILE *out, int indent) {
-  fprintf(out, "FOR\n");
+  const char *iter = this->getIterator()->s.c_str();
+  fprintf(out, "%*sfor (%s = ", indent, " ", iter);
+  this->getLb()->dumpCProgram(out);
+  fprintf(out, "; %s <= ", iter);
+  this->getUb()->dumpCProgram(out);
+  fprintf(out, "; %s += %d) ", iter, this->getStride());
+  //fprintf(out, "/*LB:%d  UB:%d*/", this->getLb()->isConstant(), this->getUb()->isConstant());
+  this->getBody()->dumpCProgram(out, indent);
 }
 
 
 ///
 ASTNode_Stmt::ASTNode_Stmt() {
   type = unset;
+  setNodetype(NODE_STMT);
 }
 
 str * ASTNode_Stmt::getName() {
@@ -399,9 +501,13 @@ void ASTNode_Stmt::setType(Stmt_type newtype) {
 }
 
 void ASTNode_Stmt::dumpCProgram(FILE *out, int indent) {
-  fprintf(out, "STMT\n");
+  fprintf(out, "%*sprintf(\"%s\\n\");\n", indent, " ", this->getName()->s.c_str());
 }
 
+
+///
+void ASTNode_YAML::dumpCProgram(FILE *out, int indent) {
+}
 
 
 ///
@@ -420,7 +526,9 @@ void AST::dumpCProgram(FILE *out) {
   fprintf(out, "\n");
   fprintf(out, "int main() {\n");
   fprintf(out, "  int c0, c1, c2, c3, c4, c5, c6, c7, c8, c9;\n"); // Should be enough...
+  fprintf(out, "\n");
   getRoot()->dumpCProgram(out, 0);
+  fprintf(out, "\n");
   fprintf(out, "  return 0;\n");
   fprintf(out, "}\n");
 }
