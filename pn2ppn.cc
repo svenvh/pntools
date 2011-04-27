@@ -172,16 +172,83 @@ struct div_vector {
     vector<div_info*> divs;
 };
 
-/* Return the index of the div_info in divs that corresponds to div "pos"
- * in "bset", creating a new div_info if needed.
- */
-int div_index(vector<div_info *> &divs, isl_basic_set *bset, unsigned pos,
-              const seq<pdg::parameter> &params)
+struct extract_div_info {
+        int             pos;
+        div_info        *di;
+};
+
+static int extract_div_from_constraint(__isl_take isl_constraint *c, void *user)
 {
+        int i;
+        extract_div_info *edi = (extract_div_info *)user;
+        isl_int v;
+        unsigned n_in = isl_constraint_dim(c, isl_dim_in);
+        unsigned n_out = isl_constraint_dim(c, isl_dim_out);
+        unsigned nparam = isl_constraint_dim(c, isl_dim_param);
+
+        isl_int_init(v);
+
+        isl_constraint_get_coefficient(c, isl_dim_out, edi->pos, &v);
+        if (isl_int_is_nonneg(v))
+                goto done;
+
+        for (i = edi->pos + 1; i < n_out; ++i) {
+                isl_constraint_get_coefficient(c, isl_dim_out, i, &v);
+                if (!isl_int_is_zero(v))
+                        goto done;
+        }
+        for (i = n_in; i < edi->pos; ++i) {
+                isl_constraint_get_coefficient(c, isl_dim_out, i, &v);
+                assert(isl_int_is_zero(v));
+        }
+
+        edi->di = new div_info;
+
+        isl_constraint_get_coefficient(c, isl_dim_out, edi->pos, &v);
+        edi->di->denom = -isl_int_get_si(v);
+        for (i = 0; i < n_in; ++i) {
+                isl_constraint_get_coefficient(c, isl_dim_in, i, &v);
+                edi->di->coeff.push_back(isl_int_get_si(v));
+        }
+        for (i = 0; i < nparam; ++i) {
+                isl_constraint_get_coefficient(c, isl_dim_param, i, &v);
+                edi->di->coeff.push_back(isl_int_get_si(v));
+        }
+        isl_constraint_get_constant(c, &v);
+        edi->di->coeff.push_back(isl_int_get_si(v));
+
+done:
+        isl_int_clear(v);
+        isl_constraint_free(c);
+
+        return edi->di ? -1 : 0;
+}
+
+/* Create a partial div_info corresponding to div "pos" in the domain
+ * that resulted in "lifting".
+ */
+static div_info *extract_div(__isl_keep isl_map *lifting, unsigned pos)
+{
+        extract_div_info edi = { pos, NULL };
+        isl_basic_map *bmap = isl_map_copy_basic_map(lifting);
+
+        edi.pos += isl_map_dim(lifting, isl_dim_in);
+        isl_basic_map_foreach_constraint(bmap, &extract_div_from_constraint,
+                                         &edi);
+        assert(edi.di);
+
+        isl_basic_map_free(bmap);
+
+        return edi.di;
+}
+
+/* Create a partial div_info corresponding to div "pos" in "bset".
+ */
+static div_info *extract_div(isl_basic_set *bset, unsigned pos)
+{
+        div_info *di = new div_info;
         int j;
         isl_int v;
-        div_info *di = new div_info;
-        std::ostringstream strm;
         unsigned dim = isl_basic_set_dim(bset, isl_dim_set);
         unsigned nparam = isl_basic_set_dim(bset, isl_dim_param);
 
@@ -210,6 +277,19 @@ int div_index(vector<div_info *> &divs, isl_basic_set *bset, unsigned pos,
         isl_int_clear(v);
         isl_div_free(div);
 
+        return di;
+}
+
+/* Return the index of the given div_info in divs and complete it
+ * if it turns out to be new.
+ */
+int div_index(vector<div_info *> &divs, div_info *di, __isl_keep isl_dim *dim)
+{
+        int j;
+        std::ostringstream strm;
+        unsigned d = isl_dim_size(dim, isl_dim_set);
+        unsigned nparam = isl_dim_size(dim, isl_dim_param);
+
         for (j = 0; j < divs.size(); ++j) {
                 if (divs[j]->denom != di->denom || divs[j]->coeff != di->coeff)
                         continue;
@@ -220,7 +300,7 @@ int div_index(vector<div_info *> &divs, isl_basic_set *bset, unsigned pos,
         divs.push_back(di);
         strm << "div(";
         bool first = true;
-        for (j = 0; j < dim; ++j) {
+        for (j = 0; j < d; ++j) {
                 if (di->coeff[j] == 0)
                         continue;
                 if (!first && di->coeff[j] >= 0)
@@ -229,17 +309,18 @@ int div_index(vector<div_info *> &divs, isl_basic_set *bset, unsigned pos,
                 strm << di->coeff[j] << "*" << "c" << j;
         }
         for (j = 0; j < nparam; ++j) {
-                if (di->coeff[dim+j] == 0)
+                if (di->coeff[d+j] == 0)
                         continue;
-                if (!first && di->coeff[dim+j] >= 0)
+                if (!first && di->coeff[d+j] >= 0)
                         strm << "+";
                 first = false;
-                strm << di->coeff[dim+j] << "*" << params[j]->name->s;
+                strm << di->coeff[d+j] << "*" <<
+                        isl_dim_get_name(dim, isl_dim_param, j);
         }
-        if (di->coeff[dim+nparam] != 0) {
-                if (!first && di->coeff[dim+nparam] >= 0)
+        if (di->coeff[d+nparam] != 0) {
+                if (!first && di->coeff[d+nparam] >= 0)
                         strm << "+";
-                strm << di->coeff[dim+nparam];
+                strm << di->coeff[d+nparam];
         }
         strm << "," << di->denom << ")";
         di->s = strm.str();
@@ -320,7 +401,7 @@ static pdg::Matrix *strip_statement_dims_from_map(pdg::PDG *pdg, isl_mat *map)
 
 static char *writePort(bool out, int index, char *node_name,
                     const vector<pdg::access *>& accesses, espam_edge* edge,
-                    isl_set *domain, isl_set *parent_domain,
+                    isl_set *domain, __isl_keep isl_map *lifting,
                     pdg::PDG *pdg, div_vector& dv)
 {
     char buf[30];
@@ -395,7 +476,8 @@ static CloogUnionDomain *add_domain(CloogUnionDomain *ud, isl_set *domain,
 {
         CloogDomain *c_dom;
         CloogScattering *c_scat;
-        isl_map *scat = isl_map_identity(isl_set_get_dim(domain));
+        isl_dim *dim = isl_dim_map_from_set(isl_set_get_dim(domain));
+        isl_map *scat = isl_map_identity(dim);
         scat = isl_map_add_dims(scat, isl_dim_out, 1);
         scat = isl_map_fix_si(scat, isl_dim_out,
                               isl_map_dim(scat, isl_dim_out) - 1, offset);
@@ -412,10 +494,9 @@ static CloogUnionDomain *add_domain(CloogUnionDomain *ud, isl_set *domain,
  * the node domain and then simplify the control variables of the port domain
  * in terms of these extra iterators.
  */
-static isl_set *normalize_domain(isl_set *port_domain, isl_set *node_domain)
+static isl_set *normalize_domain(isl_set *port_domain, __isl_keep isl_map *lift)
 {
-        isl_map *lift = isl_set_lifting(isl_set_copy(node_domain));
-        port_domain = isl_set_apply(port_domain, lift);
+        port_domain = isl_set_apply(port_domain, isl_map_copy(lift));
         port_domain = isl_set_detect_equalities(port_domain);
         return port_domain;
 }
@@ -601,7 +682,6 @@ static CloogInput *writeADG(pdg::PDG *pdg,
             max_access = node->statement->accesses.size();
     }
 
-
     for (int i = 0; i < pdg->nodes.size(); ++i) {
         char buf[10];
         char *name;
@@ -625,6 +705,7 @@ static CloogInput *writeADG(pdg::PDG *pdg,
         }
 
         isl_set *domain = isl_set_copy(scattered_domains[i]);
+        isl_map *lift = isl_set_lifting(isl_set_copy(domain));
         for (int i = 0, j = 0; i < split_edges.size(); ++i) {
             if (split_edges[i]->to_node != node)
                 continue;
@@ -633,7 +714,7 @@ static CloogInput *writeADG(pdg::PDG *pdg,
             to_domain = split_edges[i]->to_domain;
             port_name = writePort(false, j, name, split_edges[i]->to_access,
                                   split_edges[i],
-                                  to_domain, domain, pdg, dv);
+                                  to_domain, lift, pdg, dv);
             split_edges[i]->to_port = port_name;
             ++j;
 
@@ -650,11 +731,10 @@ static CloogInput *writeADG(pdg::PDG *pdg,
                 continue;
             char *port_name;
             isl_set *from_domain;
-            from_domain = normalize_domain(split_edges[i]->from_domain, domain);
+            from_domain = normalize_domain(split_edges[i]->from_domain, lift);
             split_edges[i]->from_domain = from_domain;
             port_name = writePort(true, j, name, split_edges[i]->from_access,
-                                  split_edges[i],
-                                  from_domain, domain, pdg, dv);
+                                  split_edges[i], from_domain, lift, pdg, dv);
             split_edges[i]->from_port = port_name;
             ++j;
 
@@ -673,13 +753,15 @@ static CloogInput *writeADG(pdg::PDG *pdg,
 
         assert(pdg->dimension == node->scattering->input);
         isl_set *normalized_domain = normalize_domain(isl_set_copy(domain),
-                                                      domain);
+                                                      lift);
         isl_set_free(normalized_domain);
 
         dv.index += dv.divs.size();
         dv.divs.clear();
 
         ud = add_domain(ud, domain, name, (3*node->nr+1)*max_access);
+
+        isl_map_free(lift);
     }
 
     for (int i = 0; i < pdg->nodes.size(); ++i)
