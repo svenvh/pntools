@@ -3,7 +3,7 @@
  *
  *    Created on: Sep 30, 2010
  *      Author: Teddy Zhai, Sven van Haastregt
- *      $Id: ppn.h,v 1.12 2011/02/07 09:43:12 svhaastr Exp $
+ *      $Id: ppn.h,v 1.13 2011/04/28 16:04:57 tzhai Exp $
  *
  */
 
@@ -95,11 +95,14 @@ typedef pdg::node node;
 // PPN; serializable class
 // This is the base class representing the PPN (graph).
 class PPN:public structure{
-  static serialize *create(void *user) { return new PPN(); }
+	seq<pdg::node> nodes;
+	seq<edge> edges;
+	AST *ast;
+
 private:
-  seq<pdg::node> nodes;
-  seq<edge> edges;
-  AST *ast;
+	static serialize *create(void *user) { return new PPN(); }
+
+	unsigned int getPortNr(const std::string &portname);
 
 public:
   ////////////////////////////////////////////////////////////////////////////
@@ -123,11 +126,17 @@ public:
   // Probably only pn2ppn will use this one
   void import_pn(pdg::PDG *pdg, std::vector<espam_edge*> edges, AST *ast);
 
+  ////////////////////////////////////////////////////////////////////////////
+  //// CSDF
+  // output StreamIT complaint format
+  void dumpCSDF(std::ostream& strm);
 
   ////////////////////////////////////////////////////////////////////////////
   //// Data access
   // Returns the list of edges
   std::vector<edge*> getEdges();
+
+  std::vector<edge*> getEdges(const Process *process);
 
   // Returns the list of nodes
   std::vector<pdg::node*> getNodes();
@@ -137,6 +146,9 @@ public:
 
   // Returns pointer to Node with the specified nr
   node *getNodeFromNr(const int nr);
+
+  // get name of the process
+  std::string getProcessName(const Process* process);
 
   ////////////////////////////////////////////////////////////////////////////
   //// Graph operations
@@ -150,7 +162,8 @@ public:
   PPNgraphCycles findPPNgraphCycles();
 
   // Returns a list of processes that are adjacent to the given process
-  PPNprocesses getAdjacentProcesses(const Process *process);
+  PPNprocesses getAdjacentProcesses(const Process* process);
+
 
 };
 

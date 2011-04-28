@@ -8,11 +8,14 @@
 #include "ppn.h"
 #include "yaml.h"
 #include "tarjan.h"
+#include <iostream>
 
 using namespace ppn;
 //using namespace pdg;
 /*using namespace std;*/
 using pdg::PDG;
+
+#define TABS(i) std::string((i), '\t')
 
 
 PPN::PPN(const seq<pdg::node>* nodes, const seq<edge>* edges, AST *ast){
@@ -230,6 +233,24 @@ static void copy_accesses(seq<pdg::access> *dst, std::vector<pdg::access * > *sr
 }
 
 
+unsigned int
+PPN::getPortNr(const std::string &portname){
+	std::string p = "TAGNAME_ED_0_0_V_0";
+	size_t pos; // position of "ED"
+
+	pos = portname.find("ED");
+	std::string name = portname.substr (pos);
+
+	const char *name_c  = name.c_str();
+
+	int nr1, nr2, nr3;
+	if (sscanf(name_c, "ED_%d_%d_V_%d", &nr1, &nr2, &nr3) != 3){
+		printf("WARNING: port number might be incorrect\n");
+	}
+
+	return nr1*100 + nr2 * 10 + nr3;
+}
+
 void
 PPN::import_pn(PDG *pdg, std::vector<espam_edge*> edges, AST *ast) {
   for (int i = 0; i < pdg->nodes.size(); i++) {
@@ -263,9 +284,113 @@ PPN::import_pn(PDG *pdg, std::vector<espam_edge*> edges, AST *ast) {
   this->ast = ast;
 }
 
+
+void
+PPN::dumpCSDF(std::ostream& strm){
+	const PPNprocesses ppn = this->nodes.v;
+
+	unsigned int indent = 0;
+	const unsigned int nd_nr = ppn.size();
+
+	strm<< TABS(indent) << "node_number:" << nd_nr << "\n";
+
+	// print all nodes
+	for (unsigned int i = 0; i < ppn.size(); i++){
+		Process* process = ppn[i];
+
+		strm<< TABS(indent) << "node:\n";
+		indent++;
+
+		strm << TABS(indent) << "id:" << process->nr << "\n";
+		strm << TABS(indent) << "name:" << getProcessName(process) << "\n";
+		// TODO: correct length of the pattern should be derived from the domain size
+		strm << TABS(indent) << "length:" << 1 << "\n";
+		// TODO: wcet should come from the designer
+		strm << TABS(indent) << "wcet:" << 10 << "\n";
+
+		std::vector<edge*> edges_process = getEdges(process);
+		strm << TABS(indent) << "port_number:" << edges_process.size() <<"\n";
+		strm << TABS(indent) << "port\n";
+		indent++;
+
+
+		// iterator over all ports
+		for (PPNchIter eit = edges_process.begin();
+				eit != edges_process.end();
+				++eit)
+		{
+			edge* ch = *eit;
+
+			std::string type;
+			unsigned int port_id;
+//			const char *port_id;
+			if (ch->from_node->nr == process->nr) {
+				type = "out";
+				// unique nr for each each port
+				port_id = getPortNr(ch->from_port->s);;
+
+			} else if (ch->to_node->nr == process->nr){
+				type = "in";
+				port_id = getPortNr(ch->to_port->s);;
+			} else {
+//				assert(port_id != -1);
+				fprintf(stderr, "unknown port number. Check the the name of the corresponding node and edge.\n");
+			}
+			strm << TABS(indent) << "type:" << type << "\n";
+			strm << TABS(indent) << "id:" << port_id << "\n";
+			// TODO: derive from AST tree
+			strm << TABS(indent) << "rate:" << 40 << "\n";
+		}
+
+		indent = 0;
+	} // end nodes
+
+	// write edges
+	indent = 0;
+	std::vector<edge*> ppn_edges = getEdges();
+	strm << TABS(indent) << "edge_number:" << ppn_edges.size() << "\n";
+
+	// iterate over all edges
+	for (PPNchIter eit = ppn_edges.begin();
+			eit != ppn_edges.end();
+			++eit)
+	{
+		edge* ch = *eit;
+
+		strm << TABS(indent) << "edge:" << "\n";
+		indent++;
+		strm << TABS(indent) << "id:" << ch->nr<< "\n";
+		strm << TABS(indent) << "src:" << ch->from_node->nr << " " << getPortNr(ch->from_port->s) << "\n";
+		strm << TABS(indent) << "dst:" << ch->to_node->nr << " " << getPortNr(ch->to_port->s) <<  "\n";
+
+		indent = 0;
+	}
+}
+
 std::vector<edge*>
 PPN::getEdges(){
 		return this->edges.v;
+}
+
+std::vector<edge*>
+PPN::getEdges(const Process *process){
+	std::vector<edge*> edges_proc;
+
+	std::vector<edge*> channels = this->edges.v;
+	for (PPNchIter cit = channels.begin();
+			cit != channels.end();
+			++cit)
+	{
+		edge* ch = *cit;
+
+		if ( (ch->from_node->nr != process->nr) && (ch->to_node->nr != process->nr) ) {
+			continue;
+		} else {
+			edges_proc.push_back(ch);
+		}
+	}
+
+	return edges_proc;
 }
 
 std::vector<pdg::node*>
@@ -323,7 +448,7 @@ PPN::toposort(pdg::node **topo) {
 }
 
 
-node *PPN::getNodeFromNr(int nr) {
+node *PPN::getNodeFromNr(const int nr) {
  	int size = this->getNodes().size();
  	for (int i = 0; i < size; ++i) {
     if (this->getNodes()[i]->nr == nr)
@@ -331,6 +456,10 @@ node *PPN::getNodeFromNr(int nr) {
   }
 }
 
+std::string
+PPN::getProcessName(const Process* node){
+	return node->statement->top_function->name->s;
+}
 
 PPNgraphCycles
 PPN::findPPNgraphCycles(){
