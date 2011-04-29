@@ -3,6 +3,7 @@
  *
  *  Created on: Sep 30, 2010
  *      Author: Teddy Zhai, Sven van Haastregt
+ *      $Id: ppn.cc,v 1.12 2011/04/29 15:55:32 tzhai Exp $
  */
 
 #include "ppn.h"
@@ -310,8 +311,6 @@ PPN::dumpCSDF(std::ostream& strm){
 
 		std::vector<edge*> edges_process = getEdges(process);
 		strm << TABS(indent) << "port_number:" << edges_process.size() <<"\n";
-		strm << TABS(indent) << "port\n";
-		indent++;
 
 
 		// iterator over all ports
@@ -336,10 +335,13 @@ PPN::dumpCSDF(std::ostream& strm){
 //				assert(port_id != -1);
 				fprintf(stderr, "unknown port number. Check the the name of the corresponding node and edge.\n");
 			}
+			strm << TABS(indent) << "port:\n";
+			indent++;
 			strm << TABS(indent) << "type:" << type << "\n";
 			strm << TABS(indent) << "id:" << port_id << "\n";
 			// TODO: derive from AST tree
 			strm << TABS(indent) << "rate:" << 40 << "\n";
+			indent--;
 		}
 
 		indent = 0;
@@ -351,6 +353,7 @@ PPN::dumpCSDF(std::ostream& strm){
 	strm << TABS(indent) << "edge_number:" << ppn_edges.size() << "\n";
 
 	// iterate over all edges
+	unsigned int edge_ed = 0;
 	for (PPNchIter eit = ppn_edges.begin();
 			eit != ppn_edges.end();
 			++eit)
@@ -359,7 +362,7 @@ PPN::dumpCSDF(std::ostream& strm){
 
 		strm << TABS(indent) << "edge:" << "\n";
 		indent++;
-		strm << TABS(indent) << "id:" << ch->nr<< "\n";
+		strm << TABS(indent) << "id:" << edge_ed++ << "\n";
 		strm << TABS(indent) << "src:" << ch->from_node->nr << " " << getPortNr(ch->from_port->s) << "\n";
 		strm << TABS(indent) << "dst:" << ch->to_node->nr << " " << getPortNr(ch->to_port->s) <<  "\n";
 
