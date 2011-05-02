@@ -3,7 +3,7 @@
  *
  *  	Created on: Oct 6, 2010
  *      Author: Teddy Zhai, Sven van Haastregt
- *      $Id: defs.h,v 1.6 2011/01/07 16:32:52 svhaastr Exp $
+ *      $Id: defs.h,v 1.7 2011/05/02 12:35:58 tzhai Exp $
  *
  */
 
@@ -12,8 +12,11 @@
 
 #include "global.h"
 #include <limits>
+#include "pdg.h"
+
 
 using namespace std;
+
 
 typedef double THR_t;
 
@@ -22,23 +25,40 @@ typedef double THR_t;
 #define THR_INF (std::numeric_limits<double>::max())
 
 namespace ppn {
-struct PPNgraphCycle{
 
-};
+class edge;
 
-typedef pdg::node* Process;
+typedef pdg::node Process;
 
 typedef std::vector<pdg::node*> PPNprocesses;
 typedef std::vector<pdg::node*>::iterator PPNprocessIter;
 typedef std::vector<pdg::node*>::const_iterator PPNprocessCIter;
+typedef std::vector<edge*>::iterator PPNchIter;
+typedef std::vector<edge*>::const_iterator PPNchCIter;
+
+
+typedef std::vector<pdg::node*> PPNgraphSCC;
+typedef PPNgraphSCC::iterator PPNgraphSCCIter;
+typedef PPNgraphSCC::const_iterator PPNgraphSCCCIter;
 
 typedef std::vector<PPNprocesses> PPNgraphSCCs;
-typedef PPNgraphSCCs::iterator PPNgraphSCCIter;
-typedef PPNgraphSCCs::const_iterator PPNgraphSCCCIter;
+typedef PPNgraphSCCs::iterator PPNgraphSCCsIter;
+typedef PPNgraphSCCs::const_iterator PPNgraphSCCsCIter;
+
+
+typedef std::vector<pdg::node*> PPNgraphCycle;
+typedef PPNgraphCycle::iterator PPNgraphCycleIter;
+typedef PPNgraphCycle::const_iterator PPNgraphCycleCIter;
 
 typedef vector<PPNprocesses> PPNgraphCycles;
 typedef PPNgraphCycles::iterator PPNgraphIter;
 typedef PPNgraphCycles::const_iterator PPNgraphCIter;
+
+// partitioning
+typedef enum PartType{Modulo, PlainCut} PartType ;
+
+// Direction vector used for plain-cut: indicate how to cut the iteration domain
+typedef vector<int> Direction;
 
 } // namespace
 
