@@ -22,7 +22,7 @@ libppn_la_SOURCES = \
 	ppn.h \
 	tarjan.cc \
 	tarjan.h
-libppn_la_LIBADD = $(ISALIB) $(ISADIR)/isl/libisl.la
+libppn_la_LIBADD = $(ISADIR)/libpdg.la $(ISADIR)/isl/libisl.la
 libppn_la_LDFLAGS = -release @VERSION@
 
 
