@@ -2,7 +2,7 @@
 // Convert PPN to CSDF
 // Sven van Haastregt, Teddy Zhai, May 2011
 // LERC, LIACS, Leiden University
-// $Id: ppn2csdf.cc,v 1.1 2011/05/04 16:21:30 svhaastr Exp $
+// $Id: ppn2csdf.cc,v 1.2 2011/05/04 16:36:44 svhaastr Exp $
 //
 #include <sstream>
 #include <iostream>
@@ -35,7 +35,7 @@ class CsdfDumper {
   private:
     void writePortCsdf3(std::string name, std::string type, std::ostream &strm);
     void computePhases();
-    void writePhase(const std::string &portName, std::ostream &strm);
+    void writePhase(const std::string &portName, std::ostream &strm, char sep);
     void extendPhase(unsigned int nodenr);
     unsigned int getPhaseLength(unsigned int nodenr);
     void processTrace(FILE *fin);
@@ -156,8 +156,7 @@ void CsdfDumper::dumpCsdf(std::ostream& strm) {
 
     strm << TABS(indent) << "id:" << process->nr << "\n";
     strm << TABS(indent) << "name:" << process->statement->top_function->name->s << "\n";
-    // TODO: correct length of the pattern should be derived from the domain size
-    strm << TABS(indent) << "length:" << 1 << "\n";
+    strm << TABS(indent) << "length:" << getPhaseLength(process->nr) << "\n";
     // TODO: wcet should come from the designer
     strm << TABS(indent) << "wcet:" << 10 << "\n";
 
@@ -181,7 +180,7 @@ void CsdfDumper::dumpCsdf(std::ostream& strm) {
         strm << TABS(indent) << "type:" << type << "\n";
         strm << TABS(indent) << "id:" << port_id << "\n";
         strm << TABS(indent) << "rate:";
-        writePhase(ch->from_port->s, strm);
+        writePhase(ch->from_port->s, strm, ' ');
         strm << "\n";
         indent--;
       }
@@ -193,7 +192,7 @@ void CsdfDumper::dumpCsdf(std::ostream& strm) {
         strm << TABS(indent) << "type:" << type << "\n";
         strm << TABS(indent) << "id:" << port_id << "\n";
         strm << TABS(indent) << "rate:";
-        writePhase(ch->to_port->s, strm);
+        writePhase(ch->to_port->s, strm, ' ');
         strm << "\n";
         indent--;
       }
@@ -231,7 +230,7 @@ void CsdfDumper::writePortCsdf3(std::string name, std::string type, std::ostream
        << (type.compare("in") == 0 ? " " : "")
        <<          "name='" << name << "' "
        <<          "rate='";
-  writePhase(name, strm);
+  writePhase(name, strm, ',');
   strm << "' />\n";
 }
 
@@ -358,14 +357,14 @@ void CsdfDumper::computePhases() {
 
 // Write phase belonging to given port to ostream.
 // NOTE: computePhases() needs to be called once prior to calling this one!
-void CsdfDumper::writePhase(const std::string &portName, std::ostream &strm) {
+void CsdfDumper::writePhase(const std::string &portName, std::ostream &strm, char sep) {
   std::vector<short> *phase = phases[portName];
   int phaseLen = phase->size();
   assert(phaseLen); // if length == 0, computePhases was probably not called
 
   strm << (*phase)[0];
   for (int i = 1; i < phaseLen; i++) {
-    strm << "," << (*phase)[i];
+    strm << sep << (*phase)[i];
   }
 }
 
