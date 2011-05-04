@@ -45,11 +45,15 @@ pn2ppn_SOURCES = \
 	pn2ppn_util.cc \
 	pn2ppn.cc
 
+ppn2csdf_LDADD = libppn.la $(ISADIR)/libpdg.la @SYCK_LIBS@
+ppn2csdf_SOURCES = \
+	ppn2csdf.cc
+
 ppnta_LDADD = libppn.la $(ISALIB) $(BARVINOKLIB)
 ppnta_SOURCES = \
 	ppnta.cc utility.cc utility.h
 
-bin_PROGRAMS = pdg1ana pdg1trans ppnta pn2ppn pn2loopo
+bin_PROGRAMS = pdg1ana pdg1trans ppnta ppn2csdf pn2ppn pn2loopo
 
 include local.am
 

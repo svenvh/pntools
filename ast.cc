@@ -3,7 +3,7 @@
  *
  *    Created on: Feb 2, 2011
  *      Author: Sven van Haastregt, Teddy Zhai
- *      $Id: ast.cc,v 1.8 2011/04/19 15:36:29 svhaastr Exp $
+ *      $Id: ast.cc,v 1.9 2011/05/04 16:21:30 svhaastr Exp $
  */
 
 #include <limits>
@@ -605,7 +605,7 @@ void ASTNode_If::setThen(ASTNode_Block * newthen) {
 void ASTNode_If::dumpCProgram(FILE *out, int indent) {
   fprintf(out, "%*sif (", indent, " ");
   this->getLHS()->dumpCProgram(out);
-  fprintf(out, " %s ", this->getSign()==0 ? "==" : this->getSign()==-1 ? ">=" : "<=");
+  fprintf(out, " %s ", this->getSign()==0 ? "==" : this->getSign()==1 ? ">=" : "<=");
   this->getRHS()->dumpCProgram(out);
   fprintf(out, ") ");
   //fprintf(out, "/*LHS:%d  RHS:%d*/", this->getLHS()->isConstant(), this->getRHS()->isConstant());
@@ -757,6 +757,7 @@ void AST::dumpCProgram(FILE *out) {
   fprintf(out, "\n");
   getRoot()->dumpCProgram(out, 0);
   fprintf(out, "\n");
+  fprintf(out, "  printf(\"%s\\n\");\n", STR_CPROG_FINISHED);
   fprintf(out, "  return 0;\n");
   fprintf(out, "}\n");
 }

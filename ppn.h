@@ -3,7 +3,7 @@
  *
  *    Created on: Sep 30, 2010
  *      Author: Teddy Zhai, Sven van Haastregt
- *      $Id: ppn.h,v 1.13 2011/04/28 16:04:57 tzhai Exp $
+ *      $Id: ppn.h,v 1.14 2011/05/04 16:21:30 svhaastr Exp $
  *
  */
 
@@ -102,8 +102,6 @@ class PPN:public structure{
 private:
 	static serialize *create(void *user) { return new PPN(); }
 
-	unsigned int getPortNr(const std::string &portname);
-
 public:
   ////////////////////////////////////////////////////////////////////////////
   //// Constructors/destructors
@@ -125,11 +123,6 @@ public:
   // Constructs a PPN from a PDG and vector of espam_edges
   // Probably only pn2ppn will use this one
   void import_pn(pdg::PDG *pdg, std::vector<espam_edge*> edges, AST *ast);
-
-  ////////////////////////////////////////////////////////////////////////////
-  //// CSDF
-  // output StreamIT complaint format
-  void dumpCSDF(std::ostream& strm);
 
   ////////////////////////////////////////////////////////////////////////////
   //// Data access

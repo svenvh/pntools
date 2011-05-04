@@ -3,7 +3,7 @@
  *
  *  	Created on: Oct 6, 2010
  *      Author: Teddy Zhai, Sven van Haastregt
- *      $Id: defs.h,v 1.7 2011/05/02 12:35:58 tzhai Exp $
+ *      $Id: defs.h,v 1.8 2011/05/04 16:21:30 svhaastr Exp $
  *
  */
 
@@ -33,6 +33,7 @@ typedef pdg::node Process;
 typedef std::vector<pdg::node*> PPNprocesses;
 typedef std::vector<pdg::node*>::iterator PPNprocessIter;
 typedef std::vector<pdg::node*>::const_iterator PPNprocessCIter;
+typedef std::vector<edge*> PPNchannels;
 typedef std::vector<edge*>::iterator PPNchIter;
 typedef std::vector<edge*>::const_iterator PPNchCIter;
 

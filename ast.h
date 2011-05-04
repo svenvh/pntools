@@ -3,7 +3,7 @@
  *
  *    Created on: Feb 2, 2011
  *      Author: Sven van Haastregt, Teddy Zhai
- *      $Id: ast.h,v 1.9 2011/04/19 15:36:29 svhaastr Exp $
+ *      $Id: ast.h,v 1.10 2011/05/04 16:21:30 svhaastr Exp $
  */
 
 #ifndef AST_H_
@@ -18,6 +18,9 @@
 using namespace yaml;
 
 namespace ppn {
+
+// The string printed at the end of the C program (also used by CsdfDumper)
+#define STR_CPROG_FINISHED "Finished!"
 
 class ASTExpression;
 
