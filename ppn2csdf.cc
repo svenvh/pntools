@@ -2,7 +2,7 @@
 // Convert PPN to CSDF
 // Sven van Haastregt, Teddy Zhai, May 2011
 // LERC, LIACS, Leiden University
-// $Id: ppn2csdf.cc,v 1.2 2011/05/04 16:36:44 svhaastr Exp $
+// $Id: ppn2csdf.cc,v 1.3 2011/05/04 16:46:33 svhaastr Exp $
 //
 #include <sstream>
 #include <iostream>
@@ -158,7 +158,11 @@ void CsdfDumper::dumpCsdf(std::ostream& strm) {
     strm << TABS(indent) << "name:" << process->statement->top_function->name->s << "\n";
     strm << TABS(indent) << "length:" << getPhaseLength(process->nr) << "\n";
     // TODO: wcet should come from the designer
-    strm << TABS(indent) << "wcet:" << 10 << "\n";
+    strm << TABS(indent) << "wcet:10";
+    for (unsigned int wc = 1; wc < getPhaseLength(process->nr); wc++) {
+      strm << " 10";
+    }
+    strm << "\n";
 
     std::vector<edge*> edges_process = this->ppn->getEdges(process);
     strm << TABS(indent) << "port_number:" << edges_process.size() <<"\n";
