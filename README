@@ -1,5 +1,5 @@
 PNTools
-$Id: README,v 1.6 2011/05/04 16:21:30 svhaastr Exp $
+$Id: README,v 1.7 2011/05/06 12:03:18 tzhai Exp $
 
 This directory contains various experimental tools for use with PN/ISA. Most
 likely any tool found in here is in a very premature state, with a strong
@@ -83,7 +83,7 @@ ppn2csdf
   Notes:   Implemented, needs further verification.
   Input:   XXX.ppn
   Output:  YYY.xml (SDF3 format) or
-           YYY     (StreamIT format)
+           YYY.gph (StreamIT format)
   Tested:  ISA 0.10
 
 
@@ -96,6 +96,15 @@ ppnta
   Output:  throughput numbers
   Tested:  ISA 0.10
 
+
+gen_pla
+-----
+  Purpose: generate platform file (ESPAM) for a PPN.
+  Authors: Teddy Zhai
+  Notes:   
+  Input:   
+  Output:  
+  Tested:  ISA 0.10 
 
 
 2010-10-05
