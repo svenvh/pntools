@@ -2,7 +2,7 @@
 // Convert PPN to CSDF
 // Sven van Haastregt, Teddy Zhai, May 2011
 // LERC, LIACS, Leiden University
-// $Id: ppn2csdf.cc,v 1.3 2011/05/04 16:46:33 svhaastr Exp $
+// $Id: ppn2csdf.cc,v 1.4 2011/05/06 10:33:37 tzhai Exp $
 //
 #include <sstream>
 #include <iostream>
@@ -155,7 +155,8 @@ void CsdfDumper::dumpCsdf(std::ostream& strm) {
     indent++;
 
     strm << TABS(indent) << "id:" << process->nr << "\n";
-    strm << TABS(indent) << "name:" << process->statement->top_function->name->s << "\n";
+    strm << TABS(indent) << "name:ND_" << process->nr << "\n";
+    //strm << TABS(indent) << "name:" << process->statement->top_function->name->s << "\n";
     strm << TABS(indent) << "length:" << getPhaseLength(process->nr) << "\n";
     // TODO: wcet should come from the designer
     strm << TABS(indent) << "wcet:10";
