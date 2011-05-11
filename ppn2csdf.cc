@@ -2,7 +2,7 @@
 // Convert PPN to CSDF
 // Sven van Haastregt, Teddy Zhai, May 2011
 // LERC, LIACS, Leiden University
-// $Id: ppn2csdf.cc,v 1.4 2011/05/06 10:33:37 tzhai Exp $
+// $Id: ppn2csdf.cc,v 1.5 2011/05/11 12:00:42 mohamed Exp $
 //
 #include <sstream>
 #include <iostream>
@@ -222,6 +222,7 @@ void CsdfDumper::dumpCsdf(std::ostream& strm) {
     strm << TABS(indent) << "edge:" << "\n";
     indent++;
     strm << TABS(indent) << "id:" << edge_ed++ << "\n";
+	strm << TABS(indent) << "name:" << ch->name->s << "\n";
     strm << TABS(indent) << "src:" << ch->from_node->nr << " " << getPortNr(ch->from_port->s) << "\n";
     strm << TABS(indent) << "dst:" << ch->to_node->nr << " " << getPortNr(ch->to_port->s) <<  "\n";
 
