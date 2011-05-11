@@ -2,10 +2,13 @@
 // Convert PPN to CSDF
 // Sven van Haastregt, Teddy Zhai, May 2011
 // LERC, LIACS, Leiden University
-// $Id: ppn2csdf.cc,v 1.5 2011/05/11 12:00:42 mohamed Exp $
+// $Id: ppn2csdf.cc,v 1.6 2011/05/11 22:26:54 mohamed Exp $
 //
 #include <sstream>
 #include <iostream>
+/* For computing the random WCET in getWCET() */
+#include <cstdlib>
+#include <ctime>
 
 #include "barvinok/barvinok.h"
 
@@ -40,6 +43,7 @@ class CsdfDumper {
     unsigned int getPhaseLength(unsigned int nodenr);
     void processTrace(FILE *fin);
     unsigned int getPortNr(const std::string &portname);
+	int getWCET(Process *process);
     PPN *ppn;
     phaseMap_t phases;
 
@@ -51,6 +55,9 @@ class CsdfDumper {
 
 CsdfDumper::CsdfDumper(PPN *newPpn) {
   this->ppn = newPpn;
+  
+  // call srand to initialize the RNG
+  srand(time(NULL) + clock());
 
   // Allocate vectors for each port
   for (unsigned int i = 0; i < this->ppn->getEdges().size(); ++i) {
@@ -69,6 +76,14 @@ CsdfDumper::~CsdfDumper() {
   }
 }
 
+/* Returns the WCET of a process */
+int CsdfDumper::getWCET(Process *process) {
+	int MAX_WCET = 100;
+	// TODO: Use real WCET here. WCET is random for now and ranges between 0 and MAX_WCET
+	int wcet = rand() % MAX_WCET;
+	//wcet = 10;
+	return wcet;
+}
 
 // Dumps PPN in SDF3 CSDF format.
 void CsdfDumper::dumpCsdf3(std::ostream& strm) {
@@ -103,10 +118,11 @@ void CsdfDumper::dumpCsdf3(std::ostream& strm) {
     csdfProps << "      <actorProperties actor='ND_" << process->nr << "'>\n"
               << "        <processor type='proc_0' default='true'>\n"
               << "          <executionTime time='";
+	//TODO: Get the actual WCET per phase. Now, we just fix the WCET for all phases
+	int wcet = getWCET(process);
     for (int xi = 0; xi < getPhaseLength(process->nr); xi++) {
       if (xi != 0) csdfProps << ",";
-      // TODO: use real workload here!
-      csdfProps << "1";
+      csdfProps << wcet;
     }
     csdfProps << "' />\n";
     csdfProps << "        </processor>\n"
@@ -158,10 +174,12 @@ void CsdfDumper::dumpCsdf(std::ostream& strm) {
     strm << TABS(indent) << "name:ND_" << process->nr << "\n";
     //strm << TABS(indent) << "name:" << process->statement->top_function->name->s << "\n";
     strm << TABS(indent) << "length:" << getPhaseLength(process->nr) << "\n";
-    // TODO: wcet should come from the designer
-    strm << TABS(indent) << "wcet:10";
-    for (unsigned int wc = 1; wc < getPhaseLength(process->nr); wc++) {
-      strm << " 10";
+    strm << TABS(indent) << "wcet:";
+	//TODO: Get the WCET per phase. Now, we fix the WCET for all the phases
+	int wcet = getWCET(process);
+    for (unsigned int wc = 1; wc <= getPhaseLength(process->nr); wc++) {
+      	strm << wcet;
+		if (wc < getPhaseLength(process->nr)) strm << " ";
     }
     strm << "\n";
 
