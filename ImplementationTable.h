@@ -1,7 +1,7 @@
 /*
  * Cost Table implementation
  * Author: Sven van Haastregt
- * $Id: ImplementationTable.h,v 1.1 2011/05/16 09:56:06 svhaastr Exp $
+ * $Id: ImplementationTable.h,v 1.2 2011/05/16 10:06:53 svhaastr Exp $
  */
 
 #ifndef _IMPLEMENTATIONTABLE_H_
@@ -22,17 +22,17 @@ typedef enum {
 
 // Implementation Metric
 typedef enum {
-  IM_DELAY_AVG,       // Average delay
-  IM_DELAY_WORST,     // Worst case delay
-  IM_DELAY_BEST,      // Best case delay
-  IM_II,              // Initiation interval
-  IM_SLICES,          // Slice usage
-  IM_MEMORY_DATA,     // Data memory (bytes)
-  IM_MEMORY_CODE      // Code memory (bytes)
+  IM_DELAY_AVG,               // Average delay
+  IM_DELAY_WORST,             // Worst case delay
+  IM_DELAY_BEST,              // Best case delay
+  IM_II,                      // Initiation interval
+  IM_SLICES,                  // Slice usage
+  IM_MEMORY_DATA,             // Data memory (bytes)
+  IM_MEMORY_CODE              // Code memory (bytes)
 } ImplementationMetric;
 
 
-// Describes a single implementation of a particular function.
+// Holds metrics for a single implementation of a function.
 class Implementation {
   public:
     Implementation(const std::string &name, ImplementationType type);
@@ -43,6 +43,7 @@ class Implementation {
     void setType(ImplementationType newtype);
     int getMetric(ImplementationMetric m);
     void setMetric(ImplementationMetric m, int value);
+
   private:
     std::string name;
     ImplementationType type;
