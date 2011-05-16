@@ -47,6 +47,8 @@ pn2ppn_SOURCES = \
 
 ppn2csdf_LDADD = libppn.la $(ISADIR)/libpdg.la @SYCK_LIBS@
 ppn2csdf_SOURCES = \
+	ImplementationTable.cc \
+  ImplementationTable.h \
 	ppn2csdf.cc
 
 ppnta_LDADD = libppn.la $(ISALIB) $(BARVINOKLIB)
