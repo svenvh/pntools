@@ -2,7 +2,7 @@
 // Convert PPN to CSDF
 // Sven van Haastregt, Teddy Zhai, May 2011
 // LERC, LIACS, Leiden University
-// $Id: ppn2csdf.cc,v 1.7 2011/05/16 09:56:06 svhaastr Exp $
+// $Id: ppn2csdf.cc,v 1.8 2011/05/27 15:30:50 svhaastr Exp $
 //
 #include <sstream>
 #include <iostream>
@@ -41,7 +41,7 @@ class CsdfDumper {
     unsigned int getPhaseLength(unsigned int nodenr);
     void processTrace(FILE *fin);
     unsigned int getPortNr(const std::string &portname);
-	int getWCET(Process *process);
+    int getWCET(Process *process);
     PPN *ppn;
     phaseMap_t phases;
     ImplementationTable *implTable;
@@ -73,9 +73,10 @@ CsdfDumper::~CsdfDumper() {
   }
 }
 
+
 // Returns the WCET of a process
 int CsdfDumper::getWCET(Process *process) {
-	return implTable->getMetric(IM_DELAY_WORST, process->statement->top_function->name->s);
+  return implTable->getMetric(IM_DELAY_WORST, process->statement->top_function->name->s);
 }
 
 // Dumps PPN in SDF3 CSDF format.
@@ -322,21 +323,51 @@ void CsdfDumper::processTrace(FILE *fin) {
       stop = true;
       break;
     }
+    else if (strcmp(lineBuffer, STR_CPROG_NEXTITER) == 0) {
+      // Next iteration of body, extend vectors of all nodes that have fired their function.
+      for (int i = 0; i < this->ppn->getNodes().size(); ++i) {
+        if (status[i] == 1) {
+          extendPhase(i);
+          status[i] = 0;
+        }
+      }
+      continue;
+    }
 
     switch (sscanf(lineBuffer, "ND_%d%cP", &nodenr, &porttype)) {
       case 1: // Node execution
         status[nodenr] = 1;
         break;
       case 2: // IPD/OPD statement
-        if (status[nodenr] == 1 && porttype == 'I') {
+        //status[nodenr] = 1;
+        /*if (status[nodenr] == 1 && porttype == 'I') {
           // We've made a transition from OPDs to IPDs for this node (i.e. next iteration)
+          //extendPhase(nodenr);
+          printf("BLAAA\n");
           status[nodenr] = 0;
-          extendPhase(nodenr);
-        }
+        }*/
+        assert(phases[lineBuffer]->back() == 0);  // if this fails, we missed a step...
         phases[lineBuffer]->back() = 1;
         break;
-      default:
-        assert(0); // Line not in expected format
+      default: // Line not in expected format
+        assert(0);
+    }
+  }
+
+  // Remove phase extension for all (source) nodes that we didn't touch since the last extendPhase.
+  for (int i = 0; i < this->ppn->getNodes().size(); ++i) {
+    if (status[i] == 0) {
+      std::ostringstream oss;
+      oss << "ND_" << i;
+      std::string nodePrefix = oss.str();
+      for (phaseMap_t::iterator it = phases.begin(); it != phases.end(); it++) {
+        string pName = it->first;
+        if (pName.compare(0, nodePrefix.length(), nodePrefix) == 0) {
+          assert(it->second->back() == 0);
+          it->second->pop_back();
+        }
+      }
+
     }
   }
 

@@ -3,7 +3,7 @@
  *
  *    Created on: Feb 2, 2011
  *      Author: Sven van Haastregt, Teddy Zhai
- *      $Id: ast.h,v 1.10 2011/05/04 16:21:30 svhaastr Exp $
+ *      $Id: ast.h,v 1.11 2011/05/27 15:30:50 svhaastr Exp $
  */
 
 #ifndef AST_H_
@@ -20,6 +20,7 @@ using namespace yaml;
 namespace ppn {
 
 // The string printed at the end of the C program (also used by CsdfDumper)
+#define STR_CPROG_NEXTITER "Next"
 #define STR_CPROG_FINISHED "Finished!"
 
 class ASTExpression;
@@ -187,13 +188,14 @@ class ASTNode_YAMLProxy: public structure {
 class ASTNode {
 protected:
   ASTNodeType nodetype;
-private:
   ASTNode *parent;
 public:
   ASTNode();
   ~ASTNode();
   ASTNodeType  getNodetype();
   void setNodetype(ASTNodeType newnodetype);
+  ASTNode *getParent();
+  void *setParent(ASTNode *newParent);
   virtual void dumpCProgram(FILE *out, int indent) =0;
   virtual ASTNode_YAMLProxy *toYAMLProxy() =0;
   //static void registerbase_ASTNode(struct_description &sd);

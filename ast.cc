@@ -3,7 +3,7 @@
  *
  *    Created on: Feb 2, 2011
  *      Author: Sven van Haastregt, Teddy Zhai
- *      $Id: ast.cc,v 1.9 2011/05/04 16:21:30 svhaastr Exp $
+ *      $Id: ast.cc,v 1.10 2011/05/27 15:30:50 svhaastr Exp $
  */
 
 #include <limits>
@@ -292,6 +292,7 @@ ASTExpression *ASTExpression_YAMLProxy::fromYAMLProxy() {
   ASTTerm *pTerm;
   ASTBinop *pBinop;
   ASTReduction *pRed;
+  int i;
   switch (this->type) {
     case EXPR_NAME:
       pName = new ASTName;
@@ -311,7 +312,9 @@ ASTExpression *ASTExpression_YAMLProxy::fromYAMLProxy() {
     case EXPR_REDUCTION:
       pRed = new ASTReduction;
       pRed->setType(this->redType);
-      assert(0); // TODO: handle elts
+      for (unsigned int i = 0; i < this->elts.size(); ++i) {
+        pRed->append(this->elts[i]->fromYAMLProxy());
+      }
       return pRed;
     default:
       assert(0); // Unknown type
@@ -425,7 +428,30 @@ void ASTBinop::setRHS(int newRHS) {
 }
 
 void ASTBinop::dumpCProgram(FILE *out) {
-  fprintf(out, "(TODO:binop)");
+  switch (this->type) {
+    case BINOP_MODULO:
+      fprintf(out, "(");
+      this->LHS->dumpCProgram(out);
+      fprintf(out, ")%%%d", this->RHS);
+      break;
+    case BINOP_DIV:
+      fprintf(out, "(");
+      this->LHS->dumpCProgram(out);
+      fprintf(out, ")/%d", this->RHS);
+      break;
+    case BINOP_FLOORDIV:
+      fprintf(out, "floor((");
+      this->LHS->dumpCProgram(out);
+      fprintf(out, ")/%d)", this->RHS);
+      break;
+    case BINOP_CEILDIV:
+      fprintf(out, "ceil((");
+      this->LHS->dumpCProgram(out);
+      fprintf(out, ")/%d)", this->RHS);
+      break;
+    default:
+      assert(0);
+  }
 }
 
 
@@ -434,7 +460,10 @@ ASTExpression_YAMLProxy *ASTReduction::toYAMLProxy() {
   ASTExpression_YAMLProxy *proxy = new ASTExpression_YAMLProxy;
   proxy->type = EXPR_REDUCTION;
   proxy->redType = this->getType();
-  assert(0); // TODO: elts
+  for (unsigned int i = 0; i < this->elts.size(); ++i) {
+    ASTExpression_YAMLProxy *expr = elts[i]->toYAMLProxy();
+    proxy->elts.push_back(expr);
+  }
   return proxy;
 }
 
@@ -454,7 +483,12 @@ void ASTReduction::append(ASTExpression* expr) {
 }
 
 void ASTReduction::dumpCProgram(FILE *out) {
-  fprintf(out, "(TODO:red)");
+  assert(this->type == RED_SUM); // only sums are currently supported
+  this->elts[0]->dumpCProgram(out);
+  for (unsigned int i = 1; i < this->elts.size(); ++i) {
+    fprintf(out, "+");
+    this->elts[i]->dumpCProgram(out);
+  }
 }
 
 
@@ -530,6 +564,13 @@ void ASTNode::setNodetype(ASTNodeType  newnodetype) {
   this->nodetype = newnodetype;
 }
 
+ASTNode *ASTNode::getParent() {
+  return parent;
+}
+void *ASTNode::setParent(ASTNode *newParent) {
+  this->parent = newParent;
+}
+
 
 ///
 ASTNode_Block::ASTNode_Block() {
@@ -544,9 +585,16 @@ void ASTNode_Block::dumpCProgram(FILE *out, int indent) {
   if (indent > 0)
     fprintf(out, "{\n");
   indent+=c_indent;
+
+  if (this->getParent() && this->getParent()->getNodetype() == NODE_FOR && this->stmts[0]->getNodetype() != NODE_FOR) {
+    // This is the deepest for
+    fprintf(out, "%*sprintf(\"%s\\n\");\n", indent, " ", STR_CPROG_NEXTITER);
+  }
+
   for (int i = 0; i < stmts.size(); i++) {
     stmts[i]->dumpCProgram(out, indent);
   }
+
   indent-=c_indent;
   if (indent > 0)
     fprintf(out, "%*s}\n", indent, " ");
@@ -600,6 +648,7 @@ ASTNode_Block * ASTNode_If::getThen() {
 }
 void ASTNode_If::setThen(ASTNode_Block * newthen) {
   this->then = newthen;
+  newthen->setParent(this);
 }
 
 void ASTNode_If::dumpCProgram(FILE *out, int indent) {
@@ -670,6 +719,7 @@ ASTNode_Block * ASTNode_For::getBody() {
 }
 void ASTNode_For::setBody(ASTNode_Block * newbody) {
   this->body = newbody;
+  newbody->setParent(this);
 }
 
 void ASTNode_For::dumpCProgram(FILE *out, int indent) {
