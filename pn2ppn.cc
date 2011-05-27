@@ -835,6 +835,12 @@ int main(int argc, char * argv[])
       exit(1);
     }
 
+    if (pdg->context && pdg->context->params.size() != 0) {
+      fprintf(stderr, "Error: PDG contains parameters.\n");
+      fprintf(stderr, "Parameters are not supported by the current version of this tool.\n");
+      exit(1);
+    }
+
     vector<espam_edge*> split_edges;
     CloogInput *cloog_input = writeADG(pdg, cloog_options, split_edges);
     ppn::AST *ast = cloog_clast_to_AST(cloog_input, pdg->dimension, cloog_options);
