@@ -1,5 +1,5 @@
 PNTools
-$Id: README,v 1.8 2011/05/22 14:27:36 svhaastr Exp $
+$Id: README,v 1.9 2011/05/30 10:24:33 svhaastr Exp $
 
 This directory contains various experimental tools for use with PN/ISA. Most
 likely any tool found in here is in a very premature state, with a strong
@@ -97,14 +97,13 @@ ppnta
   Tested:  ISA 0.10
 
 
-gen_pla
+plamapgen
 -----
-  Purpose: generate platform file (ESPAM) for a PPN.
-  Authors: Teddy Zhai
-  Notes:   
-  Input:   
-  Output:  
-  Tested:  ISA 0.10 
+  Purpose: Generate platform and mapping files for ESPAM.
+  Authors: Eyal Halm, Sven van Haastregt
+  Notes:   Standalone program, not dependent on any libraries.
+  Input:   Commandline argument list containing name and mapping code.
+  Output:  .pla and .map files
 
 
 2010-10-05

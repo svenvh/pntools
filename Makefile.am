@@ -55,7 +55,9 @@ ppnta_LDADD = libppn.la $(ISALIB) $(BARVINOKLIB)
 ppnta_SOURCES = \
 	ppnta.cc utility.cc utility.h
 
-bin_PROGRAMS = pdg1ana pdg1trans ppnta ppn2csdf pn2ppn pn2loopo
+plamapgen_SOURCES = plamapgen.cc
+
+bin_PROGRAMS = pdg1ana pdg1trans ppnta ppn2csdf pn2ppn pn2loopo plamapgen
 
 include local.am
 
