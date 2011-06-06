@@ -1,0 +1,53 @@
+<?xml version="1.0" standalone="no"?>
+
+<!-- Implementation metrics - Example file
+     Version: $Id: impldata.xml,v 1.1 2011/06/06 13:57:34 svhaastr Exp $
+     Sven van Haastregt, LIACS, Leiden University.
+
+     Notes: a function can have multiple implementations. The first implementation
+            in the list is considered the default implementation by most tools.
+-->
+
+<implementationMetrics>
+  <functions>
+    <function functionName="source">
+      <implementation componentName="source_MB" implementationType="MicroBlaze">
+        <performance>
+          <delay average="6" worstcase="6" />
+          <ii value="6" />
+        </performance>
+        <resources>
+          <slices value="250" />
+          <memory program="8192" data="8192" />
+        </resources>
+        <power>
+        </power>
+      </implementation>
+
+      <implementation componentName="source_HW" implementationType="CompaanHWNode">
+        <performance>
+          <delay average="3" />
+          <ii value="1" />
+        </performance>
+        <resources>
+          <slices value="1" />
+        </resources>
+        <power>
+        </power>
+      </implementation>
+    </function>
+
+    <function functionName="sink">
+      <implementation componentName="sink_MB" implementationType="MicroBlaze">
+        <performance>
+          <delay average="10" worstcase="90" bestcase="6" />
+        </performance>
+        <resources>
+          <memory program="8192" data="8192" />
+          <slices value="250" />
+        </resources>
+      </implementation>
+    </function>
+  </functions>
+
+</implementationMetrics>
