@@ -84,13 +84,15 @@ AC_LANG(C++)
 
 AC_SUBST(POLYLIB_LIBS)
 AC_SUBST(SYCK_LIBS)
+AC_SUBST(libxml2_LIBS)
 POLYLIB_LIBS="-lpolylibgmp"
 SYCK_LIBS="-lsyck"
+libxml2_LIBS="-lxml2"
 
 AC_ARG_WITH(pngen,
   AS_HELP_STRING([--with-pngen=DIR],[directory containing all other pn-related tools such as syck and gmp]) )
 if test "x$with_pngen" != "x"; then
-  CPPFLAGS="$CPPFLAGS -I$with_pngen -I$with_pngen/include"
+  CPPFLAGS="$CPPFLAGS -I$with_pngen -I$with_pngen/include -I$with_pngen/include/libxml2"
   LDFLAGS="$LDFLAGS -L$with_pngen/lib"
 fi
 

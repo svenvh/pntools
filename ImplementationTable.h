@@ -1,7 +1,7 @@
 /*
  * Cost Table implementation
  * Author: Sven van Haastregt
- * $Id: ImplementationTable.h,v 1.3 2011/05/16 12:24:20 svhaastr Exp $
+ * $Id: ImplementationTable.h,v 1.4 2011/06/06 13:56:09 svhaastr Exp $
  */
 
 #ifndef _IMPLEMENTATIONTABLE_H_
@@ -10,6 +10,8 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <libxml/parser.h>
+#include <libxml/tree.h>
 
 // Implementation/processor type
 typedef enum {
@@ -56,13 +58,30 @@ class ImplementationTable {
   public:
     ImplementationTable();
     ~ImplementationTable();
+
+    // Loads implementation data from given XML file.
     bool load(const std::string &filename);
-    //bool loadDefaultFile();
+
+    // Loads implementation data from default files (current directory or home directory).
+    bool loadDefaultFile();
+
+    // Returns number of implementations for given function.
     int getEntryCount(const std::string &funcName);
+
+    // Returns i-th implementation of given function.
     Implementation *getEntry(const std::string &funcName, int i);
+
+    // Returns metric m for (i-th implementation of) given function.
     int getMetric(ImplementationMetric m, const std::string &funcName, int i = 0);
 
   private:
+    std::vector<Implementation*> *getImplementations(const std::string &funcName);
+    xmlNode *findSibling(xmlNode *node, const char *name);
+    xmlChar *getRequiredAttribute(xmlNode *node, const char *attrName);
+    void processMetric(xmlNode *node, Implementation *impl, const char *tag, const char *attrName, ImplementationMetric metric);
+    Implementation *processImplementation(xmlNode *node, const char *fnName);
+    bool processXmlDoc(xmlDocPtr doc);
+
     std::map<std::string, std::vector<Implementation*>* > table;
 };
 

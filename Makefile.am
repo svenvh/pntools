@@ -45,7 +45,7 @@ pn2ppn_SOURCES = \
 	pn2ppn_util.cc \
 	pn2ppn.cc
 
-ppn2csdf_LDADD = libppn.la $(ISADIR)/libpdg.la @SYCK_LIBS@
+ppn2csdf_LDADD = libppn.la $(ISADIR)/libpdg.la @SYCK_LIBS@ @libxml2_LIBS@
 ppn2csdf_SOURCES = \
 	ImplementationTable.cc \
   ImplementationTable.h \

@@ -2,7 +2,7 @@
 // Convert PPN to CSDF
 // Sven van Haastregt, Teddy Zhai, May 2011
 // LERC, LIACS, Leiden University
-// $Id: ppn2csdf.cc,v 1.8 2011/05/27 15:30:50 svhaastr Exp $
+// $Id: ppn2csdf.cc,v 1.9 2011/06/06 13:56:09 svhaastr Exp $
 //
 #include <sstream>
 #include <iostream>
@@ -343,7 +343,6 @@ void CsdfDumper::processTrace(FILE *fin) {
         /*if (status[nodenr] == 1 && porttype == 'I') {
           // We've made a transition from OPDs to IPDs for this node (i.e. next iteration)
           //extendPhase(nodenr);
-          printf("BLAAA\n");
           status[nodenr] = 0;
         }*/
         assert(phases[lineBuffer]->back() == 0);  // if this fails, we missed a step...
@@ -468,7 +467,10 @@ int main(int argc, char * argv[])
   }
 
   ImplementationTable *implTable = new ImplementationTable();
-  implTable->load("TODO");
+  if (!implTable->loadDefaultFile()) {
+    fprintf(stderr, "Warning: Could not load implementation data from default files;\n"
+                    "         please put impldata.xml in the current directory or in ~/.daedalus\n");
+  }
 
   CsdfDumper *dumper = new CsdfDumper(ppn, implTable);
   if (gOutputFormat == 3) {
@@ -478,6 +480,8 @@ int main(int argc, char * argv[])
     dumper->dumpCsdf(cout);
   }
 
+  delete dumper;
+  delete implTable;
   ppn->free();
   delete ppn;
 
