@@ -40,6 +40,9 @@ pn2loopo_LDADD = $(ISALIB)
 pn2loopo_SOURCES = \
 	pn2loopo.cc
 
+pnchsched_LDADD = $(ISALIB)
+pnchsched_SOURCES = pnchsched.cc
+
 pn2ppn_LDADD = libppn.la $(ISALIB) @CLOOG_LIBS@
 pn2ppn_SOURCES = \
 	pn2ppn_util.cc \
@@ -57,7 +60,7 @@ ppnta_SOURCES = \
 
 plamapgen_SOURCES = plamapgen.cc
 
-bin_PROGRAMS = pdg1ana pdg1trans ppnta ppn2csdf pn2ppn pn2loopo plamapgen
+bin_PROGRAMS = pdg1ana pdg1trans ppnta ppn2csdf pn2ppn pn2loopo pnchsched plamapgen
 
 include local.am
 
