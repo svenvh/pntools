@@ -14,16 +14,11 @@
 #include "yaml.h"
 #include "pdg.h"
 
-#include "isl/map.h"
-#include "isl/dim.h"
-#include "isl/set.h"
-
 // Buffersize for reading
 #define BUFSIZE 512
 
 using pdg::PDG;
 using namespace std;
-//using namespace size;
 
 struct argp_option argp_options[] = {
     { "input",            'i',    "file", 0 },
@@ -32,7 +27,6 @@ struct argp_option argp_options[] = {
     { 0 }
 };
 
-//struct arguments : size_options {
 struct arguments  {
     char *input;
 };
