@@ -11,6 +11,7 @@
 
 #include "version.h"
 
+#include "isl/map.h"
 #include "yaml.h"
 #include "pdg.h"
 
@@ -148,6 +149,64 @@ void insertSchedules(PDG *pdg, vector<vector<int> >* schedules) {
 }
 
 
+void addDimensionToAccesses(pdg::node *node) {
+  for (unsigned int j = 0; j < node->statement->accesses.size(); j++) {
+    assert(node->statement->accesses[j]->map->constraints.size() == 1);
+    pdg::Matrix *m = node->statement->accesses[j]->map->constraints[0];
+    for (unsigned int si = 0; si < m->el.size(); si++) {
+      m->el[si].insert(m->el[si].begin()+1, 0);
+    }
+    node->statement->accesses[j]->map->input++;
+  }
+  node->prefix.v.insert(node->prefix.v.begin(), -1);
+  node->prefix.v.insert(node->prefix.v.begin(), 1);
+}
+
+
+
+void applySchedulesToDomains(PDG *pdg, vector<vector<int> >* schedules) {
+  for (unsigned int i = 0; i < schedules->size(); i++) {
+    pdg::node *node = findNode(pdg, i);
+    assert(node->source->constraints.size() == 1);   // >1 constraint sets not implemented
+
+    // Insert new input dim
+    pdg::Matrix *m = node->source->constraints[0];
+    for (unsigned int si = 0; si < m->el.size(); si++) {
+      m->el[si].insert(m->el[si].begin()+1, 0);
+    }
+
+    vector<int> newrow;
+    newrow.push_back(0);                        // Sign (equality)
+    newrow.push_back(-1);                       // First dimension
+    for (int ov = 0; ov < node->source->dim; ov++) {
+      newrow.push_back((*schedules)[i][ov]);    // Copy relevant output vars
+    }
+    newrow.push_back((*schedules)[i].back());   // Constant
+    m->el.insert(m->el.begin(), newrow);
+    node->source->dim++;
+    addDimensionToAccesses(node);
+  }
+}
+
+
+void dumpDomains(PDG *pdg) {
+  for (unsigned int i = 0; i < pdg->nodes.size(); i++) {
+    pdg::node *node = pdg->nodes[i];
+    pdg::Matrix *m = node->source->constraints[0];
+    printf("# %d (%s)\n", node->nr, node->statement->top_function->name->s.c_str());
+    printf("%d %d\n", m->el.size(), m->el[0].size());
+    for (unsigned int si = 0; si < m->el.size(); si++) {
+      for (unsigned int sj = 0; sj < m->el[si].size(); sj++) {
+        printf("%3d ", m->el[si][sj]);
+      }
+      printf("\n");
+    }
+    printf("\n");
+
+  }
+}
+
+
 int main(int argc, char * argv[])
 {
   FILE *in = NULL, *out = stdout, *insched = NULL;
@@ -182,15 +241,26 @@ int main(int argc, char * argv[])
   assert (pdg);
 
   vector<vector<int> > *schedules = parseSchedFile(insched);
-  insertSchedules(pdg, schedules);
-  pdg->dimension++;
-  pdg->statement_dimensions.v.insert(pdg->statement_dimensions.v.begin(), 0);
+  if (pdg->dependences.size() > 0) {
+    fprintf(stderr, "Changing the scattering matrices...\n");
+    insertSchedules(pdg, schedules);
+    pdg->dimension++;
+    pdg->statement_dimensions.v.insert(pdg->statement_dimensions.v.begin(), 0);
+    fprintf(stderr, "Warning: edge properties (size, type) are no longer valid!\n");
+  }
+  else {
+    // Put schedules into .yaml file
+    fprintf(stderr, "Applying schedules to node domains...\n");
+    applySchedulesToDomains(pdg, schedules);
+    //dumpDomains(pdg);
+  }
 
   delete schedules;
 
   fclose(insched);
   pdg->add_history_line("pnchsched", argc, argv);
   pdg->Dump(out);
+
   pdg->free();
   delete pdg;
 
