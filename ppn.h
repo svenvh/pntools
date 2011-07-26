@@ -3,7 +3,7 @@
  *
  *    Created on: Sep 30, 2010
  *      Author: Teddy Zhai, Sven van Haastregt
- *      $Id: ppn.h,v 1.14 2011/05/04 16:21:30 svhaastr Exp $
+ *      $Id: ppn.h,v 1.15 2011/07/26 09:44:46 svhaastr Exp $
  *
  */
 
@@ -31,12 +31,13 @@ struct espam_edge {
     char    *from_port;
     char    *to_port;
     isl_set  *from_domain;
-    isl_set  *to_domain;
+    isl_local_space *to_space;
+    isl_basic_set *to_domain;
     pdg::node    *from_node;
     pdg::node    *to_node;
     std::vector<pdg::access *>    from_access;
     std::vector<pdg::access *>    to_access;
-    isl_mat  *map;
+    isl_aff_list *map;
     pdg::Matrix *map_stripped;
     pdg::array *array;
     int   reordering;

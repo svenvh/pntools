@@ -3,7 +3,7 @@
  *
  *  Created on: Sep 30, 2010
  *      Author: Teddy Zhai, Sven van Haastregt
- *      $Id: ppn.cc,v 1.13 2011/05/04 16:21:30 svhaastr Exp $
+ *      $Id: ppn.cc,v 1.14 2011/07/26 09:44:46 svhaastr Exp $
  */
 
 #include "ppn.h"
@@ -246,7 +246,9 @@ PPN::import_pn(PDG *pdg, std::vector<espam_edge*> edges, AST *ast) {
     e->from_port    = new str(edges[i]->from_port);
     e->to_port      = new str(edges[i]->to_port);
     e->from_domain  = isl_set_to_UnionSet(edges[i]->from_domain);
-    e->to_domain    = isl_set_to_UnionSet(edges[i]->to_domain);
+    isl_set *todom = isl_set_from_basic_set(edges[i]->to_domain);
+    e->to_domain    = isl_set_to_UnionSet(todom);
+    isl_set_free(todom);
     e->from_node    = edges[i]->from_node;
     e->to_node      = edges[i]->to_node;
     copy_accesses(&(e->from_access), &(edges[i]->from_access));

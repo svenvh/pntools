@@ -3,6 +3,7 @@
 #include <set>
 #include <sstream>
 #include <cloog/isl/cloog.h>
+#include <isl/aff.h>
 
 #include "yaml.h"
 #include "pdg.h"
@@ -24,12 +25,13 @@ using pdg::PDG;
     char          *from_port;
     char          *to_port;
     isl_set      *from_domain;
-    isl_set      *to_domain;
+    isl_local_space *to_space;
+    isl_basic_set *to_domain;
     pdg::node    *from_node;
     pdg::node    *to_node;
     vector<pdg::access *>    from_access;
     vector<pdg::access *>    to_access;
-    isl_mat      *map;
+    isl_aff_list *map;
     pdg::array *array;
     int         reordering;
     int         multiplicity;
@@ -59,7 +61,8 @@ struct add_edge_data {
                   sticky(sticky), name(name), i(0), from_domain(NULL) {}
 };
 
-static int add_basic_lexmin_edge(isl_basic_set *dom, isl_mat *map, void *user)
+static int add_basic_lexmin_edge(__isl_take isl_basic_set *dom,
+        __isl_take isl_aff_list *list, void *user)
 {
         add_edge_data *data = (add_edge_data *)user;
 
@@ -73,8 +76,9 @@ static int add_basic_lexmin_edge(isl_basic_set *dom, isl_mat *map, void *user)
         edge->from_access.push_back(data->dep->from_access);
         edge->to_access = data->to_accesses;
         edge->from_domain = data->from_domain;
-        edge->to_domain = isl_basic_set_compute_divs(dom);
-        edge->map = map;
+        edge->to_space = isl_basic_set_get_local_space(dom);
+        edge->to_domain = dom;
+        edge->map = list;
         edge->nr = data->i++;
         edge->name = strdup(data->name);
         edge->sticky = data->sticky;
@@ -242,21 +246,18 @@ static div_info *extract_div(__isl_keep isl_map *lifting, unsigned pos)
         return edi.di;
 }
 
-/* Create a partial div_info corresponding to div "pos" in "bset".
+/* Create a partial div_info corresponding to the given isl_div.
  */
-static div_info *extract_div(isl_basic_set *bset, unsigned pos)
+static div_info *extract_div(__isl_take isl_div *div)
 {
         div_info *di = new div_info;
         int j;
         isl_int v;
-        unsigned dim = isl_basic_set_dim(bset, isl_dim_set);
-        unsigned nparam = isl_basic_set_dim(bset, isl_dim_param);
-
-        isl_div *div = isl_basic_set_div(isl_basic_set_copy(bset), pos);
-        assert(div);
+        unsigned dim = isl_div_dim(div, isl_dim_set);
+        unsigned nparam = isl_div_dim(div, isl_dim_param);
 
         isl_int_init(v);
-        for (j = 0; j < isl_basic_set_dim(bset, isl_dim_div); ++j) {
+        for (j = 0; j < isl_div_dim(div, isl_dim_div); ++j) {
                 isl_div_get_coefficient(div, isl_dim_div, j, &v);
                 assert(isl_int_is_zero(v));
         }
@@ -278,6 +279,34 @@ static div_info *extract_div(isl_basic_set *bset, unsigned pos)
         isl_div_free(div);
 
         return di;
+}
+
+/* Create a partial div_info corresponding to div "pos" in "bset".
+ */
+static div_info *extract_div(isl_basic_set *bset, unsigned pos)
+{
+        isl_div *div = isl_basic_set_div(isl_basic_set_copy(bset), pos);
+        assert(div);
+
+        return extract_div(div);
+}
+
+/* Create a partial div_info corresponding to div "pos" in "aff".
+ */
+static div_info *extract_div(__isl_keep isl_aff *aff, unsigned pos)
+{
+        isl_div *div = isl_aff_get_div(aff, pos);
+        assert(div);
+
+        return extract_div(div);
+}
+
+static div_info *extract_div(__isl_keep isl_local_space *ls, unsigned pos)
+{
+        isl_div *div = isl_local_space_get_div(ls, pos);
+        assert(div);
+
+        return extract_div(div);
 }
 
 /* Return the index of the given div_info in divs and complete it
@@ -366,14 +395,42 @@ static __isl_keep isl_basic_set *strip_statement_dims(pdg::PDG *pdg,
 
 /* Remove the rows and columns from M that refer to statement level dimensions.
  */
-static pdg::Matrix *strip_statement_dims_from_map(pdg::PDG *pdg, isl_mat *map)
+/* Construct a pdg::Matrix corresponding to the list of affine expressions
+ * in "list".  Each row in the matrix corresponds to an element in the list,
+ * except that the elements that correspond to statement level dimensions
+ * are skipped.  The columns of the matrix correspond to the dimensions
+ * in "ls", except, again, that dimensions that correspond to statement
+ * level dimensions are skipped.
+ *
+ * We currently assume that all integer divisions that any affine expression
+ * in "list" refers to is also present in "ls".
+ *
+ * The div2aff vector maps divs in "ls" to divs in the current affine
+ * expression.  If a div does not appear in the affine expression,
+ * it is mapped to -1.
+ */
+static pdg::Matrix *strip_statement_dims_from_map(pdg::PDG *pdg,
+        __isl_take isl_local_space *ls, __isl_take isl_aff_list *list)
 {
     pdg::Matrix *stripped = new pdg::Matrix;
-    unsigned dim = pdg->statement_dimensions.size();
     unsigned nstat = n_statement_dims(pdg);
-    int n_row = isl_mat_rows(map);
-    int n_col = isl_mat_cols(map);
+    int n_row = isl_aff_list_n_aff(list);
     isl_int v;
+    unsigned n_var = isl_local_space_dim(ls, isl_dim_set);
+    unsigned n_div = isl_local_space_dim(ls, isl_dim_div);
+    unsigned n_par = isl_local_space_dim(ls, isl_dim_param);
+    isl_aff *aff;
+    isl_dim *dim = isl_local_space_get_dim(ls);
+    unsigned divs_size;
+    vector<div_info *> divs;
+
+    for (int i = 0; i < n_div; ++i) {
+        div_info *di = extract_div(ls, i);
+        divs.push_back(di);
+    }
+
+    divs_size = divs.size();
+    vector<int> div2aff(divs_size);
 
     isl_int_init(v);
     for (int i = 0; i < n_row - 1; ++i) {
@@ -382,20 +439,47 @@ static pdg::Matrix *strip_statement_dims_from_map(pdg::PDG *pdg, isl_mat *map)
         if (pdg->statement_dimensions[i])
             continue;
 
-        vector<int> row(n_col - nstat);
+        aff = isl_aff_list_get_aff(list, i);
+
+        for (int i = 0; i < divs_size; ++i)
+            div2aff[i] = -1;
+
+        for (int i = 0; i < isl_aff_dim(aff, isl_dim_div); ++i) {
+            div_info *di = extract_div(aff, i);
+            int pos = div_index(divs, di, dim);
+            assert(pos < divs_size);
+            div2aff[pos] = i;
+        }
+
+        vector<int> row(n_var - nstat + n_div + n_par + 1);
         k = 0;
-        for (int j = 0; j < n_col - 1; ++j) {
-            if (j < dim && pdg->statement_dimensions[j])
+        for (int j = 0; j < n_var; ++j) {
+            if (pdg->statement_dimensions[j])
                 continue;
-            isl_mat_get_element(map, 1 + i, 1 + j, &v);
+            isl_aff_get_coefficient(aff, isl_dim_set, j, &v);
             row[k++] = isl_int_get_si(v);
         }
-        isl_mat_get_element(map, 1 + i, 0, &v);
+        for (int j = 0; j < n_div; ++j) {
+            int pos = div2aff[j];
+            if (pos < 0)
+                isl_int_set_si(v, 0);
+            else
+                isl_aff_get_coefficient(aff, isl_dim_div, pos, &v);
+            row[k++] = isl_int_get_si(v);
+        }
+        for (int j = 0; j < n_par; ++j) {
+            isl_aff_get_coefficient(aff, isl_dim_param, j, &v);
+            row[k++] = isl_int_get_si(v);
+        }
+        isl_aff_get_constant(aff, &v);
         row[k++] = isl_int_get_si(v);
         stripped->el.push_back(row);
+        isl_aff_free(aff);
     }
     isl_int_clear(v);
-    isl_mat_free(map);
+    isl_aff_list_free(list);
+    isl_local_space_free(ls);
+    isl_dim_free(dim);
     return stripped;
 }
 
@@ -711,7 +795,7 @@ static CloogInput *writeADG(pdg::PDG *pdg,
                 continue;
             char *port_name;
             isl_set *to_domain;
-            to_domain = split_edges[i]->to_domain;
+            to_domain = isl_set_from_basic_set(split_edges[i]->to_domain);
             port_name = writePort(false, j, name, split_edges[i]->to_access,
                                   split_edges[i],
                                   to_domain, lift, pdg, dv);
@@ -770,7 +854,8 @@ static CloogInput *writeADG(pdg::PDG *pdg,
 
     for (int i = 0; i < split_edges.size(); ++i) {
         pdg::Matrix *stripped;
-        stripped = strip_statement_dims_from_map(pdg, split_edges[i]->map);
+        stripped = strip_statement_dims_from_map(pdg,
+                            split_edges[i]->to_space, split_edges[i]->map);
         split_edges[i]->map_stripped = stripped;
         //writeMatrix(writer, "mapping", stripped);
         //delete stripped; //TODO
@@ -861,10 +946,11 @@ int main(int argc, char * argv[])
 
     for (int i = 0; i < split_edges.size(); ++i) {
       isl_set_free(split_edges[i]->from_domain);
-      isl_set_free(split_edges[i]->to_domain);
+      isl_basic_set_free(split_edges[i]->to_domain);
       delete split_edges[i]->map_stripped;
     }
 
+    fprintf(stderr, "I'm not cleaning up properly, so you'll get a warning from isl now:\n");
     pdg->free();
     delete pdg;
 
