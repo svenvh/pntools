@@ -12,8 +12,8 @@
 #include "version.h"
 
 #include "isl/map.h"
-#include "yaml.h"
-#include "pdg.h"
+#include "isa/yaml.h"
+#include "isa/pdg.h"
 
 // Buffersize for reading
 #define BUFSIZE 512
@@ -51,7 +51,7 @@ error_t parse_opt(int key, char *arg, struct argp_state *state)
       arguments->input = NULL;
       break;
     case 'V':
-      printf("%s\n", pdg_version());
+      //printf("%s\n", pdg_version());
       exit(0);
     case 'i':
       arguments->input = arg;

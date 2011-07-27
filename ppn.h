@@ -3,7 +3,7 @@
  *
  *    Created on: Sep 30, 2010
  *      Author: Teddy Zhai, Sven van Haastregt
- *      $Id: ppn.h,v 1.15 2011/07/26 09:44:46 svhaastr Exp $
+ *      $Id: ppn.h,v 1.16 2011/07/27 13:11:22 svhaastr Exp $
  *
  */
 
@@ -13,8 +13,8 @@
 #include <algorithm>
 #include <vector>
 
-#include "yaml.h"
-#include "pdg.h"
+#include "isa/yaml.h"
+#include "isa/pdg.h"
 
 #include "isl/mat.h"
 #include "isl/set.h"

@@ -3,14 +3,14 @@
  *
  *  	Created on: Jan 4, 2011
  *      Author: Sven van Haastregt, Teddy Zhai
- *     $Id: utility.cc,v 1.4 2011/03/02 10:22:15 tzhai Exp $
+ *     $Id: utility.cc,v 1.5 2011/07/27 13:11:22 svhaastr Exp $
  */
 
 
 #include "barvinok/barvinok.h"
 
-#include "yaml.h"
-#include "pdg.h"
+#include "isa/yaml.h"
+#include "isa/pdg.h"
 #include "ppn.h"
 #include "defs.h"
 #include "utility.h"

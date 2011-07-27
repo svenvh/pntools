@@ -3,11 +3,11 @@
  *
  *  Created on: Sep 30, 2010
  *      Author: Teddy Zhai, Sven van Haastregt
- *      $Id: ppn.cc,v 1.14 2011/07/26 09:44:46 svhaastr Exp $
+ *      $Id: ppn.cc,v 1.15 2011/07/27 13:11:22 svhaastr Exp $
  */
 
 #include "ppn.h"
-#include "yaml.h"
+#include "isa/yaml.h"
 #include "tarjan.h"
 #include <iostream>
 

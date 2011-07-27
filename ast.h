@@ -3,14 +3,14 @@
  *
  *    Created on: Feb 2, 2011
  *      Author: Sven van Haastregt, Teddy Zhai
- *      $Id: ast.h,v 1.11 2011/05/27 15:30:50 svhaastr Exp $
+ *      $Id: ast.h,v 1.12 2011/07/27 13:11:22 svhaastr Exp $
  */
 
 #ifndef AST_H_
 #define AST_H_
 
 #include <vector>
-#include "yaml.h"
+#include "isa/yaml.h"
 
 #include "global.h"
 

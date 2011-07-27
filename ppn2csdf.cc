@@ -2,15 +2,15 @@
 // Convert PPN to CSDF
 // Sven van Haastregt, Teddy Zhai, May 2011
 // LERC, LIACS, Leiden University
-// $Id: ppn2csdf.cc,v 1.9 2011/06/06 13:56:09 svhaastr Exp $
+// $Id: ppn2csdf.cc,v 1.10 2011/07/27 13:11:22 svhaastr Exp $
 //
 #include <sstream>
 #include <iostream>
 
 #include "barvinok/barvinok.h"
 
-#include "yaml.h"
-#include "pdg.h"
+#include "isa/yaml.h"
+#include "isa/pdg.h"
 #include "ppn.h"
 #include "defs.h"
 #include "ImplementationTable.h"

@@ -5,8 +5,8 @@
 #include <cloog/isl/cloog.h>
 #include <isl/aff.h>
 
-#include "yaml.h"
-#include "pdg.h"
+#include "isa/yaml.h"
+#include "isa/pdg.h"
 //#include "xml_AST.h"
 #include "ppn.h"
 #include "pn2ppn_util.h"
@@ -943,13 +943,14 @@ int main(int argc, char * argv[])
       out = fopen(output, "w");
       assert(out);
     }
-
+/*
+ //TODO: fix cleanup; this gives problems for Mohamed
     for (int i = 0; i < split_edges.size(); ++i) {
       isl_set_free(split_edges[i]->from_domain);
       isl_basic_set_free(split_edges[i]->to_domain);
       delete split_edges[i]->map_stripped;
     }
-
+*/
     fprintf(stderr, "I'm not cleaning up properly, so you'll get a warning from isl now:\n");
     pdg->free();
     delete pdg;

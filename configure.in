@@ -92,7 +92,9 @@ libxml2_LIBS="-lxml2"
 AC_ARG_WITH(isa,
   AS_HELP_STRING([--with-isa=DIR],[directory containing ISA tool set]) )
 if test "x$with_isa" != "x"; then
-  CPPFLAGS="$CPPFLAGS -I$with_isa -I$with_isa/barvinok"
+  CPPFLAGS="$CPPFLAGS -I$with_isa/include -I$with_isa/barvinok"
+  dnl We still need to following one for cloog_util.cc
+  CPPFLAGS="$CPPFLAGS -I$with_isa"
   CPPFLAGS="$CPPFLAGS -I$with_isa/isl/include -I$with_isa/barvinok/polylib/include"
   CPPFLAGS="$CPPFLAGS -I$with_isa/cloog/include"
   LDFLAGS="$LDFLAGS -L$with_isa/lib -L$with_isa/barvinok/polylib -L$with_isa/cloog"

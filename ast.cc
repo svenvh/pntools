@@ -3,14 +3,14 @@
  *
  *    Created on: Feb 2, 2011
  *      Author: Sven van Haastregt, Teddy Zhai
- *      $Id: ast.cc,v 1.10 2011/05/27 15:30:50 svhaastr Exp $
+ *      $Id: ast.cc,v 1.11 2011/07/27 13:11:21 svhaastr Exp $
  */
 
 #include <limits>
 #include "global.h"
 
 #include "ast.h"
-#include "yaml.h"
+#include "isa/yaml.h"
 
 // General idea: we cannot handle inheritance hierarchies using YAML, because we cannot instantiate the corresponding derived
 // class during deserialization. Therefore, we serialize/deserialize using YAML through a _YAMLProxy class. On serialization,

@@ -3,7 +3,7 @@
  *
  *  	Created on: Oct 6, 2010
  *      Author: Teddy Zhai, Sven van Haastregt
- *      $Id: defs.h,v 1.8 2011/05/04 16:21:30 svhaastr Exp $
+ *      $Id: defs.h,v 1.9 2011/07/27 13:11:22 svhaastr Exp $
  *
  */
 
@@ -12,7 +12,7 @@
 
 #include "global.h"
 #include <limits>
-#include "pdg.h"
+#include "isa/pdg.h"
 
 
 using namespace std;
