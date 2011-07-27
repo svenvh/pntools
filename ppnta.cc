@@ -2,14 +2,14 @@
 // Implementation of throughput analysis
 // Sven van Haastregt, September-December 2010
 // LERC, LIACS, Leiden University
-// $Id: ppnta.cc,v 1.11 2011/01/10 13:25:30 svhaastr Exp $
+// $Id: ppnta.cc,v 1.12 2011/07/27 13:17:12 svhaastr Exp $
 //
 #include <iostream>
 
 #include "barvinok/barvinok.h"
 
-#include "yaml.h"
-#include "pdg.h"
+#include "isa/yaml.h"
+#include "isa/pdg.h"
 #include "ppn.h"
 #include "defs.h"
 #include "utility.h"

@@ -12,8 +12,8 @@
 
 #include "version.h"
 
-#include "yaml.h"
-#include "pdg.h"
+#include "isa/yaml.h"
+#include "isa/pdg.h"
 
 #include "isl/map.h"
 #include "isl/dim.h"
@@ -805,7 +805,7 @@ error_t parse_opt(int key, char *arg, struct argp_state *state)
 			arguments->output = NULL;
 			break;
 		case 'V':
-			printf("%s\n", pdg_version());
+			//printf("%s\n", pdg_version());
 			exit(0);
 		case 'i':
 			arguments->input = arg;

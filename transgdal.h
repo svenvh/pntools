@@ -1,8 +1,8 @@
 #ifndef HANDLE_H
 #define HANDLE_H
 
-#include "pdg.h"
-#include "yaml.h"
+#include "isa/pdg.h"
+#include "isa/yaml.h"
 #include <gmp.h>
 #include <polylib/polylibgmp.h>
 #include <iostream>

@@ -12,8 +12,8 @@
 
 //#include <isl_set_polylib.h>
 
-#include "yaml.h"
-#include "pdg.h"
+#include "isa/yaml.h"
+#include "isa/pdg.h"
 //extern "C" {
 //#include "isl_util.h"
 //}
