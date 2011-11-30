@@ -1,6 +1,8 @@
 # Configuration script for pntools (experimental tool directory)
 # Sven van Haastregt
 # LIACS, Leiden University
+# 
+# $Id: configure.in,v 1.8 2011/11/30 13:24:42 tzhai Exp $
 
 AC_INIT
 AC_CONFIG_MACRO_DIR([m4])
@@ -105,7 +107,7 @@ AC_SUBST(ISA_DIR)
 AC_ARG_WITH(pngen,
   AS_HELP_STRING([--with-pngen=DIR],[directory containing all other pn-related tools such as syck and gmp]) )
 if test "x$with_pngen" != "x"; then
-  CPPFLAGS="$CPPFLAGS -I$with_pngen -I$with_pngen/include -I$with_pngen/include/libxml2"
+  CPPFLAGS="$CPPFLAGS -I$with_pngen -I$with_pngen/include -I/usr/include/libxml2 -I$with_pngen/include/libxml2"
   LDFLAGS="$LDFLAGS -L$with_pngen/lib"
 fi
 
