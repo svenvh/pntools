@@ -1,0 +1,117 @@
+name: modulo
+context: '{  :  }'
+iterator_map: '{ [c0, c1, c2, c3] -> [c0, c1, c2] }'
+iterators: [c0, c1, c2]
+all_iterators: [c0, c1, c2, c3]
+nodes:
+- name: ND_0
+  function:
+    name: src
+    out:
+    - {var: {access: '{ ND_0[i0, i1, i2] -> out_0ND_0[] }', type: int}, type: reference}
+    domain:
+      bounds: '{ ND_0[i0, i1, i2] : i0 >= 1 and i0 <= 10 and i1 >= 1 and i1 <= 10
+        and i2 >= 1 and i2 <= 10 }'
+  domain:
+    bounds: '{ ND_0[i0, i1, i2] : i0 >= 1 and i0 <= 10 and i1 >= 1 and i1 <= 10 and
+      i2 >= 1 and i2 <= 10 }'
+  schedule: '{ ND_0[i0, i1, i2] -> [i0, i1, i2, 0] : i0 >= 1 and i0 <= 10 and i1 >=
+    1 and i1 <= 10 and i2 >= 1 and i2 <= 10 }'
+  output_ports:
+  - name: ND_0OP_ED_0_0_V_0
+    node: ND_0
+    edge: ED_0
+    vars:
+    - {access: '{ [ND_0[i0, i1, i2] -> local[i3]] -> out_0ND_0[] }', type: int}
+    domain:
+      bounds: '{ [ND_0[i0, i1, i2] -> local[i3]] : 2i3 = i2 and i2 >= 2 and i2 <=
+        10 and i0 >= 1 and i0 <= 10 and i1 >= 1 and i1 <= 10 }'
+      controls:
+      - {name: e2, expr: '{ ND_0[c0, c1, c2] -> [([(c2)/2])] }'}
+  - name: ND_0OP_ED_1_0_V_0
+    node: ND_0
+    edge: ED_1
+    vars:
+    - {access: '{ [ND_0[i0, i1, i2] -> local[i3]] -> out_0ND_0[] }', type: int}
+    domain:
+      bounds: '{ [ND_0[i0, i1, i2] -> local[i3]] : 2i3 = -1 + i2 and i2 >= 1 and i2
+        <= 9 and i0 >= 1 and i0 <= 10 and i1 >= 1 and i1 <= 10 }'
+      controls:
+      - {name: e3, expr: '{ ND_0[c0, c1, c2] -> [(-1 + [(1 + c2)/2])] }'}
+- name: ND_1
+  function:
+    name: F
+    in:
+    - {var: {access: '{ ND_1[i0, i1, i2] -> in_0ND_1[] }', type: int}, type: reference}
+    domain:
+      bounds: '{ [ND_1[i0, i1, i2] -> local[i3]] : 2i3 = i2 and i2 >= 1 and i2 <=
+        10 and i0 >= 1 and i0 <= 10 and i1 >= 1 and i1 <= 10 }'
+      controls:
+      - {name: e0, expr: '{ ND_1[c0, c1, c2] -> [([(c2)/2])] }'}
+  domain:
+    bounds: '{ [ND_1[i0, i1, i2] -> local[i3]] : 2i3 = i2 and i2 >= 1 and i2 <= 10
+      and i0 >= 1 and i0 <= 10 and i1 >= 1 and i1 <= 10 }'
+    controls:
+    - {name: e0, expr: '{ ND_1[c0, c1, c2] -> [([(c2)/2])] }'}
+  schedule: '{ ND_1[i0, i1, i2] -> [i0, i1, i2, 1] : exists (e0 = [(i2)/2]: 2e0 =
+    i2 and i0 >= 1 and i0 <= 10 and i1 >= 1 and i1 <= 10 and i2 >= 1 and i2 <= 10)
+    }'
+  input_ports:
+  - name: ND_1IP_ED_0_0_V_0
+    node: ND_1
+    edge: ED_0
+    vars:
+    - {access: '{ [[ND_1[i0, i1, i2] -> local[i3]] -> local[]] -> in_0ND_1[] }', type: int}
+    domain:
+      bounds: '{ [[ND_1[i0, i1, i2] -> local[i3]] -> local[]] : 2i3 = i2 and i2 >=
+        2 and i2 <= 10 and i0 >= 1 and i0 <= 10 and i1 >= 1 and i1 <= 10 }'
+      controls:
+      - {name: e0, expr: '{ ND_1[c0, c1, c2] -> [([(c2)/2])] }'}
+- name: ND_2
+  function:
+    name: F13
+    in:
+    - {var: {access: '{ ND_2[i0, i1, i2] -> in_0ND_2[] }', type: int}, type: reference}
+    domain:
+      bounds: '{ [ND_2[i0, i1, i2] -> local[i3]] : 2i3 = -1 + i2 and i2 >= 1 and i2
+        <= 10 and i0 >= 1 and i0 <= 10 and i1 >= 1 and i1 <= 10 }'
+      controls:
+      - {name: e1, expr: '{ ND_2[c0, c1, c2] -> [(-1 + [(1 + c2)/2])] }'}
+  domain:
+    bounds: '{ [ND_2[i0, i1, i2] -> local[i3]] : 2i3 = -1 + i2 and i2 >= 1 and i2
+      <= 10 and i0 >= 1 and i0 <= 10 and i1 >= 1 and i1 <= 10 }'
+    controls:
+    - {name: e1, expr: '{ ND_2[c0, c1, c2] -> [(-1 + [(1 + c2)/2])] }'}
+  schedule: '{ ND_2[i0, i1, i2] -> [i0, i1, i2, 1] : exists (e0 = [(-1 + i2)/2]: 2e0
+    = -1 + i2 and i0 >= 1 and i0 <= 10 and i1 >= 1 and i1 <= 10 and i2 >= 1 and i2
+    <= 10) }'
+  input_ports:
+  - name: ND_2IP_ED_1_0_V_0
+    node: ND_2
+    edge: ED_1
+    vars:
+    - {access: '{ [[ND_2[i0, i1, i2] -> local[i3]] -> local[]] -> in_0ND_2[] }', type: int}
+    domain:
+      bounds: '{ [[ND_2[i0, i1, i2] -> local[i3]] -> local[]] : 2i3 = -1 + i2 and
+        i2 >= 1 and i2 <= 9 and i0 >= 1 and i0 <= 10 and i1 >= 1 and i1 <= 10 }'
+      controls:
+      - {name: e1, expr: '{ ND_2[c0, c1, c2] -> [(-1 + [(1 + c2)/2])] }'}
+edges:
+- name: ED_0
+  type: fifo
+  map: '{ lifted[[ND_1[i0, i1, i2] -> local[i3]] -> local[]] -> ND_0[(i0), (i1), (2i3)]
+    }'
+  from_node: ND_0
+  from_port: ND_0OP_ED_0_0_V_0
+  to_node: ND_1
+  to_port: ND_1IP_ED_0_0_V_0
+  value_size: 1
+- name: ED_1
+  type: fifo
+  map: '{ lifted[[ND_2[i0, i1, i2] -> local[i3]] -> local[]] -> ND_0[(i0), (i1), (1
+    + 2i3)] }'
+  from_node: ND_0
+  from_port: ND_0OP_ED_1_0_V_0
+  to_node: ND_2
+  to_port: ND_2IP_ED_1_0_V_0
+  value_size: 1

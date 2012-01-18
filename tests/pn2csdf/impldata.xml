@@ -1,0 +1,240 @@
+<?xml version="1.0" standalone="no"?>
+
+<implementationMetrics>
+  <functions>
+    <!-- example used in DATE12 paper      -->
+    <function functionName="src">
+      <implementation componentName="MB" implementationType="MicroBlaze">
+        <performance>
+          <delay average="5" worstcase="5" />
+        </performance>
+        <!--<resources>
+          <slices value="250" />
+          <memory program="8192" data="8192" />
+        </resources>-->
+      </implementation>
+    </function>
+    
+    <function functionName="F1">
+      <implementation componentName="MB" implementationType="MicroBlaze">
+        <performance>
+          <delay average="8" worstcase="8" />
+        </performance>
+        <!--<resources>
+          <slices value="250" />
+          <memory program="8192" data="8192" />
+        </resources>-->
+      </implementation>
+    </function>
+    
+    <function functionName="F2">
+      <implementation componentName="MB" implementationType="MicroBlaze">
+        <performance>
+          <delay average="25" worstcase="25" />
+        </performance>
+        <!--<resources>
+          <slices value="250" />
+          <memory program="8192" data="8192" />
+        </resources>-->
+      </implementation>
+    </function>
+    
+    <function functionName="sink">
+      <implementation componentName="MB" implementationType="MicroBlaze">
+        <performance>
+          <delay average="4" worstcase="4" />
+        </performance>
+        <!--<resources>
+          <slices value="250" />
+          <memory program="8192" data="8192" />
+        </resources>-->
+      </implementation>
+    </function>
+    
+    <!-- Sobel -->
+    <function functionName="readPixel">
+      <implementation componentName="MB" implementationType="MicroBlaze">
+        <performance>
+          <delay average="5" worstcase="5" />
+        </performance>
+        <resources>
+          <slices value="250" />
+          <memory program="8192" data="8192" />
+        </resources>
+      </implementation>
+    </function>
+
+    <function functionName="gradient">
+      <implementation componentName="MB" implementationType="MicroBlaze">
+        <performance>
+          <delay average="62" worstcase="62"/>
+        </performance>
+        <resources>
+          <memory program="8192" data="8192" />
+          <slices value="250" />
+        </resources>
+      </implementation>
+    </function>
+    
+    <function functionName="absVal">
+      <implementation componentName="MB" implementationType="MicroBlaze">
+        <performance>
+          <delay average="118" worstcase="118"/>
+        </performance>
+        <resources>
+          <memory program="8192" data="8192" />
+          <slices value="250" />
+        </resources>
+      </implementation>
+    </function>
+    
+    <function functionName="writePixel">
+      <implementation componentName="MB" implementationType="MicroBlaze">
+        <performance>
+          <delay average="5" worstcase="5"/>
+        </performance>
+        <resources>
+          <memory program="8192" data="8192" />
+          <slices value="250" />
+        </resources>
+      </implementation>
+    </function>    
+    
+    
+    <!-- MJPEG Encoder -->    
+    <function functionName="initVideoIn">
+      <implementation componentName="MB" implementationType="MicroBlaze">
+        <performance>
+          <delay average="18" worstcase="18" />
+        </performance>
+        <resources>
+          <memory program="8192" data140113="8192" />
+          <slices value="250" />
+        </resources>
+      </implementation>
+    </function>
+    <function functionName="mainVideoIn">
+      <implementation componentName="MB" implementationType="MicroBlaze">
+        <performance>
+          <delay average="1910" worstcase="1910"/>
+        </performance>
+        <resources>
+          <memory program="8192" data="8192" />
+          <slices value="250" />
+        </resources>
+      </implementation>
+    </function>
+    <function functionName="mainDCT">
+      <implementation componentName="MB" implementationType="MicroBlaze">
+        <performance>
+          <delay average="126386" worstcase="126386" />
+        </performance>
+        <resources>
+          <memory program="8192" data="8192" />
+          <slices value="250" />
+        </resources>
+      </implementation>
+    </function>
+    <function functionName="mainQ">
+      <implementation componentName="MB" implementationType="MicroBlaze">
+        <performance>
+          <delay average="69632" worstcase="69632"/>
+        </performance>
+        <resources>
+          <memory program="8192" data="8192" />
+          <slices value="250" />
+        </resources>
+      </implementation>
+    </function>
+    <function functionName="mainVLE">
+      <implementation componentName="MB" implementationType="MicroBlaze">
+        <performance>
+          <delay average="48876" worstcase="48876"/>
+        </performance>
+        <resources>
+          <memory program="8192" data="8192" />
+          <slices value="250" />
+        </resources>
+      </implementation>
+    </function>
+    <function functionName="mainVideoOut">
+      <implementation componentName="MB" implementationType="MicroBlaze">
+        <performance>
+          <delay average="17051" worstcase="17051"/>
+        </performance>
+        <resources>
+          <memory program="8192" data="8192" />
+          <slices value="250" />
+        </resources>
+      </implementation>
+    </function>
+    
+    <!-- MJPEG Decoder -->
+    <function functionName="init_header">
+      <implementation componentName="MB" implementationType="MicroBlaze">
+        <performance>
+          <delay average="140113" worstcase="140113"/>
+        </performance>
+        <resources>
+          <memory program="8192" data="8192" />
+          <slices value="250" />
+        </resources>
+      </implementation>
+    </function>
+    <function functionName="init_vld">
+      <implementation componentName="MB" implementationType="MicroBlaze">
+        <performance>
+          <delay average="140113" worstcase="140113"/>
+        </performance>
+        <resources>
+          <memory program="8192" data="8192" />
+          <slices value="250" />
+        </resources>
+      </implementation>
+    </function>        
+    <function functionName="iqzz">
+      <implementation componentName="MB" implementationType="MicroBlaze">
+        <performance>
+          <delay average="2935" worstcase="2935"/>
+        </performance>
+        <resources>
+          <memory program="8192" data="8192" />
+          <slices value="250" />
+        </resources>
+      </implementation>
+    </function>
+    <function functionName="idct">
+      <implementation componentName="MB" implementationType="MicroBlaze">
+        <performance>
+          <delay average="18124" worstcase="18124"/>
+        </performance>
+        <resources>
+          <memory program="8192" data="8192" />
+          <slices value="250" />
+        </resources>
+      </implementation>
+    </function>
+    <function functionName="cc">
+      <implementation componentName="MB" implementationType="MicroBlaze">
+        <performance>
+          <delay average="10958" worstcase="10958"/>
+        </performance>
+        <resources>
+          <memory program="8192" data="8192" />
+          <slices value="250" />
+        </resources>
+      </implementation>
+    </function>
+    <function functionName="raster">
+      <implementation componentName="MB" implementationType="MicroBlaze">
+        <performance>
+          <delay average="390" worstcase="390"/>
+        </performance>
+        <resources>
+          <memory program="8192" data="8192" />
+          <slices value="250" />
+        </resources>
+      </implementation>
+    </function>        
+  </functions>
+</implementationMetrics>
