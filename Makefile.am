@@ -1,6 +1,8 @@
 # Makefile for pntools
 # Sven van Haastregt
 # LIACS, Leiden University
+# 
+# $Id: Makefile.am,v 1.19 2012/01/18 15:07:22 tzhai Exp $
 
 SUBDIRS = .
 
@@ -15,53 +17,48 @@ BARVINOKLIB = $(BARVINOKDIR)/libbarvinok.la
 
 ### Libraries
 
-lib_LTLIBRARIES = libppn.la
-libppn_la_SOURCES = \
-	ast.cc \
-	ast.h \
-	ppn.cc \
-	ppn.h \
-	tarjan.cc \
-	tarjan.h
-libppn_la_LIBADD = $(ISADIR)/libpdg.la $(ISADIR)/isl/libisl.la
-libppn_la_LDFLAGS = -release @VERSION@
+## comment tarjan temporarily
+#	tarjan.cc \
+#	tarjan.h
+lib_LTLIBRARIES = libadg_helper.la
+libadg_helper_la_SOURCES = \
+	ADG_helper.cc \
+	ADG_helper.h 
+libadg_helper_la_LIBADD = $(ISADIR)/libpdg.la $(ISADIR)/isl/libisl.la $(ADGLIB)
+libadg_helper_la_LDFLAGS = -release @VERSION@
 
 
 ### Applications
 
-pdg1ana_LDADD = $(ISALIB)
-pdg1ana_SOURCES = \
-	pdg1ana.cc
+# pdg1ana_LDADD = $(ISALIB)
+# pdg1ana_SOURCES = \
+# 	pdg1ana.cc
 
-pdg1trans_LDADD = $(ISALIB) $(BARVINOKLIB)
-pdg1trans_SOURCES = \
-	pdg1trans.cc transgdal.cc transgdal.h
+# pdg1trans_LDADD = $(ISALIB) $(BARVINOKLIB)
+# pdg1trans_SOURCES = \
+# 	pdg1trans.cc #transgdal.cc transgdal.h
 
-pn2loopo_LDADD = $(ISALIB)
-pn2loopo_SOURCES = \
-	pn2loopo.cc
+# pn2ppn_LDADD = libppn.la $(ISALIB) @CLOOG_LIBS@
+# pn2ppn_SOURCES = \
+# 	pn2ppn_util.cc \
+# 	pn2ppn.cc
 
-pnchsched_LDADD = $(ISALIB)
-pnchsched_SOURCES = pnchsched.cc
-
-pn2ppn_LDADD = libppn.la $(ISALIB) @CLOOG_LIBS@
-pn2ppn_SOURCES = \
-	pn2ppn_util.cc \
-	pn2ppn.cc
-
-ppn2csdf_LDADD = libppn.la $(ISADIR)/libpdg.la @SYCK_LIBS@ @libxml2_LIBS@
-ppn2csdf_SOURCES = \
+pn2csdf_LDADD = libadg_helper.la $(ISADIR)/libpdg.la $(ADGLIB) @libxml2_LIBS@ @SYCK_LIBS@ $(BARVINOKLIB)
+pn2csdf_SOURCES = \
 	ImplementationTable.cc \
-  ImplementationTable.h \
-	ppn2csdf.cc
+	ImplementationTable.h \
+	utility.cc utility.h \
+	pn2csdf.cc
 
-ppnta_LDADD = libppn.la $(ISALIB) $(BARVINOKLIB)
-ppnta_SOURCES = \
-	ppnta.cc utility.cc utility.h
+#ppnta_LDADD = libppn.la $(ISALIB) $(BARVINOKLIB)
+#ppnta_SOURCES = \
+#	#ppnta.cc utility.cc utility.h
 
 plamapgen_SOURCES = plamapgen.cc
 
-bin_PROGRAMS = pdg1ana pdg1trans ppnta ppn2csdf pn2ppn pn2loopo pnchsched plamapgen
+
+
+bin_PROGRAMS = pn2csdf plamapgen
 
 include local.am
 
