@@ -8,6 +8,7 @@ ACLOCAL_AMFLAGS = -I m4
 
 ISADIR = @ISA_DIR@
 ISALIB = $(ISADIR)/libpdg.la @SYCK_LIBS@
+ADGLIB = $(ISADIR)/libadg.la @SYCK_LIBS@
 BARVINOKDIR = $(ISADIR)/barvinok
 BARVINOKLIB = $(BARVINOKDIR)/libbarvinok.la
 
