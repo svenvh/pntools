@@ -41,8 +41,8 @@ int main (int argc, char **argv) {
     printf("         after <name> a mapping code is specified; see Eyal's MSc Thesis Sec. 3.1\n");
     printf("Example: plamapgen qr 1 2 %d 2\n", HW_ACCELERATOR_CODE);
     printf("         generates qr.pla and qr.map, with 2 MicroBlazes and 1 HWN\n");
-    printf("         with process assignment: MB_1: P_1\n");
-    printf("                                  MB_2: P_2, P_4\n");
+    printf("         with process assignment: mb_1: P_1\n");
+    printf("                                  mb_2: P_2, P_4\n");
     printf("                                  HWN1: P_3\n");
     exit(0);
   }
@@ -70,7 +70,7 @@ int main (int argc, char **argv) {
   // Print the matrix (DEBUG)
   for (i = 1; i < MAX_CPU_NUM; i++) {
     if (mappingCounters[i] > 0) {
-      printf("MB_%d: ", i);
+      printf("mb_%d: ", i);
       for (j = 0; j < MAX_PROC_NUM; j++) {
         if (mapping[i][j] != NO_NODE_CODE) {
           printf("ND_%d ", mapping[i][j]);
@@ -102,7 +102,7 @@ int main (int argc, char **argv) {
 
   for (i = 0; i <= MAX_CPU_NUM; i++) {
     if (mappingCounters[i] > 0) {
-      fprintf(fMapping, "   <processor name=\"MB_%d\">\n", i);
+      fprintf(fMapping, "   <processor name=\"mb_%d\">\n", i);
       for (j = 0; j < mappingCounters[i]; j++) {
         fprintf(fMapping, "      <process name=\"ND_%d\" />\n", mapping[i][j]);
       } //for
@@ -135,7 +135,7 @@ int main (int argc, char **argv) {
 
   for (i = 0; i <= MAX_CPU_NUM; i++) {
     if (mappingCounters[i] > 0) {
-      fprintf(fPlatform, "   <processor name=\"MB_%d\" type=\"MB\" data_memory=\"32768\" program_memory=\"32768\">\n", i);
+      fprintf(fPlatform, "   <processor name=\"mb_%d\" type=\"MB\" data_memory=\"65536\" program_memory=\"65536\">\n", i);
       fprintf(fPlatform, "   </processor>\n\n");
     } //if
   } //for

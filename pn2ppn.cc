@@ -933,6 +933,7 @@ int main(int argc, char * argv[])
     ppn::PPN *ppn = new ppn::PPN;
     ppn->import_pn(pdg, split_edges, ast);
     ppn->Dump(stdout);
+//    ppn->dumpCSDF(std::cout);
 
 
     //writeAST(writer, cloog_input, pdg->dimension, cloog_options);

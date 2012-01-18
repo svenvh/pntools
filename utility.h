@@ -3,7 +3,7 @@
  *
  *  	Created on: Jan 4, 2011
  *      Author: teddyzhai
- *      $Id: utility.h,v 1.3 2011/03/02 10:22:15 tzhai Exp $
+ *      $Id: utility.h,v 1.4 2012/01/18 15:38:22 tzhai Exp $
  */
 
 #ifndef UTILITY_H_
@@ -11,20 +11,18 @@
 
 #include "global.h"
 #include "defs.h"
-#include "ppn.h"
 
 
 using pdg::PDG;
-using ppn::PPN;
 using namespace std;
-using namespace ppn;
 
-void toposort(PPN *ppn, pdg::node **topo) ;
+//void toposort(PPN *ppn, pdg::node **topo) ;
 
+// callback
 int countCard(isl_set *set, isl_qpolynomial *qp, void *user);
 
 int getCardinality(isl_ctx *ctx, pdg::UnionSet *s);
 
-void writePLA(ofstream& pla_file, signed int nr_proc);
+int getCardinality(isl_pw_qpolynomial *pw_qpoly);
 
 #endif /* UTILITY_H_ */

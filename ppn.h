@@ -1,52 +1,37 @@
 /*
  * ppn.h
  *
- *    Created on: Sep 30, 2010
+ *    	Created on: Sep 30, 2010
  *      Author: Teddy Zhai, Sven van Haastregt
- *      $Id: ppn.h,v 1.16 2011/07/27 13:11:22 svhaastr Exp $
+ *
+ *		This class builds on top of adg struct in isa. It intends to provides functions which are not
+ *		implemented in adg struct.
+ *
+ *
+ *      $Id: ppn.h,v 1.17 2012/01/18 15:38:22 tzhai Exp $
+ *
+ *      30. Nov. 2011: adapted ppn to adg data structure in isa
  *
  */
 
 #ifndef PPN_H_
 #define PPN_H_
 
-#include <algorithm>
-#include <vector>
+#include "global.h"
+#include "defs.h"
 
 #include "isa/yaml.h"
 #include "isa/pdg.h"
+#include "isa/adg.h"
 
 #include "isl/mat.h"
 #include "isl/set.h"
 
-#include "global.h"
-#include "defs.h"
 #include "ast.h"
 
 using namespace yaml;
+//using pdg::PDG;
 
-// espam_edge; structure used during conversion of a pn2ppn. Original definition is in pn2espam.cc .
-struct espam_edge {
-    char    *name;
-    char    *from_port;
-    char    *to_port;
-    isl_set  *from_domain;
-    isl_local_space *to_space;
-    isl_basic_set *to_domain;
-    pdg::node    *from_node;
-    pdg::node    *to_node;
-    std::vector<pdg::access *>    from_access;
-    std::vector<pdg::access *>    to_access;
-    isl_aff_list *map;
-    pdg::Matrix *map_stripped;
-    pdg::array *array;
-    int   reordering;
-    int   multiplicity;
-    integer * size;
-    int   nr;
-    bool  sticky;
-    bool  shift_register;
-};
 
 namespace ppn{
 
@@ -96,12 +81,14 @@ typedef pdg::node node;
 // PPN; serializable class
 // This is the base class representing the PPN (graph).
 class PPN:public structure{
-	seq<pdg::node> nodes;
-	seq<edge> edges;
-	AST *ast;
+//	seq<pdg::node> nodes;
+//	seq<edge> edges;
+//	AST *ast;
+//	PDG *pdg;
+	adg *pn_adg;
 
 private:
-	static serialize *create(void *user) { return new PPN(); }
+//	static serialize *create(void *user) { return new PPN(); }
 
 public:
   ////////////////////////////////////////////////////////////////////////////
@@ -113,53 +100,84 @@ public:
 
   ////////////////////////////////////////////////////////////////////////////
   //// YAML stuff
-  static PPN *Load(char *str, void *user = NULL);
-  static PPN *Load(FILE *fp, void *user = NULL);
+//  static PPN *Load(char *str, void *user = NULL);
+  void Load(FILE *fp, isl_ctx *ctx);
   static void register_type();
   void dump(emitter& e);
+  void dump(FILE *fp);
 
 
-  ////////////////////////////////////////////////////////////////////////////
-  //// Loading / importing
-  // Constructs a PPN from a PDG and vector of espam_edges
-  // Probably only pn2ppn will use this one
-  void import_pn(pdg::PDG *pdg, std::vector<espam_edge*> edges, AST *ast);
-
-  ////////////////////////////////////////////////////////////////////////////
-  //// Data access
-  // Returns the list of edges
+//  ////////////////////////////////////////////////////////////////////////////
+//  //// Loading / importing
+//  // Constructs a PPN from a PDG and vector of espam_edges
+//  // Probably only pn2ppn will use this one
+//  void import_pn(pdg::PDG *pdg, std::vector<espam_edge*> edges, AST *ast);
+//
+//  ////////////////////////////////////////////////////////////////////////////
+//  //// Data access
+//  // Returns the list of edges
   std::vector<edge*> getEdges();
 
   std::vector<edge*> getEdges(const Process *process);
 
   // Returns the list of nodes
   std::vector<pdg::node*> getNodes();
-
+//
   // Returns pointer to AST
   AST *getAST();
-
-  // Returns pointer to Node with the specified nr
-  node *getNodeFromNr(const int nr);
-
-  // get name of the process
-  std::string getProcessName(const Process* process);
-
-  ////////////////////////////////////////////////////////////////////////////
-  //// Graph operations
-  // Returns a node* array representing a topological sort of the PPN
-  void toposort(pdg::node **topo);
-
-  // Finds all SCCs of size >= 2
-  PPNgraphSCCs findSCCs();
-
-  // Finds all cycles in a PPN
-  PPNgraphCycles findPPNgraphCycles();
-
-  // Returns a list of processes that are adjacent to the given process
-  PPNprocesses getAdjacentProcesses(const Process* process);
+//
+//  // Returns pointer to Node with the specified nr
+//  node *getNodeFromNr(const int nr);
+//
+//  // get name of the process
+//  std::string getProcessName(const Process* process);
+//
+//  ////////////////////////////////////////////////////////////////////////////
+//  //// Graph operations
+//  // Returns a node* array representing a topological sort of the PPN
+//  void toposort(pdg::node **topo);
+//
+//  // Finds all SCCs of size >= 2
+//  PPNgraphSCCs findSCCs();
+//
+//  // Finds all cycles in a PPN
+//  PPNgraphCycles findPPNgraphCycles();
+//
+//  // Returns a list of processes that are adjacent to the given process
+//  PPNprocesses getAdjacentProcesses(const Process* process);
 
 
 };
+
+class PPN_ADG{
+	isl_ctx *ctx;
+	adg *pn_adg;
+
+public:
+	PPN_ADG(adg *pn_adg, isl_ctx *ctx);
+	~PPN_ADG();
+	void Load(FILE *fp, isl_ctx *ctx);
+
+	//  ////////////////////////////////////////////////////////////////////////////
+	//  //// Data access
+	//  // Returns the list of edges
+	  Channels getChannels();
+	  Channels getChannels(const Process *process);
+
+	  Processes GetProcesses();
+	  Domain* getProcessDomain(Process *process);
+	  __isl_give isl_set* getProcessDomainBound(const Process *process);
+
+
+	  Ports getInPorts(const Process *process);
+	  Ports getOutPorts(const Process *process);
+
+	  __isl_give isl_set* getPortDomainBound(const Port *port);
+
+	  std::vector<adg_param*> GetParameters();
+};
+
+
 
 } //namespace
 

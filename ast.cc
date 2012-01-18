@@ -3,11 +3,12 @@
  *
  *    Created on: Feb 2, 2011
  *      Author: Sven van Haastregt, Teddy Zhai
- *      $Id: ast.cc,v 1.11 2011/07/27 13:11:21 svhaastr Exp $
+ *      $Id: ast.cc,v 1.12 2012/01/18 15:38:22 tzhai Exp $
  */
 
 #include <limits>
 #include "global.h"
+#include "defs.h"
 
 #include "ast.h"
 #include "isa/yaml.h"
