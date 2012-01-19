@@ -1,5 +1,5 @@
 PNTools
-$Id: README,v 1.12 2012/01/18 15:08:02 tzhai Exp $
+$Id: README,v 1.13 2012/01/19 10:21:30 tzhai Exp $
 
 This directory contains various experimental tools for use with PN/ISA. Most
 likely any tool found in here is in a very premature state, with a strong
@@ -11,7 +11,7 @@ Compilation Instructions
 ./autogen.sh
 ./configure --with-pngen=XXX --with-isa=YYY
   Replace XXX with your pngen top level directory (i.e., the directory
-  containing SUIF, Syck, etc.).
+  containing GMP, Syck, and libxml2 etc.).
   Replace YYY with your isa directory (containing pn, pn2espam etc.).
 make
 
