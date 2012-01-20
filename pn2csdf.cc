@@ -3,6 +3,8 @@
  *
  *  Created on: Dec 19, 2011
  *      Author: Teddy Zhai
+ *
+ *      $Id: pn2csdf.cc,v 1.2 2012/01/20 10:23:47 tzhai Exp $
  */
 
 #include <sstream>
@@ -71,7 +73,8 @@ private:
 	void scanIterationPoints_lexmin(const Process *process, const Port *port);
     void computePhases(const Process *process);
     unsigned getWCET(Process *process);
-
+    bool checkSimplePattern(const Process *process);
+    bool checkPhaseValidity(const Process *process);
 
 };
 
@@ -325,6 +328,9 @@ CsdfDumper::findVariantDomain2(const Process *process){
 		}
 
 		var_domains[input_ports[i]->name] = var_domain_port;
+		/*std::cout << "in port variant domain :";
+		printer = isl_printer_print_set(printer, var_domain_port);
+		printer = isl_printer_end_line(printer);*/
 	}
 
 	// for each output port, project out independent dimensions from the port domain
@@ -465,9 +471,9 @@ CsdfDumper::computePhases(const Process *process){
 	assert(var_domains.size() > 0);
 	assert(var_domains.count(process->name) > 0);
 	isl_set *process_var_domain = var_domains[process->name];
-//	std::cout << "process variant domain: ";
-//	printer = isl_printer_print_set(printer, process_var_domain);
-//	printer = isl_printer_end_line(printer);
+	/*std::cout << "process variant domain: ";
+	printer = isl_printer_print_set(printer, process_var_domain);
+	printer = isl_printer_end_line(printer);*/
 
 
 	// iterate over all input port domains
@@ -533,6 +539,104 @@ CsdfDumper::computePhases(const Process *process){
 	} // end output ports
 }
 
+// Write phases belonging to given port to ostream.
+void
+CsdfDumper::writePhase(isl_id *portName, std::ostream &strm, char sep){
+	std::vector<short> *phases_port = phases[portName];
+	int len_phases = phases_port->size();
+	assert(len_phases > 0);
+
+	strm << (*phases_port)[0];
+	for (int i = 1; i < len_phases; i++) {
+		strm << sep << (*phases_port)[i];
+	}
+}
+
+// Returns the WCET of a process
+unsigned
+CsdfDumper::getWCET(Process *process) {
+  return implTable->getMetric( IM_DELAY_WORST, isl_id_get_name(process->function->name) );
+}
+
+/* check if the process has a simple consumption/production pattern, such as [1].
+ * Basic idea is that, if all input/output port domains are equal to process domain,
+ * all consumption/production patterns have only one phase with rate 1.
+ *
+ * If the process has a simple consumption/production pattern, store the pattern [1] for all input/output ports */
+bool
+CsdfDumper::checkSimplePattern(const Process *process){
+	/*std::cout << "process domain: ";
+	printer = isl_printer_print_set(printer, process->domain->bounds);
+	printer = isl_printer_end_line(printer);*/
+
+	// check all input ports
+	Ports input_ports = process->input_ports;
+	for (int i = 0; i < input_ports.size(); ++i) {
+		/*std::cout << "in port domain: ";
+		printer = isl_printer_print_set(printer, input_ports[i]->domain->bounds);
+		printer = isl_printer_end_line(printer);*/
+
+		if (process->domain->is_equal(input_ports[i]->domain) != 1) {
+			return false;
+//			std::cout << "equal" << std::endl;
+		}
+	}
+
+	// check all output ports
+	Ports output_ports = process->output_ports;
+	for (int i = 0; i < output_ports.size(); ++i) {
+		/*std::cout << "out port domain: ";
+		printer = isl_printer_print_set(printer, output_ports[i]->domain->bounds);
+		printer = isl_printer_end_line(printer);*/
+
+		if (process->domain->is_equal(output_ports[i]->domain) != 1) {
+			return false;
+		}
+	}
+
+//	std::cout << "simple pattern." << std::endl;
+
+	// store the pattern [1]
+	for (int i = 0; i < input_ports.size(); ++i) {
+		isl_id *port_id = input_ports[i]->name;
+		phases[port_id]->push_back(1);
+	}
+	for (int i = 0; i < output_ports.size(); ++i) {
+		isl_id *port_id = output_ports[i]->name;
+		phases[port_id]->push_back(1);
+	}
+
+	return true;
+}
+
+/* valid phases of a port must at least have one 1*/
+bool
+CsdfDumper::checkPhaseValidity(const Process *process){
+	bool isValid = true;
+
+	Ports in_ports = process->input_ports;
+	for (int i = 0; i < in_ports.size(); ++i) {
+		isl_id *port_id = in_ports[i]->name;
+		std::vector<short> *port_phases = phases[port_id];
+
+		if (find(port_phases->begin(), port_phases->end(), 1) == port_phases->end()) {
+			return false;
+		}
+	}
+	Ports out_ports = process->output_ports;
+	for (int i = 0; i < out_ports.size(); ++i) {
+		isl_id *port_id = out_ports[i]->name;
+		std::vector<short> *port_phases = phases[port_id];
+
+		if (find(port_phases->begin(), port_phases->end(), 1) == port_phases->end()) {
+			return false;
+		}
+	}
+
+	return isValid;
+}
+
+
 // print the csdf in the StreamIT-compatible format
 void CsdfDumper::DumpCsdf(std::ostream& strm) {
 	const Processes procs = this->ppn->getProcesses();
@@ -556,122 +660,110 @@ void CsdfDumper::DumpCsdf(std::ostream& strm) {
 		strm << TABS(indent) << "id:" << i << "\n";
 		strm << TABS(indent) << "name:" << isl_id_get_name(process->name) << "\n";
 
-		findVariantDomain2(process);
-//		isl_set *var_domain = findVariantDomain(process);
+		// there are special cases in which simple patterns, such as [1],  can be derived without further processing
+		bool isSimplePattern = checkSimplePattern(process);
+		if (isSimplePattern) {
+			strm << TABS(indent) << "length:1"  << "\n";
 
-		computePhases(process);
+			strm << TABS(indent) << "wcet:" << getWCET(process);
+		} else { // simple pattern cannot be found
+			findVariantDomain2(process);
 
-    strm << TABS(indent) << "length:" << getPhaseLength(var_domains[process->name]) << "\n";
-    strm << TABS(indent) << "wcet:" ;
-    int wcet = getWCET(process);
-    for (unsigned int wc = 1; wc <= getPhaseLength(var_domains[process->name]); wc++) {
-      	strm << wcet;
-		if (wc < getPhaseLength(var_domains[process->name])) strm << " ";
-    }
-    strm << "\n";
+			computePhases(process);
+
+			strm << TABS(indent) << "length:" << getPhaseLength(var_domains[process->name]) << "\n";
+			strm << TABS(indent) << "wcet:" ;
+			int wcet = getWCET(process);
+			for (unsigned int wc = 1; wc <= getPhaseLength(var_domains[process->name]); wc++) {
+				strm << wcet;
+				if (wc < getPhaseLength(var_domains[process->name])) strm << " ";
+			}
+		} // isSImplePattern
+
+		strm << "\n";
 
 
-    strm << TABS(indent) << "port_number:" << process->input_ports.size() + process->output_ports.size() <<"\n";
-    // iterator over input ports of the process
-    for (PPNportIter pit = process->input_ports.begin();
-    		pit != process->input_ports.end();
-    		++pit)
-    {
-    	Port *port = *pit;
+		strm << TABS(indent) << "port_number:" << process->input_ports.size() + process->output_ports.size() <<"\n";
+		// iterator over input ports of the process
+		for (PPNportIter pit = process->input_ports.begin();
+				pit != process->input_ports.end();
+				++pit)
+		{
+			Port *port = *pit;
 
-    	strm << TABS(indent) << "port:\n";
-    	indent++;
+			strm << TABS(indent) << "port:\n";
+			indent++;
 
-    	strm << TABS(indent) << "type:in" << "\n";
-    	strm << TABS(indent) << "id:" << isl_id_get_name(port->name) << "\n";
-    	strm << TABS(indent) << "rate:";
-    	writePhase(port->name, strm, ' ');
-    	strm << "\n";
-    	indent--;
+			strm << TABS(indent) << "type:in" << "\n";
+			strm << TABS(indent) << "id:" << isl_id_get_name(port->name) << "\n";
+			strm << TABS(indent) << "rate:";
+			writePhase(port->name, strm, ' ');
+			strm << "\n";
+			indent--;
+		}
+
+		// iterate over all output ports of the process
+		for (PPNportIter pit = process->output_ports.begin();
+				pit != process->output_ports.end();
+				++pit)
+		{
+			Port *port = *pit;
+
+			strm << TABS(indent) << "port:\n";
+			indent++;
+
+			strm << TABS(indent) << "type:out" << "\n";
+			strm << TABS(indent) << "id:" << isl_id_get_name(port->name) << "\n";
+			strm << TABS(indent) << "rate:";
+			writePhase(port->name, strm, ' ');
+			strm << "\n";
+			indent--;
+		}
+
+		indent = 0;
+	} // end processes
+
+
+	// write channels
+	indent = 0;
+	Channels ppn_channels = this->ppn->getChannels();
+	strm << TABS(indent) << "edge_number:" << ppn_channels.size() << "\n";
+	// iterate over all channels
+	unsigned int edge_ed = 0;
+	for (PPNchIter eit = ppn_channels.begin();
+			eit != ppn_channels.end();
+			++eit)
+	{
+		Channel* ch = *eit;
+
+		strm << TABS(indent) << "edge:" << "\n";
+		indent++;
+		strm << TABS(indent) << "id:" << edge_ed++ << "\n";
+		strm << TABS(indent) << "name:" << isl_id_get_name(ch->name) << "\n";
+		strm << TABS(indent) << "src:" << isl_id_get_name(ch->from_node_name) <<
+				" " << isl_id_get_name(ch->from_port_name) << "\n";
+		strm << TABS(indent) << "dst:" << isl_id_get_name(ch->to_node_name) <<
+				" " << isl_id_get_name(ch->to_port_name) << "\n";
+		indent = 0;
 	}
 
-    // iterate over all output ports of the process
-    for (PPNportIter pit = process->output_ports.begin();
-    		pit != process->output_ports.end();
-    		++pit)
-    {
-    	Port *port = *pit;
 
-    	strm << TABS(indent) << "port:\n";
-    	indent++;
-
-    	strm << TABS(indent) << "type:out" << "\n";
-    	strm << TABS(indent) << "id:" << isl_id_get_name(port->name) << "\n";
-    	strm << TABS(indent) << "rate:";
-    	writePhase(port->name, strm, ' ');
-    	strm << "\n";
-    	indent--;
-	}
-
-    indent = 0;
-  } // end processes
-
-
-  // write channels
-  indent = 0;
-  Channels ppn_channels = this->ppn->getChannels();
-  strm << TABS(indent) << "edge_number:" << ppn_channels.size() << "\n";
-  // iterate over all channels
-  unsigned int edge_ed = 0;
-  for (PPNchIter eit = ppn_channels.begin();
-      eit != ppn_channels.end();
-      ++eit)
-  {
-    Channel* ch = *eit;
-
-    strm << TABS(indent) << "edge:" << "\n";
-    indent++;
-    strm << TABS(indent) << "id:" << edge_ed++ << "\n";
-    strm << TABS(indent) << "name:" << isl_id_get_name(ch->name) << "\n";
-    strm << TABS(indent) << "src:" << isl_id_get_name(ch->from_node_name) <<
-    		" " << isl_id_get_name(ch->from_port_name) << "\n";
-    strm << TABS(indent) << "dst:" << isl_id_get_name(ch->to_node_name) <<
-        		" " << isl_id_get_name(ch->to_port_name) << "\n";
-    indent = 0;
-  }
-
-
-  isl_printer_free(printer);
+	isl_printer_free(printer);
 }
-
-// Write phases belonging to given port to ostream.
-void
-CsdfDumper::writePhase(isl_id *portName, std::ostream &strm, char sep){
-	std::vector<short> *phases_port = phases[portName];
-	int len_phases = phases_port->size();
-	assert(len_phases > 0);
-
-	strm << (*phases_port)[0];
-	for (int i = 1; i < len_phases; i++) {
-		strm << sep << (*phases_port)[i];
-	}
-}
-
-// Returns the WCET of a process
-unsigned
-CsdfDumper::getWCET(Process *process) {
-  return implTable->getMetric( IM_DELAY_WORST, isl_id_get_name(process->function->name) );
-}
-
 
 static int gOutputFormat; // 1 = StreamIT, 3 = SDF3
 
 void printUsage() {
   fprintf(stderr, "Usage: ppn2csdf [options] < [adg].yaml\n");
   fprintf(stderr, "Supported options:\n");
-  fprintf(stderr, "  -3     Dump in SDF3 format [default]\n");
-  fprintf(stderr, "  -s     Dump in StreamIT format\n");
+  fprintf(stderr, "  -3     Dump in SDF3 format \n");
+  fprintf(stderr, "  -s     Dump in StreamIT format [default]\n");
 }
 
 
 int parseCommandline(int argc, char ** argv)
 {
-  gOutputFormat = 3;
+  gOutputFormat = 1;
   for (int i = 1; i < argc; i++) {
     if (strcmp(argv[i], "-3") == 0) {
     	// currently not supported
@@ -697,51 +789,51 @@ int parseCommandline(int argc, char ** argv)
 
 int main(int argc, char * argv[])
 {
-  FILE *in = stdin;
+	FILE *in = stdin;
 
-  if (parseCommandline(argc, argv) == 1) {
-    printUsage();
-    exit(1);
-  }
+	if (parseCommandline(argc, argv) == 1) {
+		printUsage();
+		exit(1);
+	}
 
-  isl_ctx *ctx;
-  ctx = isl_ctx_alloc();
+	isl_ctx *ctx;
+	ctx = isl_ctx_alloc();
 
-  adg *csdf_adg;
-  csdf_adg = adg_parse(ctx, in);
-  assert(csdf_adg);
+	adg *csdf_adg;
+	csdf_adg = adg_parse(ctx, in);
+	assert(csdf_adg);
 
-  ADG_helper adg_helper(csdf_adg, ctx);
+	ADG_helper adg_helper(csdf_adg, ctx);
 
-  Parameters params = adg_helper.getParameters();
-  if (params.size() > 0) {
-	  fprintf(stderr, "PPN with parameters has no equivalent CSDF\n");
-	  delete csdf_adg;
-	  isl_ctx_free(ctx);
-	  exit(1);
-  }
+	Parameters params = adg_helper.getParameters();
+	if (params.size() > 0) {
+		fprintf(stderr, "PPN with parameters has no equivalent CSDF\n");
+		delete csdf_adg;
+		isl_ctx_free(ctx);
+		exit(1);
+	}
 
-  ImplementationTable *implTable = new ImplementationTable();
-  if (!implTable->loadDefaultFile()) {
-    fprintf(stderr, "Warning: Could not load implementation data from default files;\n"
-                    "         please put impldata.xml in the current directory or in ~/.daedalus\n");
-  }
+	ImplementationTable *implTable = new ImplementationTable();
+	if (!implTable->loadDefaultFile()) {
+		fprintf(stderr, "Warning: Could not load implementation data from default files;\n"
+				"         please put impldata.xml in the current directory or in ~/.daedalus\n");
+	}
 
-  CsdfDumper *dumper = new CsdfDumper(&adg_helper, implTable, ctx);
-  if (gOutputFormat == 3) {
-//    dumper->dumpCsdf3(cout);
-  }else{
-	  assert(gOutputFormat == 1);
-	  dumper->DumpCsdf(cout);
-  }
+	CsdfDumper *dumper = new CsdfDumper(&adg_helper, implTable, ctx);
+	if (gOutputFormat == 3) {
+		//    dumper->dumpCsdf3(cout);
+	}else{
+		assert(gOutputFormat == 1);
+		dumper->DumpCsdf(cout);
+	}
 
-  delete dumper;
-  delete implTable;
+	delete dumper;
+	delete implTable;
 
 
-  delete csdf_adg;
-  isl_ctx_free(ctx);
+	delete csdf_adg;
+	isl_ctx_free(ctx);
 
-  return 0;
+	return 0;
 }
 
