@@ -130,31 +130,31 @@ projectCtrlVars(const adg_domain *adg_dom){
 }
 
 // get the set without local space provided the local space is empty
-__isl_give isl_set*
-getUnwrappedDomain(__isl_take isl_set *set){
-	assert(isl_set_is_wrapping(set) == 1);
-
-	isl_map *unwrapped_set = isl_set_unwrap(set);
-
-	isl_set *ran_set = isl_map_range(isl_map_copy(unwrapped_set));
-	/*std::cout << "the range of unwrapped set: ";
-	printer = isl_printer_print_set(printer, ran_set);
-	printer = isl_printer_end_line(printer);
-	std::cout << "dim set: " << isl_set_dim(ran_set, isl_dim_set) << std::endl;
-	std::cout << "dim cst: " << isl_set_dim(ran_set, isl_dim_cst) << std::endl;
-	std::cout << "dim param:" << isl_set_dim(ran_set, isl_dim_param) << std::endl;
-	std::cout << "dim in:" << isl_set_dim(ran_set, isl_dim_in) << std::endl;*/
-	assert(isl_set_dim(ran_set, isl_dim_set) == 0);
-	if (isl_set_dim(ran_set, isl_dim_set) != 0) {
-		fprintf(stderr, "ERROR: the local space of the set have dimensions. "
-				"Getting unwrapped domain from the set might cause problems\n");
-	}
-	isl_set_free(ran_set);
-
-	isl_set *dom_set = isl_map_domain(unwrapped_set);
-
-	return dom_set;
-}
+// __isl_give isl_set*
+// getUnwrappedDomain(__isl_take isl_set *set){
+// 	assert(isl_set_is_wrapping(set) == 1);
+// 
+// 	isl_map *unwrapped_set = isl_set_unwrap(set);
+// 
+// 	isl_set *ran_set = isl_map_range(isl_map_copy(unwrapped_set));
+// 	/*std::cout << "the range of unwrapped set: ";
+// 	printer = isl_printer_print_set(printer, ran_set);
+// 	printer = isl_printer_end_line(printer);
+// 	std::cout << "dim set: " << isl_set_dim(ran_set, isl_dim_set) << std::endl;
+// 	std::cout << "dim cst: " << isl_set_dim(ran_set, isl_dim_cst) << std::endl;
+// 	std::cout << "dim param:" << isl_set_dim(ran_set, isl_dim_param) << std::endl;
+// 	std::cout << "dim in:" << isl_set_dim(ran_set, isl_dim_in) << std::endl;*/
+// 	assert(isl_set_dim(ran_set, isl_dim_set) == 0);
+// 	if (isl_set_dim(ran_set, isl_dim_set) != 0) {
+// 		fprintf(stderr, "ERROR: the local space of the set have dimensions. "
+// 				"Getting unwrapped domain from the set might cause problems\n");
+// 	}
+// 	isl_set_free(ran_set);
+// 
+// 	isl_set *dom_set = isl_map_domain(unwrapped_set);
+// 
+// 	return dom_set;
+// }
 
 int
 check_ind_constratint(__isl_take isl_constraint *constrnt, void *user){
