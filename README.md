@@ -1,7 +1,7 @@
 PNTools
 =======
 
-This project contains various experimental tools for use with the PN/ISA compiler. 
+This project contains various experimental tools for use with the [PN/ISA](http://repo.or.cz/w/isa.git) compiler. 
 Most likely any tool found in here is in a very premature state, with a strong
 dependence on the current phase of the moon.
 
@@ -42,34 +42,38 @@ Upate: 30.Nov.2011: We start to adapt all tools to the latest isa version.
         In particular, adg structure (instead of ppn before) will be used as basis for most of the tools.
 
 ### pdg1ana (not updated currently)
-Purpose: Example of how to extract information from a PDG.
-Authors: Sven van Haastregt
-Tested:  ISA 0.10
+* Purpose: Example of how to extract information from a PDG.
+* Authors: Sven van Haastregt
+* Tested:  ISA 0.10
 
 ### pn2csdf
-Purpose: Converts a PPN (in the form of ADG) to a CSDF graph.
-Authors: Sven van Haastregt, Teddy Zhai
-Notes:   Implemented, needs further verification.
-Input:   `XXX-adg.yaml`
-Output:  `YYY.xml` (SDF3 format, currently not supported yet) or
+* Purpose: Converts a PPN (in the form of ADG) to a CSDF graph.
+* Authors: Sven van Haastregt, Teddy Zhai
+* Notes:   Implemented, needs further verification.
+* Input:   `XXX-adg.yaml`
+* Output:  `YYY.xml` (SDF3 format, currently not supported yet) or
          `YYY.gph` (StreamIT format)
-Tested:  ISA 0.11
+* Tested:  ISA 0.11
 
 ### ppnta (not updated currently)
-Purpose: Do some throughput analysis on a PPN.
-Authors: Teddy Zhai, Sven van Haastregt
-Notes:   Implemented, needs further verification.
-Input:   `XXX.ppn`
-Output:  throughput numbers
-Tested:  ISA 0.10
+* Purpose: Do some throughput analysis on a PPN.
+* Authors: Teddy Zhai, Sven van Haastregt
+* Notes:   Implemented, needs further verification.
+* Input:   `XXX.ppn`
+* Output:  throughput numbers
+* Tested:  ISA 0.10
 
 ### plamapgen
-Purpose: Generate platform and mapping files for ESPAM.
-Authors: Eyal Halm, Sven van Haastregt
-Notes:   Standalone program, not dependent on any libraries.
-Input:   Commandline argument list containing name and mapping code.
-Output:  .pla and .map files
+* Purpose: Generate platform and mapping files for ESPAM.
+* Authors: Eyal Halm, Sven van Haastregt
+* Notes:   Standalone program, not dependent on any libraries.
+* Input:   Commandline argument list containing name and mapping code.
+* Output:  .pla and .map files
 
 
-In case of bugs/questions, please contact: Sven van Haastregt or Teddy Zhai
+Bugs/Questions
+--------------
+In case of bugs/questions, please contact: [Sven van Haastregt](https://github.com/svenvh) or [Teddy Zhai](https://github.com/tzhai)
+
+
 
