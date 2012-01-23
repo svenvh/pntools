@@ -10,17 +10,17 @@ Compilation Instructions
 ------------------------
     ./autogen.sh
     ./configure --with-pngen=XXX --with-isa=YYY
+    make
 Replace XXX with your pngen top level directory (i.e., the directory 
 containing GMP, Syck, and libxml2 etc.).
 Replace YYY with your isa directory (containing pn, pn2espam etc.).
-    make
 
 
 Adding New Tools
 ----------------
 
 1. Open up `Makefile.am` and add appropriate `_LDADD`, `_SOURCES` lines. Add the tool
-   executable name to bin_`PROGRAMS`.
+   executable name to `bin_PROGRAMS`.
 2. Rerun `autogen.sh`, `configure` and `make`.
 3. Add your tool to the list below. :-)
 
@@ -51,11 +51,11 @@ Upate: 30.Nov.2011: We start to adapt all tools to the latest isa version.
 * Authors: Sven van Haastregt, Teddy Zhai
 * Notes:   Implemented, needs further verification.
 * Input:   `XXX-adg.yaml`
-* Output:  `YYY.xml` (SDF3 format, currently not supported yet) or
+* Output:  `YYY.xml` (SDF3 format, currently not supported yet) or  
          `YYY.gph` (StreamIT format)
 * Tested:  ISA 0.11
 
-### ppnta (not updated currently)
+### ppnta (to be changed into adgta)
 * Purpose: Do some throughput analysis on a PPN.
 * Authors: Teddy Zhai, Sven van Haastregt
 * Notes:   Implemented, needs further verification.
