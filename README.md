@@ -46,13 +46,13 @@ Upate: 30.Nov.2011: We start to adapt all tools to the latest isa version.
 * Authors: Sven van Haastregt
 * Tested:  ISA 0.10
 
-### pn2csdf
+### adg2csdf
 * Purpose: Converts a PPN (in the form of ADG) to a CSDF graph.
 * Authors: Sven van Haastregt, Teddy Zhai
 * Notes:   Implemented, needs further verification.
 * Input:   `XXX-adg.yaml`
 * Output:  `YYY.xml` (SDF3 format, currently not supported yet) or  
-         `YYY.gph` (StreamIT format)
+           `YYY.gph` (StreamIT format)
 * Tested:  ISA 0.11
 
 ### ppnta (to be changed into adgta)

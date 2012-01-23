@@ -1,10 +1,9 @@
 /*
- * pn2csdf.cc
+ * adg2csdf.cc
  *
  *  Created on: Dec 19, 2011
  *      Author: Teddy Zhai
  *
- *      $Id: pn2csdf.cc,v 1.3 2012/01/23 11:12:44 tzhai Exp $
  */
 
 #include <sstream>
@@ -24,9 +23,6 @@
 #include "ImplementationTable.h"
 #include "utility.h"
 
-//using pdg::PDG;
-//using ppn::PPN;
-//using namespace std;
 using namespace adg_helper;
 
 #define TABS(i) std::string((i), '\t')

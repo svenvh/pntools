@@ -43,12 +43,12 @@ libadg_helper_la_LDFLAGS = -release @VERSION@
 # 	pn2ppn_util.cc \
 # 	pn2ppn.cc
 
-pn2csdf_LDADD = libadg_helper.la $(ISADIR)/libpdg.la $(ADGLIB) @libxml2_LIBS@ @SYCK_LIBS@ $(BARVINOKLIB)
-pn2csdf_SOURCES = \
+adg2csdf_LDADD = libadg_helper.la $(ISADIR)/libpdg.la $(ADGLIB) @libxml2_LIBS@ @SYCK_LIBS@ $(BARVINOKLIB)
+adg2csdf_SOURCES = \
 	ImplementationTable.cc \
 	ImplementationTable.h \
 	utility.cc utility.h \
-	pn2csdf.cc
+	adg2csdf.cc
 
 #ppnta_LDADD = libppn.la $(ISALIB) $(BARVINOKLIB)
 #ppnta_SOURCES = \
@@ -58,7 +58,7 @@ plamapgen_SOURCES = plamapgen.cc
 
 
 
-bin_PROGRAMS = pn2csdf plamapgen
+bin_PROGRAMS = adg2csdf plamapgen
 
 include local.am
 
