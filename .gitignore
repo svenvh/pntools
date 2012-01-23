@@ -2,7 +2,6 @@
 *.o
 *.la
 *.lo
-*.la
 
 # Build files
 Makefile
@@ -19,8 +18,6 @@ local.am
 .deps
 autom4te.cache
 aclocal.m4
-aclocal.m4
-autom4te.cache/
 m4/libtool.m4
 m4/lt~obsolete.m4
 m4/ltoptions.m4
