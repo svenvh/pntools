@@ -4,7 +4,7 @@
  *  Created on: Jan 18, 2012
  *      Author: Teddy Zhai
  *
- *      $Id: ADG_helper.h,v 1.2 2012/01/23 10:54:37 tzhai Exp $
+ *      $Id: ADG_helper.h,v 1.3 2012/01/23 11:08:40 tzhai Exp $
  */
 
 #ifndef ADG_HELPER_H_
@@ -31,6 +31,7 @@ public:
 
 	unsigned getId(const Process *process);
 	unsigned getId(const Port *port);
+	unsigned getId(isl_id *name);
 
 	__isl_give isl_set* getProcessDomainBound(const Process *process);
 

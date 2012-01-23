@@ -4,7 +4,7 @@
  *  Created on: Jan 18, 2012
  *      Author: Teddy Zhai
  *
- *		$Id: ADG_helper.cc,v 1.2 2012/01/23 10:54:37 tzhai Exp $
+ *		$Id: ADG_helper.cc,v 1.3 2012/01/23 11:08:40 tzhai Exp $
  */
 
 #include "ADG_helper.h"
@@ -53,6 +53,12 @@ unsigned
 ADG_helper::getId(const Port *port){
 	assert(adg_ids.count(port->name) > 0);
 	return adg_ids[port->name];
+}
+
+unsigned
+ADG_helper::getId(isl_id *name){
+	assert(adg_ids.count(name) > 0);
+	return adg_ids[name];
 }
 
 Channels
