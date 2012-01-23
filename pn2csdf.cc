@@ -4,7 +4,7 @@
  *  Created on: Dec 19, 2011
  *      Author: Teddy Zhai
  *
- *      $Id: pn2csdf.cc,v 1.2 2012/01/20 10:23:47 tzhai Exp $
+ *      $Id: pn2csdf.cc,v 1.3 2012/01/23 11:12:44 tzhai Exp $
  */
 
 #include <sstream>
@@ -110,7 +110,51 @@ CsdfDumper::~CsdfDumper() {
 	}
 }
 
+/* project out control variables in bounds of adg_domain to obtain
+ * the representation with existential variables
+ * */
+__isl_give isl_set*
+projectCtrlVars(const adg_domain *adg_dom){
+	isl_set *set = isl_set_copy(adg_dom->bounds);
 
+	if (adg_dom->controls.size() == 0) {
+		return set;
+	}
+
+	unsigned nr_ctrl_vars = adg_dom->controls.size();
+	unsigned nr_dim = isl_set_dim(set, isl_dim_set);
+
+	// project out control variables from bounds
+	set = isl_set_project_out(set, isl_dim_set, nr_dim- nr_ctrl_vars, nr_ctrl_vars);
+	return set;
+}
+
+// get the set without local space provided the local space is empty
+__isl_give isl_set*
+getUnwrappedDomain(__isl_take isl_set *set){
+	assert(isl_set_is_wrapping(set) == 1);
+
+	isl_map *unwrapped_set = isl_set_unwrap(set);
+
+	isl_set *ran_set = isl_map_range(isl_map_copy(unwrapped_set));
+	/*std::cout << "the range of unwrapped set: ";
+	printer = isl_printer_print_set(printer, ran_set);
+	printer = isl_printer_end_line(printer);
+	std::cout << "dim set: " << isl_set_dim(ran_set, isl_dim_set) << std::endl;
+	std::cout << "dim cst: " << isl_set_dim(ran_set, isl_dim_cst) << std::endl;
+	std::cout << "dim param:" << isl_set_dim(ran_set, isl_dim_param) << std::endl;
+	std::cout << "dim in:" << isl_set_dim(ran_set, isl_dim_in) << std::endl;*/
+	assert(isl_set_dim(ran_set, isl_dim_set) == 0);
+	if (isl_set_dim(ran_set, isl_dim_set) != 0) {
+		fprintf(stderr, "ERROR: the local space of the set have dimensions. "
+				"Getting unwrapped domain from the set might cause problems\n");
+	}
+	isl_set_free(ran_set);
+
+	isl_set *dom_set = isl_map_domain(unwrapped_set);
+
+	return dom_set;
+}
 
 int
 check_ind_constratint(__isl_take isl_constraint *constrnt, void *user){
@@ -565,38 +609,102 @@ CsdfDumper::getWCET(Process *process) {
  * If the process has a simple consumption/production pattern, store the pattern [1] for all input/output ports */
 bool
 CsdfDumper::checkSimplePattern(const Process *process){
-	/*std::cout << "process domain: ";
-	printer = isl_printer_print_set(printer, process->domain->bounds);
-	printer = isl_printer_end_line(printer);*/
+	bool isSimplePattern = true;
+	isl_set *procs_domain = process->domain->bounds;
+//	std::cout << "process domain: ";
+//	printer = isl_printer_print_set(printer, process->domain->bounds);
+//	printer = isl_printer_end_line(printer);
+
+	isl_set *unwrapped_procs_domain = NULL;
+	if (process->domain->controls.size() > 0) {
+		unwrapped_procs_domain = projectCtrlVars(process->domain);
+	}else{
+		unwrapped_procs_domain = isl_set_copy(procs_domain);
+	}
+//	std::cout << "projected process domain: ";
+//	printer = isl_printer_print_set(printer, unwrapped_procs_domain);
+//	printer = isl_printer_end_line(printer);
+	// get unwrapped domain (without local space in the bounds)
+	if (isl_set_is_wrapping(unwrapped_procs_domain)) {
+		unwrapped_procs_domain = getUnwrappedDomain(unwrapped_procs_domain);
+	}
+	assert(unwrapped_procs_domain != NULL);
+
 
 	// check all input ports
 	Ports input_ports = process->input_ports;
 	for (int i = 0; i < input_ports.size(); ++i) {
-		/*std::cout << "in port domain: ";
-		printer = isl_printer_print_set(printer, input_ports[i]->domain->bounds);
-		printer = isl_printer_end_line(printer);*/
+		isl_set *port_domain = input_ports[i]->domain->bounds;
+//		std::cout << "in port domain: ";
+//		printer = isl_printer_print_set(printer, input_ports[i]->domain->bounds);
+//		printer = isl_printer_end_line(printer);
 
-		if (process->domain->is_equal(input_ports[i]->domain) != 1) {
-			return false;
-//			std::cout << "equal" << std::endl;
+		// the port domain has control variable, it cannot be equal to the process domain
+		isl_set *unwrapped_port_domain = NULL;
+		if (input_ports[i]->domain->controls.size() > 0) {
+			unwrapped_port_domain = projectCtrlVars(input_ports[i]->domain);
+		} else {
+			unwrapped_port_domain = isl_set_copy(port_domain);
 		}
+		// the local space of the domain should have dimensions 0.
+		// get unwrapped domain (without local space in the bounds)
+		if (isl_set_is_wrapping(unwrapped_port_domain)) {
+			unwrapped_port_domain = getUnwrappedDomain(unwrapped_port_domain);
+		}
+		assert(unwrapped_port_domain != NULL);
+
+
+		if (isl_set_is_equal(unwrapped_port_domain, unwrapped_procs_domain) != 1) {
+			isSimplePattern = false;
+		}
+
+		isl_set_free(unwrapped_port_domain);
+	} // end input ports
+
+
+	if (!isSimplePattern) {
+		isl_set_free(unwrapped_procs_domain);
+		return isSimplePattern;
 	}
+//	std::cout<< "it is a simple pattern for inputs." << std::endl;
+
 
 	// check all output ports
 	Ports output_ports = process->output_ports;
 	for (int i = 0; i < output_ports.size(); ++i) {
-		/*std::cout << "out port domain: ";
-		printer = isl_printer_print_set(printer, output_ports[i]->domain->bounds);
-		printer = isl_printer_end_line(printer);*/
+		isl_set *port_domain = output_ports[i]->domain->bounds;
+//		std::cout << "out port domain: ";
+//		printer = isl_printer_print_set(printer, output_ports[i]->domain->bounds);
+//		printer = isl_printer_end_line(printer);
 
-		if (process->domain->is_equal(output_ports[i]->domain) != 1) {
-			return false;
+		// the port domain has control variable, it cannot be equal to the process domain
+		isl_set *unwrapped_port_domain = NULL;
+		if (output_ports[i]->domain->controls.size() > 0){
+			unwrapped_port_domain = projectCtrlVars(output_ports[i]->domain);
+		} else {
+			unwrapped_port_domain = isl_set_copy(port_domain);
 		}
+		// get unwrapped domain (without local space in the bounds)
+		if (isl_set_is_wrapping(unwrapped_port_domain)) {
+			unwrapped_port_domain = getUnwrappedDomain(unwrapped_port_domain);
+		}
+		assert(unwrapped_port_domain != NULL);
+
+		if (isl_set_is_equal(unwrapped_port_domain, unwrapped_procs_domain) != 1){
+			isSimplePattern = false;
+		}
+
+		isl_set_free(unwrapped_port_domain);
+	} // end output ports
+
+	isl_set_free(unwrapped_procs_domain);
+	if (!isSimplePattern) {
+		return isSimplePattern;
 	}
 
-//	std::cout << "simple pattern." << std::endl;
+//	std::cout<< "it is a simple pattern." << std::endl;
 
-	// store the pattern [1]
+	// simple pattern, store the pattern [1]
 	for (int i = 0; i < input_ports.size(); ++i) {
 		isl_id *port_id = input_ports[i]->name;
 		phases[port_id]->push_back(1);
@@ -606,13 +714,12 @@ CsdfDumper::checkSimplePattern(const Process *process){
 		phases[port_id]->push_back(1);
 	}
 
-	return true;
+	return isSimplePattern;
 }
 
 /* valid phases of a port must at least have one 1*/
 bool
 CsdfDumper::checkPhaseValidity(const Process *process){
-	bool isValid = true;
 
 	Ports in_ports = process->input_ports;
 	for (int i = 0; i < in_ports.size(); ++i) {
@@ -633,7 +740,7 @@ CsdfDumper::checkPhaseValidity(const Process *process){
 		}
 	}
 
-	return isValid;
+	return true;
 }
 
 
@@ -657,11 +764,12 @@ void CsdfDumper::DumpCsdf(std::ostream& strm) {
 		strm<< TABS(indent) << "node:\n";
 		indent++;
 
-		strm << TABS(indent) << "id:" << i << "\n";
+		strm << TABS(indent) << "id:" << ppn->getId(process) << "\n";
 		strm << TABS(indent) << "name:" << isl_id_get_name(process->name) << "\n";
 
 		// there are special cases in which simple patterns, such as [1],  can be derived without further processing
 		bool isSimplePattern = checkSimplePattern(process);
+//		bool isSimplePattern = false;
 		if (isSimplePattern) {
 			strm << TABS(indent) << "length:1"  << "\n";
 
@@ -695,7 +803,7 @@ void CsdfDumper::DumpCsdf(std::ostream& strm) {
 			indent++;
 
 			strm << TABS(indent) << "type:in" << "\n";
-			strm << TABS(indent) << "id:" << isl_id_get_name(port->name) << "\n";
+			strm << TABS(indent) << "id:" << ppn->getId(port) << "\n";
 			strm << TABS(indent) << "rate:";
 			writePhase(port->name, strm, ' ');
 			strm << "\n";
@@ -713,7 +821,7 @@ void CsdfDumper::DumpCsdf(std::ostream& strm) {
 			indent++;
 
 			strm << TABS(indent) << "type:out" << "\n";
-			strm << TABS(indent) << "id:" << isl_id_get_name(port->name) << "\n";
+			strm << TABS(indent) << "id:" << ppn->getId(port) << "\n";
 			strm << TABS(indent) << "rate:";
 			writePhase(port->name, strm, ' ');
 			strm << "\n";
@@ -740,10 +848,10 @@ void CsdfDumper::DumpCsdf(std::ostream& strm) {
 		indent++;
 		strm << TABS(indent) << "id:" << edge_ed++ << "\n";
 		strm << TABS(indent) << "name:" << isl_id_get_name(ch->name) << "\n";
-		strm << TABS(indent) << "src:" << isl_id_get_name(ch->from_node_name) <<
-				" " << isl_id_get_name(ch->from_port_name) << "\n";
-		strm << TABS(indent) << "dst:" << isl_id_get_name(ch->to_node_name) <<
-				" " << isl_id_get_name(ch->to_port_name) << "\n";
+		strm << TABS(indent) << "src:" << ppn->getId(ch->from_node_name) <<
+				" " << ppn->getId(ch->from_port_name) << "\n";
+		strm << TABS(indent) << "dst:" << ppn->getId(ch->to_node_name) <<
+				" " << ppn->getId(ch->to_port_name) << "\n";
 		indent = 0;
 	}
 
