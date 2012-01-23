@@ -1,5 +1,5 @@
 PNTools
-$Id: README,v 1.13 2012/01/19 10:21:30 tzhai Exp $
+$Id: README,v 1.14 2012/01/23 11:22:27 tzhai Exp $
 
 This directory contains various experimental tools for use with PN/ISA. Most
 likely any tool found in here is in a very premature state, with a strong
@@ -47,15 +47,6 @@ pdg1ana (not updated currently)
 -------
   Purpose: Example of how to extract information from a PDG.
   Authors: Sven van Haastregt
-  Tested:  ISA 0.10
-
-
-pdg1trans (not updated currently)
----------
-  Purpose: Integrates work of BSc. student Giso Dal, who worked on implementing
-           modulo unfolding and plane cutting transformations.
-  Authors: Giso Dal, Sven van Haastregt
-  Notes:   Result may be plain wrong. See thesis for restrictions.
   Tested:  ISA 0.10
 
 
