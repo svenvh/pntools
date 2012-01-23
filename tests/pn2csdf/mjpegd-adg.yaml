@@ -1,0 +1,226 @@
+name: mjpegd
+context: '{  :  }'
+iterator_map: '{ [c0, c1, c2] -> [c0, c1] }'
+iterators: [c0, c1]
+all_iterators: [c0, c1, c2]
+nodes:
+- name: ND_0
+  function:
+    name: init_header
+    out:
+    - {var: {access: '{ ND_0[i0, i1] -> out_0ND_0[] }', type: SubHeader1}, type: reference}
+    - {var: {access: '{ ND_0[i0, i1] -> out_1ND_0[] }', type: SubHeader2}, type: reference}
+    domain:
+      bounds: '{ ND_0[i0, 0] : i0 >= 0 and i0 <= 11 }'
+  domain:
+    bounds: '{ ND_0[i0, 0] : i0 >= 0 and i0 <= 11 }'
+  schedule: '{ ND_0[i0, 0] -> [i0, 0, 0] : i0 >= 0 and i0 <= 11 }'
+  output_ports:
+  - name: ND_0OP_ED_0_0_V_0
+    node: ND_0
+    edge: ED_0
+    vars:
+    - {access: '{ ND_0[i0, i1] -> out_0ND_0[] }', type: SubHeader1}
+    domain:
+      bounds: '{ ND_0[i0, 0] : i0 >= 0 and i0 <= 11 }'
+  - name: ND_0OP_ED_1_0_V_1
+    node: ND_0
+    edge: ED_1
+    vars:
+    - {access: '{ ND_0[i0, i1] -> out_1ND_0[] }', type: SubHeader2}
+    domain:
+      bounds: '{ ND_0[i0, 0] : i0 >= 0 and i0 <= 11 }'
+- name: ND_1
+  function:
+    name: init_vld
+    out:
+    - {var: {access: '{ ND_1[i0, i1] -> out_0ND_1[] }', type: FValue}, type: reference}
+    domain:
+      bounds: '{ ND_1[i0, i1] : i0 >= 0 and i0 <= 11 and i1 >= 0 and i1 <= 2 }'
+  domain:
+    bounds: '{ ND_1[i0, i1] : i0 >= 0 and i0 <= 11 and i1 >= 0 and i1 <= 2 }'
+  schedule: '{ ND_1[i0, i1] -> [i0, i1, 0] : i0 >= 0 and i0 <= 11 and i1 >= 0 and
+    i1 <= 2 }'
+  output_ports:
+  - name: ND_1OP_ED_2_0_V_0
+    node: ND_1
+    edge: ED_2
+    vars:
+    - {access: '{ ND_1[i0, i1] -> out_0ND_1[] }', type: FValue}
+    domain:
+      bounds: '{ ND_1[i0, i1] : i0 >= 0 and i0 <= 11 and i1 >= 0 and i1 <= 2 }'
+- name: ND_2
+  function:
+    name: iqzz
+    in:
+    - {var: {access: '{ ND_2[i0, i1] -> in_0ND_2[] }', type: FValue}, type: reference}
+    out:
+    - {var: {access: '{ ND_2[i0, i1] -> out_1ND_2[] }', type: FBlock}, type: reference}
+    domain:
+      bounds: '{ ND_2[i0, i1] : i0 >= 0 and i0 <= 11 and i1 >= 0 and i1 <= 2 }'
+  domain:
+    bounds: '{ ND_2[i0, i1] : i0 >= 0 and i0 <= 11 and i1 >= 0 and i1 <= 2 }'
+  schedule: '{ ND_2[i0, i1] -> [i0, i1, 1] : i0 >= 0 and i0 <= 11 and i1 >= 0 and
+    i1 <= 2 }'
+  input_ports:
+  - name: ND_2IP_ED_2_0_V_0
+    node: ND_2
+    edge: ED_2
+    vars:
+    - {access: '{ [ND_2[i0, i1] -> local[]] -> in_0ND_2[] }', type: FValue}
+    domain:
+      bounds: '{ [ND_2[i0, i1] -> local[]] : i0 >= 0 and i0 <= 11 and i1 >= 0 and
+        i1 <= 2 }'
+  output_ports:
+  - name: ND_2OP_ED_4_0_V_1
+    node: ND_2
+    edge: ED_4
+    vars:
+    - {access: '{ ND_2[i0, i1] -> out_1ND_2[] }', type: FBlock}
+    domain:
+      bounds: '{ ND_2[i0, i1] : i0 >= 0 and i0 <= 11 and i1 >= 0 and i1 <= 2 }'
+- name: ND_3
+  function:
+    name: idct
+    in:
+    - {var: {access: '{ ND_3[i0, i1] -> in_0ND_3[] }', type: FBlock}, type: reference}
+    out:
+    - {var: {access: '{ ND_3[i0, i1] -> out_1ND_3[] }', type: PBlock}, type: reference}
+    domain:
+      bounds: '{ ND_3[i0, i1] : i0 >= 0 and i0 <= 11 and i1 >= 0 and i1 <= 2 }'
+  domain:
+    bounds: '{ ND_3[i0, i1] : i0 >= 0 and i0 <= 11 and i1 >= 0 and i1 <= 2 }'
+  schedule: '{ ND_3[i0, i1] -> [i0, i1, 2] : i0 >= 0 and i0 <= 11 and i1 >= 0 and
+    i1 <= 2 }'
+  input_ports:
+  - name: ND_3IP_ED_4_0_V_0
+    node: ND_3
+    edge: ED_4
+    vars:
+    - {access: '{ [ND_3[i0, i1] -> local[]] -> in_0ND_3[] }', type: FBlock}
+    domain:
+      bounds: '{ [ND_3[i0, i1] -> local[]] : i0 >= 0 and i0 <= 11 and i1 >= 0 and
+        i1 <= 2 }'
+  output_ports:
+  - name: ND_3OP_ED_3_0_V_1
+    node: ND_3
+    edge: ED_3
+    vars:
+    - {access: '{ ND_3[i0, i1] -> out_1ND_3[] }', type: PBlock}
+    domain:
+      bounds: '{ ND_3[i0, i1] : i0 >= 0 and i0 <= 11 and i1 >= 0 and i1 <= 2 }'
+- name: ND_4
+  function:
+    name: cc
+    in:
+    - {var: {access: '{ ND_4[i0, i1] -> in_0ND_4[] }', type: SubHeader1}, type: reference}
+    - {var: {access: '{ ND_4[i0, i1] -> in_1ND_4[] }', type: PBlock}, type: reference}
+    out:
+    - {var: {access: '{ ND_4[i0, i1] -> out_2ND_4[] }', type: ColorBuffer}, type: reference}
+    domain:
+      bounds: '{ ND_4[i0, i1] : i0 >= 0 and i0 <= 11 and i1 >= 0 and i1 <= 2 }'
+  domain:
+    bounds: '{ ND_4[i0, i1] : i0 >= 0 and i0 <= 11 and i1 >= 0 and i1 <= 2 }'
+  schedule: '{ ND_4[i0, i1] -> [i0, i1, 3] : i0 >= 0 and i0 <= 11 and i1 >= 0 and
+    i1 <= 2 }'
+  input_ports:
+  - name: ND_4IP_ED_0_0_V_0
+    node: ND_4
+    edge: ED_0
+    vars:
+    - {access: '{ [ND_4[i0, i1] -> local[]] -> in_0ND_4[] }', type: SubHeader1}
+    domain:
+      bounds: '{ [ND_4[i0, 0] -> local[]] : i0 >= 0 and i0 <= 11 }'
+  - name: ND_4IP_ED_3_0_V_1
+    node: ND_4
+    edge: ED_3
+    vars:
+    - {access: '{ [ND_4[i0, i1] -> local[]] -> in_1ND_4[] }', type: PBlock}
+    domain:
+      bounds: '{ [ND_4[i0, i1] -> local[]] : i0 >= 0 and i0 <= 11 and i1 >= 0 and
+        i1 <= 2 }'
+  output_ports:
+  - name: ND_4OP_ED_5_0_V_2
+    node: ND_4
+    edge: ED_5
+    vars:
+    - {access: '{ ND_4[i0, i1] -> out_2ND_4[] }', type: ColorBuffer}
+    domain:
+      bounds: '{ ND_4[i0, i1] : i0 >= 0 and i0 <= 11 and i1 >= 0 and i1 <= 2 }'
+- name: ND_5
+  function:
+    name: raster
+    in:
+    - {var: {access: '{ ND_5[i0, i1] -> in_0ND_5[] }', type: SubHeader2}, type: reference}
+    - {var: {access: '{ ND_5[i0, i1] -> in_1ND_5[] }', type: ColorBuffer}, type: reference}
+    domain:
+      bounds: '{ ND_5[i0, i1] : i0 >= 0 and i0 <= 11 and i1 >= 0 and i1 <= 2 }'
+  domain:
+    bounds: '{ ND_5[i0, i1] : i0 >= 0 and i0 <= 11 and i1 >= 0 and i1 <= 2 }'
+  schedule: '{ ND_5[i0, i1] -> [i0, i1, 4] : i0 >= 0 and i0 <= 11 and i1 >= 0 and
+    i1 <= 2 }'
+  input_ports:
+  - name: ND_5IP_ED_1_0_V_0
+    node: ND_5
+    edge: ED_1
+    vars:
+    - {access: '{ [ND_5[i0, i1] -> local[]] -> in_0ND_5[] }', type: SubHeader2}
+    domain:
+      bounds: '{ [ND_5[i0, 0] -> local[]] : i0 >= 0 and i0 <= 11 }'
+  - name: ND_5IP_ED_5_0_V_1
+    node: ND_5
+    edge: ED_5
+    vars:
+    - {access: '{ [ND_5[i0, i1] -> local[]] -> in_1ND_5[] }', type: ColorBuffer}
+    domain:
+      bounds: '{ [ND_5[i0, i1] -> local[]] : i0 >= 0 and i0 <= 11 and i1 >= 0 and
+        i1 <= 2 }'
+edges:
+- name: ED_0
+  type: sticky fifo
+  map: '{ lifted[ND_4[i0, i1] -> local[]] -> ND_0[(i0), (0)] }'
+  from_node: ND_0
+  from_port: ND_0OP_ED_0_0_V_0
+  to_node: ND_4
+  to_port: ND_4IP_ED_0_0_V_0
+  value_size: 1
+- name: ED_1
+  type: sticky fifo
+  map: '{ lifted[ND_5[i0, i1] -> local[]] -> ND_0[(i0), (0)] }'
+  from_node: ND_0
+  from_port: ND_0OP_ED_1_0_V_1
+  to_node: ND_5
+  to_port: ND_5IP_ED_1_0_V_0
+  value_size: 1
+- name: ED_2
+  type: fifo
+  map: '{ lifted[ND_2[i0, i1] -> local[]] -> ND_1[(i0), (i1)] }'
+  from_node: ND_1
+  from_port: ND_1OP_ED_2_0_V_0
+  to_node: ND_2
+  to_port: ND_2IP_ED_2_0_V_0
+  value_size: 1
+- name: ED_3
+  type: fifo
+  map: '{ lifted[ND_4[i0, i1] -> local[]] -> ND_3[(i0), (i1)] }'
+  from_node: ND_3
+  from_port: ND_3OP_ED_3_0_V_1
+  to_node: ND_4
+  to_port: ND_4IP_ED_3_0_V_1
+  value_size: 1
+- name: ED_4
+  type: fifo
+  map: '{ lifted[ND_3[i0, i1] -> local[]] -> ND_2[(i0), (i1)] }'
+  from_node: ND_2
+  from_port: ND_2OP_ED_4_0_V_1
+  to_node: ND_3
+  to_port: ND_3IP_ED_4_0_V_0
+  value_size: 1
+- name: ED_5
+  type: fifo
+  map: '{ lifted[ND_5[i0, i1] -> local[]] -> ND_4[(i0), (i1)] }'
+  from_node: ND_4
+  from_port: ND_4OP_ED_5_0_V_2
+  to_node: ND_5
+  to_port: ND_5IP_ED_5_0_V_1
+  value_size: 1
