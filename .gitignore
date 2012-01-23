@@ -1,9 +1,11 @@
 # Object files
 *.o
 *.lo
+*.la
 
 # Build files
 Makefile
+Makefile.in
 configure
 config.*
 libtool
@@ -14,6 +16,7 @@ ltmain.sh
 local.am
 .libs
 .deps
+autom4te.cache
 aclocal.m4
 aclocal.m4
 m4/libtool.m4
