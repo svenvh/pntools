@@ -11,14 +11,12 @@ Compilation Instructions
     ./autogen.sh
     ./configure --with-pngen=XXX --with-isa=YYY
     make
-Replace XXX with your pngen top level directory (i.e., the directory 
-containing GMP, Syck, and libxml2 etc.).
-Replace YYY with your isa directory (containing pn, pn2espam etc.).
+Replace XXX with your pngen top level directory (i.e., the directory where GMP, Syck, and libxml2 are installed).
+Replace YYY with your isa build directory (containing pn, pn2adg, libpdg.la etc.).
 
 
 Adding New Tools
 ----------------
-
 1. Open up `Makefile.am` and add appropriate `_LDADD`, `_SOURCES` lines. Add the tool
    executable name to `bin_PROGRAMS`.
 2. Rerun `autogen.sh`, `configure` and `make`.
@@ -27,7 +25,6 @@ Adding New Tools
 
 How to use the tools
 --------------------
-
 - Most of the tools require `XXX.yaml` and/or `XXX-adg.yaml` as input (XXX stands for the name of your application).
 - Run `c2pdg` to extract polyhedral description and it generates `XXX.yaml`
 - Run `pn` and `pn2adg` to generate `XXX-adg.yaml` and it generates `XXX-adg.yaml` 
@@ -81,6 +78,3 @@ Upate: 30.Nov.2011: We start to adapt all tools to the latest isa version.
 Bugs/Questions
 --------------
 In case of bugs/questions, please contact: [Sven van Haastregt](https://github.com/svenvh) or [Teddy Zhai](https://github.com/tzhai)
-
-
-
