@@ -50,6 +50,9 @@ adg2csdf_SOURCES = \
 	utility.cc utility.h \
 	adg2csdf.cc
 
+adgstat_LDADD = $(ADGLIB)
+adgstat_SOURCES = adgstat.cc
+
 #ppnta_LDADD = libppn.la $(ISALIB) $(BARVINOKLIB)
 #ppnta_SOURCES = \
 #	#ppnta.cc utility.cc utility.h
@@ -58,7 +61,7 @@ plamapgen_SOURCES = plamapgen.cc
 
 
 
-bin_PROGRAMS = adg2csdf plamapgen
+bin_PROGRAMS = adg2csdf adgstat plamapgen
 
 include local.am
 

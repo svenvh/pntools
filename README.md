@@ -55,6 +55,13 @@ Upate: 30.Nov.2011: We start to adapt all tools to the latest isa version.
            `YYY.gph` (StreamIT format)
 * Tested:  ISA 0.11
 
+### adgstat
+* Purpose: Dump some statistics about an ADG, such as channel implementation cost estimates.
+* Author:  Sven van Haastregt
+* Input:   `XXX.adg`
+* Output:  plaintext
+* Tested:  isa-0.11-196-g2af2525
+
 ### ppnta (to be changed into adgta)
 * Purpose: Do some throughput analysis on a PPN.
 * Authors: Teddy Zhai, Sven van Haastregt
