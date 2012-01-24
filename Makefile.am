@@ -9,8 +9,8 @@ SUBDIRS = .
 ACLOCAL_AMFLAGS = -I m4
 
 ISADIR = @ISA_DIR@
-ISALIB = $(ISADIR)/libpdg.la @SYCK_LIBS@
-ADGLIB = $(ISADIR)/libadg.la @SYCK_LIBS@
+ISALIB = $(ISADIR)/libpdg.la
+ADGLIB = $(ISADIR)/libadg.la
 BARVINOKDIR = $(ISADIR)/barvinok
 BARVINOKLIB = $(BARVINOKDIR)/libbarvinok.la
 
@@ -43,7 +43,7 @@ libadg_helper_la_LDFLAGS = -release @VERSION@
 # 	pn2ppn_util.cc \
 # 	pn2ppn.cc
 
-adg2csdf_LDADD = libadg_helper.la $(ISADIR)/libpdg.la $(ADGLIB) @libxml2_LIBS@ @SYCK_LIBS@ $(BARVINOKLIB)
+adg2csdf_LDADD = libadg_helper.la $(ISALIB) $(ADGLIB) @libxml2_LIBS@ @SYCK_LIBS@ $(BARVINOKLIB)
 adg2csdf_SOURCES = \
 	ImplementationTable.cc \
 	ImplementationTable.h \
