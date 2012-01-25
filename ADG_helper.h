@@ -28,6 +28,8 @@ public:
 
 	Processes getProcesses();
 	Channels getChannels();
+	Channel* getChannel(isl_id *name);
+
 
 	unsigned getId(const Process *process);
 	unsigned getId(const Port *port);
@@ -41,6 +43,10 @@ public:
 	__isl_give isl_set* getPortDomainBound(const Port *port);
 
 	std::vector<adg_param*> getParameters();
+
+	// topological analysis
+	bool isChain();
+	bool isTree();
 };
 
 }
