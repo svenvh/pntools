@@ -2,8 +2,6 @@ PNTools
 =======
 
 This project contains various experimental tools for use with the [PN/ISA](http://repo.or.cz/w/isa.git) compiler. 
-Most likely any tool found in here is in a very premature state, with a strong
-dependence on the current phase of the moon.
 
 
 Compilation Instructions
@@ -12,7 +10,9 @@ Compilation Instructions
     ./configure --with-pngen=XXX --with-isa=YYY
     make
 Replace XXX with your pngen top level directory (i.e., the directory where GMP, Syck, and libxml2 are installed).
-Replace YYY with your isa build directory (containing pn, pn2adg, libpdg.la etc.).
+In case that standard libaries are installed on Linux distribution, XXX does not play a roll anymore.
+
+Replace YYY with your isa build directory (containing c2pdg, pn, pn2adg, libpdg.la etc.).
 
 
 Adding New Tools
@@ -38,7 +38,7 @@ tool, please add an appropriate description to this list as well.
 Upate: 30.Nov.2011: We start to adapt all tools to the latest isa version.
         In particular, adg structure (instead of ppn before) will be used as basis for most of the tools.
 
-### pdg1ana (not updated currently)
+### pdg1ana (not updated yet)
 * Purpose: Example of how to extract information from a PDG.
 * Authors: Sven van Haastregt
 * Tested:  ISA 0.10
@@ -48,8 +48,7 @@ Upate: 30.Nov.2011: We start to adapt all tools to the latest isa version.
 * Authors: Sven van Haastregt, Teddy Zhai
 * Notes:   Implemented, needs further verification.
 * Input:   `XXX-adg.yaml`
-* Output:  `YYY.xml` ([SDF For Free](http://www.es.ele.tue.nl/sdf3/) format, currently not supported yet) or  
-           `YYY.gph` (Extended [StreamIt](http://groups.csail.mit.edu/cag/streamit/) format, see "Graph Formats" below)
+* Output:  `YYY.gph` (Extended [StreamIt](http://groups.csail.mit.edu/cag/streamit/) format, see "Graph Formats" below)
 * Tested:  ISA 0.11
 
 ### adgstat

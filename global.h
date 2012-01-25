@@ -9,23 +9,6 @@
 #ifndef GLOBAL_H_
 #define GLOBAL_H_
 
-/* some standard libraries and global options.
- * This file should be included in all other files
- * */
-
-/* standard libraries */
-#include <list>
-#include <vector>
-#include <algorithm>
-#include <string>
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <fstream>
-#include <iostream>
-#include <sys/param.h>
-
-
 /* global options*/
 
 #endif /* GLOBAL_H_ */

@@ -46,7 +46,9 @@ public:
 
 	// topological analysis
 	bool isChain();
+	bool isChain(const Processes &processes);
 	bool isTree();
+	bool isTree(const Processes &processes);
 };
 
 }

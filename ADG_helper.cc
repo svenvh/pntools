@@ -155,6 +155,11 @@ ADG_helper::isChain(){
 	return isChain;
 }
 
+bool
+ADG_helper::isTree(const Processes &processes){
+
+}
+
 // a simple check if the adg has a chain topology
 bool
 ADG_helper::isTree(){

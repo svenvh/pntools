@@ -748,10 +748,6 @@ void CsdfDumper::DumpCsdf(std::ostream& strm) {
 	unsigned int indent = 0;
 	const unsigned int nd_nr = procs.size();
 
-	printer = isl_printer_to_file(this->ctx, stdout);
-	printer = isl_printer_set_output_format(printer, ISL_FORMAT_ISL);
-
-
 	strm<< TABS(indent) << "node_number:" << nd_nr << "\n";
 
 	// iterate over all processes
@@ -851,9 +847,6 @@ void CsdfDumper::DumpCsdf(std::ostream& strm) {
 				" " << ppn->getId(ch->to_port_name) << "\n";
 		indent = 0;
 	}
-
-
-	isl_printer_free(printer);
 }
 
 static int gOutputFormat; // 1 = StreamIT, 3 = SDF3
@@ -896,10 +889,10 @@ int main(int argc, char * argv[])
 {
 	FILE *in = stdin;
 
-	if (parseCommandline(argc, argv) == 1) {
-		printUsage();
-		exit(1);
-	}
+//	if (parseCommandline(argc, argv) == 1) {
+//		printUsage();
+//		exit(1);
+//	}
 
 	isl_ctx *ctx;
 	ctx = isl_ctx_alloc();
@@ -907,6 +900,11 @@ int main(int argc, char * argv[])
 	adg *csdf_adg;
 	csdf_adg = adg_parse(ctx, in);
 	assert(csdf_adg);
+
+	// initialize the global variable: printer
+	printer = isl_printer_to_file(ctx, stdout);
+	printer = isl_printer_set_output_format(printer, ISL_FORMAT_ISL);
+
 
 	ADG_helper adg_helper(csdf_adg, ctx);
 
@@ -925,17 +923,17 @@ int main(int argc, char * argv[])
 	}
 
 	CsdfDumper *dumper = new CsdfDumper(&adg_helper, implTable, ctx);
-	if (gOutputFormat == 3) {
-		//    dumper->dumpCsdf3(cout);
-	}else{
-		assert(gOutputFormat == 1);
+//	if (gOutputFormat == 3) {
+//		dumper->dumpCsdf3(cout);
+//	}else{
+//		assert(gOutputFormat == 1);
 		dumper->DumpCsdf(cout);
-	}
+//	}
 
 	delete dumper;
 	delete implTable;
 
-
+	isl_printer_free(printer);
 	delete csdf_adg;
 	isl_ctx_free(ctx);
 
