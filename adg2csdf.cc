@@ -18,9 +18,10 @@
 #include "isa/adg.h"
 #include "adg_parse.h"
 
-#include "ADG_helper.h"
 #include "defs.h"
+#include "ADG_helper.h"
 #include "ImplementationTable.h"
+#include "suffix_tree.h"
 #include "utility.h"
 
 using namespace adg_helper;
