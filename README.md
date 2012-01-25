@@ -48,8 +48,8 @@ Upate: 30.Nov.2011: We start to adapt all tools to the latest isa version.
 * Authors: Sven van Haastregt, Teddy Zhai
 * Notes:   Implemented, needs further verification.
 * Input:   `XXX-adg.yaml`
-* Output:  `YYY.xml` (SDF3 format, currently not supported yet) or  
-           `YYY.gph` (StreamIT format)
+* Output:  `YYY.xml` ([SDF For Free](http://www.es.ele.tue.nl/sdf3/) format, currently not supported yet) or  
+           `YYY.gph` (Extended [StreamIt](http://groups.csail.mit.edu/cag/streamit/) format, see "Graph Formats" below)
 * Tested:  ISA 0.11
 
 ### adgstat
@@ -57,7 +57,7 @@ Upate: 30.Nov.2011: We start to adapt all tools to the latest isa version.
 * Author:  Sven van Haastregt
 * Input:   `XXX.adg`
 * Output:  plaintext
-* Tested:  isa-0.11-196-g2af2525
+* Tested:  `isa-0.11-196-g2af2525`
 
 ### ppnta (to be changed into adgta)
 * Purpose: Do some throughput analysis on a PPN.
@@ -74,6 +74,45 @@ Upate: 30.Nov.2011: We start to adapt all tools to the latest isa version.
 * Input:   Commandline argument list containing name and mapping code.
 * Output:  .pla and .map files
 
+
+Graph Formats
+-------------
+
+### adg2csdf
+
+`adg2csdf` is capable of exporting the ADG graph into either the [SDF For Free](http://www.es.ele.tue.nl/sdf3/) XML format or the Extended [StreamIt](http://groups.csail.mit.edu/cag/streamit/) format. The Extended StreamIt format is based on the original StreamIt format and adds support for CSDF graphs. Extended StreamIt graphs have an extension `.gph` as the original StreamIt graphs. A simple producer/consumer graph looks like this:
+
+    node_number:2
+    node:
+	    id:0
+	    name:ND_0
+	    length:1
+	    wcet:5
+	    port_number:1
+	    port:
+		    type:out
+		    id:1
+		    rate:1
+    node:
+	    id:1
+	    name:ND_1
+	    length:1
+	    wcet:2
+	    port_number:1
+	    port:
+		    type:in
+		    id:1
+		    rate:1
+    edge_number:1
+    edge:
+        id:0
+        name:ED_0
+        src:0 1
+        dst:1 1	
+
+A graph can have multiple nodes and multiple edges. In turn, a node can have multiple ports. The `length` field in the node specifies the length of the function and production/consumption rates sequences in the CSDF graph (cf. `P_j` in the original CSDF article). The `wcet` field specifies the Worst-Case Execution Time (WCET) of the actor. The `src` and `dst` field in the edge are interpreted as follows: `src: src_actor_id port_id` and `dst: dst_actor_id port_id`.
+
+`CSDFConverter.py` in [csdf-rtschedtools](https://github.com/mohamed/csdf-rtschedtools) is capable of accepting the Extended StreamIt graphs and producing the SDF For Free XML format and Compact StreamIt format. 
 
 Bugs/Questions
 --------------
