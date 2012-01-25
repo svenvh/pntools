@@ -45,6 +45,7 @@ libadg_helper_la_LDFLAGS = -release @VERSION@
 
 adg2csdf_LDADD = libadg_helper.la $(ISALIB) $(ADGLIB) @libxml2_LIBS@ @SYCK_LIBS@ $(BARVINOKLIB)
 adg2csdf_SOURCES = \
+	suffix_tree.cc suffix_tree.h \
 	ImplementationTable.cc \
 	ImplementationTable.h \
 	utility.cc utility.h \

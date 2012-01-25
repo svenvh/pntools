@@ -66,6 +66,23 @@ ADG_helper::getChannels(){
 		return this->ADG->edges;
 }
 
+Channel*
+ADG_helper::getChannel(isl_id *name){
+	const char* name_char = isl_id_get_name(name);
+
+	Channels channels = ADG->edges;
+	for (int i = 0; i < channels.size(); ++i) {
+		const char *ch_name_char = isl_id_get_name(channels[i]->name);
+
+		if (strcmp(name_char, ch_name_char)) continue;
+
+		return channels[i];
+	}
+
+	// should not reach here
+	fprintf(stderr, "channel with name: %s is not found!!", name_char);
+}
+
 Processes
 ADG_helper::getProcesses(){
 	return this->ADG->nodes;
@@ -101,4 +118,73 @@ ADG_helper::getPortDomainBound(const Port *port){
 std::vector<adg_param*>
 ADG_helper::getParameters(){
 	return this->ADG->params;
+}
+
+// a simple check if the adg has a chain topology
+bool
+ADG_helper::isChain(){
+	bool isChain = true;
+
+	Processes processes = this->ADG->nodes;
+
+	// if each process has at most one input/output port, then adg is a chain
+	for (int i = 0; i < processes.size(); ++i) {
+		Process *process = processes[i];
+
+		Ports in_ports = process->input_ports;
+		if (in_ports.size() > 1) {
+			// further check: if all ports are connected to the source node, it is still a chain
+			Channel *ch0 = getChannel(in_ports[0]->edge_name);
+			const char *from_node_name_0 = isl_id_get_name(ch0->from_node_name);
+
+			for (int j = 1; j < in_ports.size(); ++j) {
+				Channel *ch = getChannel(in_ports[i]->edge_name);
+				const char *from_node_name = isl_id_get_name(ch->from_node_name);
+				if (strcmp(from_node_name_0, from_node_name)) {
+					return false;
+				}
+			}
+		}
+
+		Ports out_ports = process->output_ports;
+		if (out_ports.size() > 1) {
+			return false;
+		}
+	}
+
+	return isChain;
+}
+
+// a simple check if the adg has a chain topology
+bool
+ADG_helper::isTree(){
+	bool isTree = true;
+
+	Processes processes = this->ADG->nodes;
+
+	// if each process has at most one input, then adg is a tree
+	for (int i = 0; i < processes.size(); ++i) {
+		Process *process = processes[i];
+
+		Ports in_ports = process->input_ports;
+		if (in_ports.size() > 1) {
+			return false;
+		}
+
+		Ports out_ports = process->output_ports;
+		if (out_ports.size() > 1) {
+			// further check: if all ports are connected to the source node, it is still a chain
+			Channel *ch0 = getChannel(out_ports[0]->edge_name);
+			const char *to_node_name_0 = isl_id_get_name(ch0->to_node_name);
+			for (int j = 1; j < out_ports.size(); ++j) {
+				Channel *ch = getChannel(out_ports[i]->edge_name);
+				const char *to_node_name = isl_id_get_name(ch->to_node_name);
+				if (strcmp(to_node_name_0, to_node_name)) {
+					return false;
+				}
+			}
+		}
+	}
+
+	return isTree;
 }
