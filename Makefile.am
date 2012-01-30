@@ -11,6 +11,8 @@ ACLOCAL_AMFLAGS = -I m4
 ISADIR = @ISA_DIR@
 ISALIB = $(ISADIR)/libpdg.la
 ADGLIB = $(ISADIR)/libadg.la
+ISLDIR = $(ISADIR)/isl
+ISLLIB = $(ISLDIR)/libisl.la
 BARVINOKDIR = $(ISADIR)/barvinok
 BARVINOKLIB = $(BARVINOKDIR)/libbarvinok.la
 
@@ -24,7 +26,7 @@ lib_LTLIBRARIES = libadg_helper.la
 libadg_helper_la_SOURCES = \
 	ADG_helper.cc \
 	ADG_helper.h 
-libadg_helper_la_LIBADD = $(ISADIR)/libpdg.la $(ISADIR)/isl/libisl.la $(ADGLIB)
+libadg_helper_la_LIBADD = $(ISADIR)/libpdg.la $(ISLLIB) $(ADGLIB)
 libadg_helper_la_LDFLAGS = -release @VERSION@
 
 
