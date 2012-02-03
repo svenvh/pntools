@@ -3,7 +3,7 @@
  *
  *  	Created on: Jan 4, 2011
  *      Author: Sven van Haastregt, Teddy Zhai
- *     $Id: utility.cc,v 1.6 2012/01/18 15:38:22 tzhai Exp $
+ *
  */
 
 
@@ -17,7 +17,6 @@
 #include "utility.h"
 
 using pdg::PDG;
-//using ppn::PPN;
 using namespace std;
 
 /* Helper function (callback) for getCardinality
@@ -70,9 +69,19 @@ int getCardinality(__isl_keep isl_pw_qpolynomial *pwqp){
 	return count;
 }
 
-// get the set without local space provided the local space is empty
+
 __isl_give isl_set*
 getUnwrappedDomain(__isl_take isl_set *set){
+	isl_set *dom_set = NULL;
+
+	if (isl_set_is_wrapping(set) == -1) {
+		fprintf(stderr, "ERROR: The unwrapped domain cannot be found.\n");
+	} else if (isl_set_is_wrapping(set) == 0) {
+		// the set is not nested
+		dom_set = isl_set_copy(set);
+		isl_set_free(set);
+		return dom_set;
+	}
     assert(isl_set_is_wrapping(set) == 1);
     
     isl_map *unwrapped_set = isl_set_unwrap(set);
@@ -85,16 +94,50 @@ getUnwrappedDomain(__isl_take isl_set *set){
     std::cout << "dim cst: " << isl_set_dim(ran_set, isl_dim_cst) << std::endl;
     std::cout << "dim param:" << isl_set_dim(ran_set, isl_dim_param) << std::endl;
     std::cout << "dim in:" << isl_set_dim(ran_set, isl_dim_in) << std::endl;*/
-    assert(isl_set_dim(ran_set, isl_dim_set) == 0);
-    if (isl_set_dim(ran_set, isl_dim_set) != 0) {
-	fprintf(stderr, "ERROR: the local space of the set have dimensions. "
-	"Getting unwrapped domain from the set might cause problems\n");
-    }
+//    assert(isl_set_dim(ran_set, isl_dim_set) == 0);
+//    if (isl_set_dim(ran_set, isl_dim_set) != 0) {
+//		fprintf(stderr, "WARNING: the local space of the set have dimensions. "
+//		"Getting unwrapped domain from the set might cause problems\n");
+//    }
     isl_set_free(ran_set);
     
-    isl_set *dom_set = isl_map_domain(unwrapped_set);
+    dom_set = isl_map_domain(unwrapped_set);
     
     return dom_set;
 }
 
 
+__isl_give isl_set* getPDGDomain(adg_domain *adgDomain){
+	isl_set *pdgDomain = isl_set_copy(adgDomain->bounds);
+
+	// project out control variables
+	unsigned int nrDim = isl_set_dim(adgDomain->bounds, isl_dim_set);
+	unsigned int nrCtrlVar = adgDomain->controls.size();
+	if (nrCtrlVar > 0) {
+		pdgDomain = isl_set_project_out(pdgDomain, isl_dim_set, nrDim - nrCtrlVar, nrCtrlVar);
+	}
+
+	// eliminate nested spaces (get domain of unwrapped map)
+	pdgDomain = getUnwrappedDomain(pdgDomain);
+
+	return pdgDomain;
+}
+
+
+bool
+isDimsEqual(__isl_keep isl_set *set1, __isl_keep isl_set *set2,
+		unsigned int first, unsigned int n)
+{
+	bool isFullyDefined = false;
+	assert(isl_set_dim(set1, isl_dim_set) == isl_set_dim(set2, isl_dim_set));
+
+	isl_set *firstnSet1 = isl_set_project_out(set1, isl_dim_set, first, n);
+
+	isl_set *firstnSet2 = isl_set_project_out(set1, isl_dim_set, first, n);
+
+	if (isl_set_is_equal(firstnSet1, firstnSet2)) {
+		isFullyDefined = true;
+	}
+
+	return isFullyDefined;
+}
