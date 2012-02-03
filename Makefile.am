@@ -11,6 +11,8 @@ ACLOCAL_AMFLAGS = -I m4
 ISADIR = @ISA_DIR@
 ISALIB = $(ISADIR)/libpdg.la
 ADGLIB = $(ISADIR)/libadg.la
+ISLDIR = $(ISADIR)/isl
+ISLLIB = $(ISLDIR)/libisl.la
 BARVINOKDIR = $(ISADIR)/barvinok
 BARVINOKLIB = $(BARVINOKDIR)/libbarvinok.la
 
@@ -24,7 +26,7 @@ lib_LTLIBRARIES = libadg_helper.la
 libadg_helper_la_SOURCES = \
 	ADG_helper.cc \
 	ADG_helper.h 
-libadg_helper_la_LIBADD = $(ISADIR)/libpdg.la $(ISADIR)/isl/libisl.la $(ADGLIB)
+libadg_helper_la_LIBADD = $(ISADIR)/libpdg.la $(ISLLIB) $(ADGLIB)
 libadg_helper_la_LDFLAGS = -release @VERSION@
 
 
@@ -54,6 +56,9 @@ adg2csdf_SOURCES = \
 adgstat_LDADD = $(ADGLIB)
 adgstat_SOURCES = adgstat.cc
 
+visset_LDADD = $(ISLLIB)
+visset_SOURCES = visset.cc
+
 #ppnta_LDADD = libppn.la $(ISALIB) $(BARVINOKLIB)
 #ppnta_SOURCES = \
 #	#ppnta.cc utility.cc utility.h
@@ -62,7 +67,7 @@ plamapgen_SOURCES = plamapgen.cc
 
 
 
-bin_PROGRAMS = adg2csdf adgstat plamapgen
+bin_PROGRAMS = adg2csdf adgstat visset plamapgen
 
 include local.am
 

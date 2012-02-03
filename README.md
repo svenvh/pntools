@@ -66,6 +66,13 @@ Upate: 30.Nov.2011: We start to adapt all tools to the latest isa version.
 * Output:  throughput numbers
 * Tested:  ISA 0.10
 
+### visset
+* Purpose: Visualize 2D and 3D isl sets.
+* Author:  Sven van Haastregt
+* Input:   Reads an isl set from stdin.
+* Output:  Writes a gnuplot script to stdout.
+* Tested:  isl-0.09-33-gc7dc962
+
 ### plamapgen
 * Purpose: Generate platform and mapping files for ESPAM.
 * Authors: Eyal Halm, Sven van Haastregt
