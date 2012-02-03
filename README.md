@@ -61,6 +61,13 @@ Upate: 30.Nov.2011: We start to adapt all tools to the latest isa version.
 * Output:  plaintext
 * Tested:  `isa-0.11-196-g2af2525`
 
+### pdgtrans
+* Purpose: Transform a PDG.
+* Authors: Wouter de Zwijger, Sven van Haastregt
+* Input:   `XXX.yaml`
+* Output:  `YYY.yaml`
+* Notes:   See "Specifying Transformations" below.
+
 ### ppnta (to be changed into adgta)
 * Purpose: Do some throughput analysis on a PPN.
 * Authors: Teddy Zhai, Sven van Haastregt
@@ -122,6 +129,31 @@ Graph Formats
 A graph can have multiple nodes and multiple edges. In turn, a node can have multiple ports. The `length` field in the node specifies the length of the function and production/consumption rates sequences in the CSDF graph (cf. `P_j` in the original CSDF article). The `wcet` field specifies the Worst-Case Execution Time (WCET) of the actor. The `src` and `dst` field in the edge are interpreted as follows: `src: src_actor_id port_id` and `dst: dst_actor_id port_id`.
 
 `CSDFConverter.py` in [csdf-rtschedtools](https://github.com/mohamed/csdf-rtschedtools) is capable of accepting the Extended StreamIt graphs and producing the SDF For Free XML format and Compact StreamIt format. 
+
+
+Specifying Transformations
+--------------------------
+
+### Example invocations
+
+Transformations are applied on the PDG output by c2pdg.
+
+Split node 0 in two nodes. One intersected with { S_0[i] : i >= 5 } and the other with { S_0[j,i] : j > 45}.
+    ./pdgtrans --domain-split --node 0 --sets "{ S_0[i] : i >= 5 }; { S_0[j,i] : j > 45}" < splitjoin.yaml
+
+Splitting a 6-dimensional node 0 in 10*12*5 parts, where each of these new nodes is a unique offset combination of modulo 10 12 and 5 of dim 3, 4 and 5 respectively.
+    ./pdgtrans --modulo-split --node 0 --factors 1,1,1,10,12,5 < splitjoin2.yaml
+
+Splitting node 1 in 4 parts. One with extra condition dim 0 lower or equal than 5 - 1.
+One bigger equal 5 and lower than 10 - 1 (in dim 0). One with dim 0 between 10 and 15 -1.
+The last part has as extra condition that it must be bigger than 15 in dim 0.
+    ./pdgtrans --plane-split --node 1 --conditions "0 1 0 -5,0 1 0 -10,0 1 0 -15" < splitjoin.yaml
+
+Splits node 3, by dividing the set in 2 parts over dimension 0. Then splitting each of these parts by dividing them in three parts over dimension 1.
+While the algorithm tries to split each set in equal parts, giving more than one dimension might result in unequal parts.
+A dimension can be skipped for splitting, by giving it a factor 1, meaning one part, therefor no split on this dimension.
+    ./pdgtrans --plane-split --node 3 --factors 2,3 < splitjoin.yaml
+
 
 Bugs/Questions
 --------------

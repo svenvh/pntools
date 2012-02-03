@@ -54,6 +54,14 @@ adg2csdf_SOURCES = \
 adgstat_LDADD = $(ADGLIB)
 adgstat_SOURCES = adgstat.cc
 
+pdgtrans_LDADD = $(ISALIB) @SYCK_LIBS@ $(BARVINOKLIB)
+pdgtrans_SOURCES = \
+	TransDebug.cc TransDebug.h \
+	SetDivider.cc SetDivider.h \
+	SplitCommand.cc SplitCommand.h \
+	TransCLParser.cc TransCLParser.h \
+	pdgtrans.cc
+
 visset_LDADD = $(ISLLIB)
 visset_SOURCES = visset.cc
 
@@ -65,7 +73,7 @@ plamapgen_SOURCES = plamapgen.cc
 
 
 
-bin_PROGRAMS = adg2csdf adgstat visset plamapgen
+bin_PROGRAMS = adg2csdf adgstat pdgtrans visset plamapgen
 
 include local.am
 
