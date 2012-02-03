@@ -1,7 +1,6 @@
 /*
  * Cost Table implementation
  * Author: Sven van Haastregt
- * $Id: ImplementationTable.h,v 1.4 2011/06/06 13:56:09 svhaastr Exp $
  */
 
 #ifndef _IMPLEMENTATIONTABLE_H_

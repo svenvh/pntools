@@ -3,8 +3,6 @@
  *
  *  Created on: Jan 18, 2012
  *      Author: Teddy Zhai
- *
- *      $Id: ADG_helper.h,v 1.3 2012/01/23 11:08:40 tzhai Exp $
  */
 
 #ifndef ADG_HELPER_H_

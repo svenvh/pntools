@@ -1,8 +1,6 @@
 # Configuration script for pntools (experimental tool directory)
 # Sven van Haastregt
 # LIACS, Leiden University
-# 
-# $Id: configure.in,v 1.8 2011/11/30 13:24:42 tzhai Exp $
 
 AC_INIT
 AC_CONFIG_MACRO_DIR([m4])

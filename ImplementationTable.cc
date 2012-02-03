@@ -1,7 +1,6 @@
 /*
  * Cost Table implementation
  * Author: Sven van Haastregt
- * $Id: ImplementationTable.cc,v 1.2 2011/06/06 13:56:09 svhaastr Exp $
  */
 
 #include "ImplementationTable.h"

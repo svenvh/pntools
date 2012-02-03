@@ -1,8 +1,6 @@
 # Makefile for pntools
 # Sven van Haastregt
 # LIACS, Leiden University
-# 
-# $Id: Makefile.am,v 1.19 2012/01/18 15:07:22 tzhai Exp $
 
 SUBDIRS = .
 

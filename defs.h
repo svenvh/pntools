@@ -3,8 +3,6 @@
  *
  *  	Created on: Oct 6, 2010
  *      Author: Teddy Zhai, Sven van Haastregt
- *      $Id: defs.h,v 1.10 2012/01/18 15:38:22 tzhai Exp $
- *
  */
 
 #ifndef DEFS_H_

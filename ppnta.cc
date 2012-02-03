@@ -2,7 +2,6 @@
 // Implementation of throughput analysis
 // Sven van Haastregt, September-December 2010
 // LERC, LIACS, Leiden University
-// $Id: ppnta.cc,v 1.12 2011/07/27 13:17:12 svhaastr Exp $
 //
 #include <iostream>
 
