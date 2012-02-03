@@ -17,6 +17,9 @@ Replace YYY with your isa build directory (containing c2pdg, pn, pn2adg, libpdg.
 
 Adding New Tools
 ----------------
+We recommend the coding guide written by [Applied Informatics](http://www.appinf.com/download/CppCodingStyleGuide.pdf)
+throughout the development process in pntools.
+
 1. Open up `Makefile.am` and add appropriate `_LDADD`, `_SOURCES` lines. Add the tool
    executable name to `bin_PROGRAMS`.
 2. Rerun `autogen.sh`, `configure` and `make`.
