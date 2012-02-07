@@ -22,6 +22,7 @@
 using pdg::PDG;
 using namespace std;
 
+
 /* Helper function (callback) for getCardinality
  * This function is mainly used for non-parameterized case,
  * in which only a single piece and a constant are desired
@@ -76,7 +77,9 @@ int getCardinality(__isl_keep isl_pw_qpolynomial *pwqp){
 __isl_give isl_set*
 getUnwrappedDomain(__isl_take isl_set *set){
 	isl_set *dom_set = NULL;
-
+//	std::cout << "set:";
+//	isl_set_print(set, stdout, 0, ISL_FORMAT_ISL);
+//	std::cout << std::endl;
 	if (isl_set_is_wrapping(set) == -1) {
 		fprintf(stderr, "ERROR: The unwrapped domain cannot be found.\n");
 	} else if (isl_set_is_wrapping(set) == 0) {
@@ -105,9 +108,14 @@ getUnwrappedDomain(__isl_take isl_set *set){
 //    isl_set_free(ran_set);
     
     dom_set = isl_map_domain(unwrapped_set);
-    // In principle, we should recursively unwrap the set.
-	// FIXME: currently, we assume the set is only one level nested.
-	assert(isl_set_is_wrapping(dom_set) == 0);
+    while(isl_set_is_wrapping(dom_set)){
+    	unwrapped_set = isl_set_unwrap(dom_set);
+    	dom_set = isl_map_domain(unwrapped_set);
+    }
+//    std::cout << "dom set:";
+//    isl_set_print(dom_set, stdout, 0, ISL_FORMAT_ISL);
+//	std::cout << std::endl;
+    assert(isl_set_is_wrapping(dom_set) == 0);
     assert(isl_set_is_empty(dom_set) == 0);
     
     return dom_set;
@@ -131,11 +139,15 @@ __isl_give isl_set* getPDGDomain(const adg_domain *adgDomain){
 	// project out control variables
 	unsigned int nrDim = isl_set_dim(adgDomain->bounds, isl_dim_set);
 	unsigned int nrCtrlVar = adgDomain->controls.size();
+//	std::cout << "nr. control: " << nrCtrlVar << std::endl;
 	if (nrCtrlVar > 0) {
 		pdgDomain = isl_set_project_out(pdgDomain, isl_dim_set, nrDim - nrCtrlVar, nrCtrlVar);
 	}
 
 	// eliminate nested spaces (get domain of unwrapped map)
+//	std::cout << "pdgDomain: ";
+//	isl_set_print(pdgDomain, stdout, 0, ISL_FORMAT_ISL);
+//	std::cout << std::endl;
 	pdgDomain = getUnwrappedDomain(pdgDomain);
 	pdgDomain = isl_set_set_tuple_id(pdgDomain, name);
 
