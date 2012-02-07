@@ -1,9 +1,11 @@
 /*
+ * Copyright (c) 2012 Leiden University (LERC group at LIACS).
+ * All rights reserved.
+ *
  * adg2csdf.cc
  *
  *  Created on: Dec 19, 2011
  *      Author: Teddy Zhai
- *
  */
 
 #include <sstream>
@@ -34,10 +36,9 @@ struct ind_dims_t {
 	unsigned int dims;
 	int nr_ind_dim;
 
-	isl_set *var_domain;
 	std::map<unsigned int, bool> dim_dep_map;
 
-	ind_dims_t() : var_domain(NULL) {}
+
 };
 
 typedef std::map<std::string, std::vector<short>* > phaseMap_t;
@@ -47,7 +48,6 @@ typedef std::map<isl_id*, isl_set*> var_domain_t;
 typedef std::map<isl_id*, std::vector<short>* > phases_t;
 
 /// Csdf Dumper class
-// Currently only used by ppn2csdf, so declaration is inside this file.
 class CsdfDumper {
 	ADG_helper *ppn;
 	phases_t phases;
@@ -61,17 +61,22 @@ public:
     void DumpCsdf(std::ostream &strm);
 //    void dumpCsdf3(std::ostream &strm);
 
+
 private:
 //    void writePortCsdf3(std::string name, std::string type, std::ostream &strm);
     void writePhase(isl_id *portName, std::ostream &strm, char sep);
-    __isl_give isl_set* findVariantDomain(const Process *process);
+
+    int getCommonPortsDims(__isl_keep isl_set *process_domain, Ports &ports, ind_dims_t &ind_dims);
     void findVariantDomain2(const Process *process);
 	unsigned int getPhaseLength(__isl_keep isl_set *var_domain);
-	void scanIterationPoints_lexmin(const Process *process, const Port *port);
     void computePhases(const Process *process);
     unsigned getWCET(Process *process);
+
+
     bool checkSimplePattern(const Process *process);
     bool checkPhaseValidity(const Process *process);
+
+    void dumpChannels(std::ostream &strm);
 
 };
 
@@ -126,38 +131,13 @@ projectCtrlVars(const adg_domain *adg_dom){
 	return set;
 }
 
-// get the set without local space provided the local space is empty
-// __isl_give isl_set*
-// getUnwrappedDomain(__isl_take isl_set *set){
-// 	assert(isl_set_is_wrapping(set) == 1);
-// 
-// 	isl_map *unwrapped_set = isl_set_unwrap(set);
-// 
-// 	isl_set *ran_set = isl_map_range(isl_map_copy(unwrapped_set));
-// 	/*std::cout << "the range of unwrapped set: ";
-// 	printer = isl_printer_print_set(printer, ran_set);
-// 	printer = isl_printer_end_line(printer);
-// 	std::cout << "dim set: " << isl_set_dim(ran_set, isl_dim_set) << std::endl;
-// 	std::cout << "dim cst: " << isl_set_dim(ran_set, isl_dim_cst) << std::endl;
-// 	std::cout << "dim param:" << isl_set_dim(ran_set, isl_dim_param) << std::endl;
-// 	std::cout << "dim in:" << isl_set_dim(ran_set, isl_dim_in) << std::endl;*/
-// 	assert(isl_set_dim(ran_set, isl_dim_set) == 0);
-// 	if (isl_set_dim(ran_set, isl_dim_set) != 0) {
-// 		fprintf(stderr, "ERROR: the local space of the set have dimensions. "
-// 				"Getting unwrapped domain from the set might cause problems\n");
-// 	}
-// 	isl_set_free(ran_set);
-// 
-// 	isl_set *dom_set = isl_map_domain(unwrapped_set);
-// 
-// 	return dom_set;
-// }
-
+/* check all dependent dimensions
+ * if the corresponding coefficients are non-zero in this constraint
+ * */
 int
 check_ind_constratint(__isl_take isl_constraint *constrnt, void *user){
-	struct ind_dims_t *printer_dims = (ind_dims_t *)user;
-	unsigned int nr_dims = printer_dims->dims;
-//	std::cout << "nr. dim:" << nr_dims << std::endl;
+	struct ind_dims_t *ind_dims = (ind_dims_t *)user;
+	//	std::cout << "nr. dim:" << nr_dims << std::endl;
 
 
 	std::map<unsigned int, bool> dim_deps;
@@ -167,12 +147,23 @@ check_ind_constratint(__isl_take isl_constraint *constrnt, void *user){
 	isl_int_init(zero_int);
 	isl_int_set_si(zero_int, 0);
 	unsigned int nr_dep = 0;
+	unsigned int nr_dims = ind_dims->dims;
+	// 2 dimensions are dependent if the corresponding coefficient is non-zero
 	for (int i = 0; i < nr_dims; ++i) {
 		isl_constraint_get_coefficient(constrnt, isl_dim_set, i, &iter_coffi);
+
+
+
+		/* if the coefficients of set and dimensions in port domain is not equal to those in process domain,
+		 * this means, port domain on the set domain is a subset of the set dimension in the process domain.
+		 * This dimension cannot be projected later on.
+		 */
+
 
 		if (isl_int_eq(iter_coffi, zero_int)) {
 			dim_deps[i] = false;
 		}else{
+			// the coefficient is non-zero
 			dim_deps[i] = true;
 			nr_dep ++;
 		}
@@ -187,7 +178,7 @@ check_ind_constratint(__isl_take isl_constraint *constrnt, void *user){
 		for (int i = 0; i < nr_dims; ++i) {
 			if (dim_deps[i] == false) continue;
 
-			printer_dims->dim_dep_map[i] = true;
+			ind_dims->dim_dep_map[i] = true;
 		}
 	}
 
@@ -200,7 +191,6 @@ int
 check_ind_dims(__isl_take isl_basic_set *domain_bset, void *user){
 
 	ind_dims_t *ind_dims = (ind_dims_t *)user;
-	unsigned int nr_dims = ind_dims->dims;
 
 	/*std::cout << "nr. dim:" << nr_dims << std::endl;
 	std::cout << "the domain: ";
@@ -220,6 +210,8 @@ check_ind_dims(__isl_take isl_basic_set *domain_bset, void *user){
 //		std::cout << "first dim. to project out is:" << first_dim << std::endl;
 	}
 
+	// port domain shoud be live in the same space with node domain
+	unsigned int nr_dims = ind_dims->dims;
 	for (int i = 0; i < nr_dims; ++i) {
 		if (ind_dims->dim_dep_map[i] == true) {
 //			std::cout << i << " dimension is dependent" << std::endl;
@@ -238,255 +230,173 @@ check_ind_dims(__isl_take isl_basic_set *domain_bset, void *user){
 
 	// project outer-most "n_dim" independent dimensions
 	if (first_dim != -1) {
-		isl_basic_set *d_var = isl_basic_set_project_out(domain_bset, isl_dim_out, first_dim, n_dim);
-		ind_dims->var_domain = isl_set_from_basic_set(d_var);
-
 		ind_dims->nr_ind_dim = n_dim;
-	}else{
-		// no compact variant domain is found.
-		// the variant domain is equal to the original port domain.
-		ind_dims->var_domain = isl_set_from_basic_set(domain_bset);
 	}
 
-	/*std::cout << "the variant domain: ";
-	printer = isl_printer_print_set(printer, ind_dims->var_domain);
-	printer = isl_printer_end_line(printer);
-	isl_basic_set_free(d_var);*/
+	isl_basic_set_free(domain_bset);
 
 	return 0;
 }
 
 void printTest(adg_domain *adgdomain){
-	std::cout << "constrols: " << adgdomain->controls.size() << std::endl;
+	std::cout << "controls: " << adgdomain->controls.size() << std::endl;
 	std::cout << "filters: " << adgdomain->filters.size() << std::endl;
 }
 
-void
-CsdfDumper::findVariantDomain2(const Process *process){
-	isl_set *process_domain = ppn->getProcessDomainBound(process);
-	/*std::cout << "process domain: ";
-	printer = isl_printer_print_set(printer, process->domain->bounds);
-	printer = isl_printer_end_line(printer);*/
+int
+CsdfDumper::getCommonPortsDims(__isl_keep isl_set *process_domain, Ports &ports, ind_dims_t &ind_dims){
+	int nr_common_dims = INT_MAX;
 
-	//isl_set *common_var_domain = isl_set_empty_like(process_domain);
-	int nr_common_vardomain_dims = INT_MAX;
+	for (int i = 0; i < ports.size(); ++i) {
+		// ignore self-edges
+		CDNode cdNode;
+		Node *node = ppn->getNode(ports[i]->node_name);
+		cdNode.push_back(node);
+		if (ppn->isSelfEdge(ppn->getEdge(ports[i]->edge_name), &cdNode)) {
+			continue;
+		}
 
-	// iterate over all input port domains
-	Ports input_ports = ppn->getInPorts(process);
-	for (int i = 0; i < input_ports.size(); ++i) {
-		isl_set *port_domain = ppn->getPortDomainBound(input_ports[i]);
+		isl_set *port_domain = getPDGDomain(ports[i]->domain);
+//		std::cout << "in port domain: ";
+//		printer = isl_printer_print_set(printer, port_domain);
+//		printer = isl_printer_end_line(printer);
 
-		struct ind_dims_t *ind_dims = new ind_dims_t;
-		unsigned int nr_dims = isl_set_dim(port_domain, isl_dim_out);
-		ind_dims->dims = nr_dims;
-		ind_dims->nr_ind_dim = -1;
-
+		ind_dims.nr_ind_dim = -1;
 		// find the variant domain of this port domain and store in "ind_dims->var_domain"
-		int rt = isl_set_foreach_basic_set(port_domain, check_ind_dims, ind_dims);
+		int rt = isl_set_foreach_basic_set(port_domain, check_ind_dims, &ind_dims);
 		assert(rt == 0);
 
 		/* find the common variant domain:
-		 * If the common variant domain is a subset of the currently found variant domain,
+		 * If the common variant domain is a superset of the currently found variant domain,
+		 * i.e. dimension of the common variant domain is larger than the currently found variant domain,
 		 * then assign it as the new common variant domain
-		if (isl_set_is_subset(common_var_domain, ind_dims->var_domain) != 1){
-			isl_set_free(common_var_domain);
-			common_var_domain = isl_set_copy(ind_dims->var_domain);
-		}*/
-		if ( ind_dims->nr_ind_dim != -1 && ind_dims->nr_ind_dim < nr_common_vardomain_dims) {
-			nr_common_vardomain_dims = ind_dims->nr_ind_dim;
+		 */
+		if ( ind_dims.nr_ind_dim <= 0) {
+			nr_common_dims = 0;
+			isl_set_free(port_domain);
+
+			return nr_common_dims;
+		}
+		if (ind_dims.nr_ind_dim < nr_common_dims) {
+			nr_common_dims = ind_dims.nr_ind_dim;
 		}
 
+		/* step 2: iterate over all found common and outer-dimensions.
+		 * All port domain must be fully defined in the node domain at that dimension,
+		 * if a pattern can be possibly found.
+		 * */
+		int nr_equal_dims = 0;
+		for (int j = 0; j < nr_common_dims; ++j) {
+			if (!isDimsEqual(process_domain, port_domain, 0, j+1)) {
+				nr_equal_dims = j;
+				break;
+			} else {
+				nr_equal_dims++;
+			}
+		}
 
-		isl_set_free(ind_dims->var_domain);
-		free(ind_dims);
+		if (nr_equal_dims < nr_common_dims){
+			nr_common_dims = nr_equal_dims;
+		}
+		assert(nr_common_dims != INT_MAX && nr_common_dims >=0);
 		isl_set_free(port_domain);
-	}
+	} // end ports
 
-	// iterate over all output port domains
+	return nr_common_dims;
+}
+
+
+void
+CsdfDumper::findVariantDomain2(const Process *process){
+	isl_set *process_domain = getPDGDomain(process->domain);
+//	std::cout << "process domain: ";
+//	printer = isl_printer_print_set(printer, process_domain);
+//	printer = isl_printer_end_line(printer);
+
+	/* step 1: check the dependences between dimensions in each port domain.
+	 *  if a outer-dimension depends on a certain inner-dimension,
+	 *  no pattern can be found at the outer-dimension.
+	 *  NOTE: while(1) is naturally handled.
+	 *  */
+	int nr_common_dims = INT_MAX;
+	struct ind_dims_t ind_dims;
+	unsigned int nr_dims = isl_set_dim(process_domain, isl_dim_set);
+	ind_dims.dims = nr_dims;
+
+	// iterate over all input port domains
+	Ports input_ports = ppn->getInPorts(process);
+	nr_common_dims = getCommonPortsDims(process_domain, input_ports, ind_dims);
+
+//	// iterate over all output port domains
 	Ports output_ports = ppn->getOutPorts(process);
-	for (int i = 0; i < output_ports.size(); ++i) {
-		isl_set *port_domain = ppn->getPortDomainBound(output_ports[i]);
-		/*std::cout << "port domain :";
-		printer = isl_printer_print_set(printer, port_domain);
-		printer = isl_printer_end_line(printer);*/
-//		printTest(output_ports[i]->domain);
-//		if (isl_set_is_subset(port_domain, process_domain) == 0) {
-//			std::cout << "how come, port domain is not a subset of the process domain." << std::endl;
-//		}
-
-		struct ind_dims_t *ind_dims = new ind_dims_t;
-		ind_dims->dims  = isl_set_dim(port_domain, isl_dim_out);
-		ind_dims->nr_ind_dim = -1;
-
-		// find variant domains and store in "ind_dims->var_domain"
-		int rt = isl_set_foreach_basic_set(port_domain, check_ind_dims, ind_dims);
-		assert(rt == 0);
-		assert(ind_dims->var_domain != NULL);
-
-		/* find the max common variant domain:
-		 * If the common variant domain is a subset of the currently found variant domain,
-		 * then assign it as the new common variant domain
-		if (isl_set_is_subset(common_var_domain, ind_dims->var_domain) != 1) {
-			isl_set_free(common_var_domain);
-			common_var_domain = isl_set_copy(ind_dims->var_domain);
-		}*/
-		if ( ind_dims->nr_ind_dim != -1 && ind_dims->nr_ind_dim < nr_common_vardomain_dims) {
-			nr_common_vardomain_dims = ind_dims->nr_ind_dim;
-		}
-
-		isl_set_free(port_domain);
-		isl_set_free(ind_dims->var_domain);
-		free(ind_dims);
+	int nr_common_out_dims = getCommonPortsDims(process_domain, output_ports, ind_dims);
+	if (nr_common_dims > nr_common_out_dims) {
+		nr_common_dims = nr_common_out_dims;
 	}
-
 	// number should be between 0 and number of dimensions of the process domain
-	assert(nr_common_vardomain_dims != INT_MAX);
+//	std::cout << "nr common dimension in variant domains: " << nr_common_dims << std::endl;
+
 
 	// process the process domain and store its processed variant domain
-	isl_set *var_domain_process = isl_set_project_out(process_domain, isl_dim_out,
-			0, nr_common_vardomain_dims);
-	// TODO: possibly controls in the process domain needs to be projected out as well.
-	var_domains[process->name] = var_domain_process;
-	/*std::cout << "process variant domain :";
-	printer = isl_printer_print_set(printer, var_domain_process);
-	printer = isl_printer_end_line(printer);*/
+//	std::cout << "process domain :";
+//	printer = isl_printer_print_set(printer, process_domain);
+//	printer = isl_printer_end_line(printer);
+	if (nr_common_dims > 0) {
+		// NOTE: currently the tuple is removed if certain dimensions of a set is projected out.
+		// Therefore, we need id to reset it in the new set
+		isl_id *process_name = isl_set_get_tuple_id(process_domain);
+		isl_set *var_domain_process = isl_set_project_out((process_domain), isl_dim_set,
+					0, nr_common_dims);
+		var_domain_process = isl_set_set_tuple_id(var_domain_process, process_name);
+		var_domains[process->name] = var_domain_process;
+	} else {
+		// no common variant domain is found
+		var_domains[process->name] = process_domain;
+	}
+//	std::cout << "process variant domain :";
+//	printer = isl_printer_print_set(printer, var_domains[process->name]);
+//	printer = isl_printer_end_line(printer);
 
 
 	// for each input port, project out independent dimensions from the port domain
 	for (int i = 0; i < input_ports.size(); ++i) {
-		isl_set *port_domain = ppn->getPortDomainBound(input_ports[i]);
+		isl_set *port_domain = getPDGDomain(input_ports[i]->domain);
 
 		// project out independent dimensions
-		isl_set *var_domain_port = isl_set_project_out(port_domain, isl_dim_out,
-					0, nr_common_vardomain_dims);
-
-		// project out control variables if any
-		unsigned nr_controls_port_domain = input_ports[i]->domain->controls.size();
-		if ( nr_controls_port_domain > 0) {
-			int nr_dim_var_port_dom = isl_set_dim(var_domain_port, isl_dim_set);
-			var_domain_port = isl_set_project_out(var_domain_port, isl_dim_set,
-					nr_dim_var_port_dom - nr_controls_port_domain, nr_controls_port_domain);
+		if (nr_common_dims > 0) {
+			isl_id *port_name = isl_set_get_tuple_id(port_domain);
+			isl_set *var_domain_port = isl_set_project_out((port_domain), isl_dim_out,
+								0, nr_common_dims);
+			var_domain_port = isl_set_set_tuple_id(var_domain_port, port_name);
+			var_domains[input_ports[i]->name] = var_domain_port;
+		} else {
+			var_domains[input_ports[i]->name] = port_domain;
 		}
-
-		var_domains[input_ports[i]->name] = var_domain_port;
-		/*std::cout << "in port variant domain :";
-		printer = isl_printer_print_set(printer, var_domain_port);
-		printer = isl_printer_end_line(printer);*/
+//		std::cout << "in port variant domain :";
+//		printer = isl_printer_print_set(printer, var_domains[input_ports[i]->name]);
+//		printer = isl_printer_end_line(printer);
 	}
 
 	// for each output port, project out independent dimensions from the port domain
 	for (int i = 0; i < output_ports.size(); ++i) {
-		isl_set *port_domain = ppn->getPortDomainBound(output_ports[i]);
+		isl_set *port_domain = getPDGDomain(output_ports[i]->domain);
 
 		// first project out independent dimensions
-		isl_set *var_domain_port = isl_set_project_out(port_domain, isl_dim_out,
-					0, nr_common_vardomain_dims);
-
-		// project out control variables if any
-		unsigned nr_controls_port_domain = output_ports[i]->domain->controls.size();
-		if ( nr_controls_port_domain > 0) {
-			int nr_dim_var_port_dom = isl_set_dim(var_domain_port, isl_dim_set);
-			var_domain_port = isl_set_project_out(var_domain_port, isl_dim_set,
-					nr_dim_var_port_dom - nr_controls_port_domain, nr_controls_port_domain);
+		if (nr_common_dims > 0) {
+			isl_id *port_name = isl_set_get_tuple_id(port_domain);
+			isl_set *var_domain_port = isl_set_project_out(port_domain, isl_dim_out,
+								0, nr_common_dims);
+			var_domain_port = isl_set_set_tuple_id(var_domain_port, port_name);
+			var_domains[output_ports[i]->name] = var_domain_port;
+		} else {
+			var_domains[output_ports[i]->name] = port_domain;
 		}
-		var_domains[output_ports[i]->name] = var_domain_port;
-		/*std::cout << "port variant domain :";
-		printer = isl_printer_print_set(printer, var_domain_port);
-		printer = isl_printer_end_line(printer);*/
+//		std::cout << "-->port variant domain :";
+//		printer = isl_printer_print_set(printer, var_domains[output_ports[i]->name]);
+//		printer = isl_printer_end_line(printer);
 	}
 
 	assert(var_domains.empty() == false);
-}
-
-
-__isl_give isl_set*
-CsdfDumper::findVariantDomain(const Process *process){
-
-	isl_set *process_domain = ppn->getProcessDomainBound(process);
-	std::cout << "process domain: ";
-	printer = isl_printer_print_set(printer, process->domain->bounds);
-	printer = isl_printer_end_line(printer);
-
-	isl_set *common_var_domain = isl_set_empty_like(process_domain);
-	int nr_common_vardomain_dims = INT_MAX;
-
-	// iterate over all input port domains
-	Ports input_ports = ppn->getInPorts(process);
-	for (int i = 0; i < input_ports.size(); ++i) {
-		isl_set *port_domain = ppn->getPortDomainBound(input_ports[i]);
-
-		struct ind_dims_t *ind_dims = new ind_dims_t;
-		unsigned int nr_dims = isl_set_dim(port_domain, isl_dim_out);
-		ind_dims->dims = nr_dims;
-		ind_dims->nr_ind_dim = -1;
-
-		// find the variant domain of this port domain and store in "ind_dims->var_domain"
-		int rt = isl_set_foreach_basic_set(port_domain, check_ind_dims, ind_dims);
-		assert(rt == 0);
-
-		/* find the common variant domain:
-		 * If the common variant domain is a subset of the currently found variant domain,
-		 * then assign it as the new common variant domain */
-		if (isl_set_is_subset(common_var_domain, ind_dims->var_domain) != 1){
-			isl_set_free(common_var_domain);
-			common_var_domain = isl_set_copy(ind_dims->var_domain);
-		}
-
-		isl_set_free(ind_dims->var_domain);
-		free(ind_dims);
-		isl_set_free(port_domain);
-	}
-
-	// iterate over all output port domains
-	Ports output_ports = ppn->getOutPorts(process);
-	for (int i = 0; i < output_ports.size(); ++i) {
-		isl_set *port_domain = ppn->getPortDomainBound(output_ports[i]);
-		std::cout << "port domain :";
-		printer = isl_printer_print_set(printer, port_domain);
-		printer = isl_printer_end_line(printer);
-
-		struct ind_dims_t *ind_dims = new ind_dims_t;
-		ind_dims->dims  = isl_set_dim(port_domain, isl_dim_out);
-		ind_dims->nr_ind_dim = -1;
-
-		// find variant domains and store in "ind_dims->var_domain"
-		int rt = isl_set_foreach_basic_set(port_domain, check_ind_dims, ind_dims);
-		assert(rt == 0);
-		assert(ind_dims->var_domain != NULL);
-
-		/* find the max common variant domain:
-		 * If the common variant domain is a subset of the currently found variant domain,
-		 * then assign it as the new common variant domain
-		if (isl_set_is_subset(common_var_domain, ind_dims->var_domain) != 1) {
-			isl_set_free(common_var_domain);
-			common_var_domain = isl_set_copy(ind_dims->var_domain);
-		}*/
-		if ( ind_dims->nr_ind_dim != -1 && ind_dims->nr_ind_dim < nr_common_vardomain_dims) {
-			nr_common_vardomain_dims = ind_dims->nr_ind_dim;
-		}
-
-		isl_set_free(port_domain);
-		isl_set_free(ind_dims->var_domain);
-		free(ind_dims);
-	}
-
-
-	/*std::cout << "the common variant domain: ";
-	printer = isl_printer_print_set(printer, common_var_domain);
-	printer = isl_printer_end_line(printer);*/
-
-	// for each input port, process the port domain to variant domain (dimensions)
-
-	// for each output port, process the port domain to variant domain (dimensions)
-	for (int i = 0; i < output_ports.size(); ++i) {
-		isl_set *port_domain = ppn->getPortDomainBound(output_ports[i]);
-
-	}
-
-	isl_set_free(process_domain);
-
-	assert(isl_set_is_empty(common_var_domain) != 1);
-	return common_var_domain;
 }
 
 
@@ -544,7 +454,8 @@ CsdfDumper::computePhases(const Process *process){
 		}
 		isl_set_free(process_dom_new);
 
-		assert(phases[port_id]->size() > 0);
+		// the length of phases of each is equal to the number of iterations of node domain
+		assert(phases[port_id]->size() == getPhaseLength(var_domains[process->name]));
 	} // end input_ports
 
 	// iterate over all output port domains
@@ -574,7 +485,8 @@ CsdfDumper::computePhases(const Process *process){
 		}
 		isl_set_free(process_dom_new);
 
-		assert(phases[port_id]->size() > 0);
+		// the length of phases of each is equal to the number of iterations of node domain
+		assert(phases[port_id]->size() == getPhaseLength(var_domains[process->name]));
 //		printer = isl_printer_print_set(printer, domain_port);
 //		printer = isl_printer_end_line(printer);
 	} // end output ports
@@ -607,49 +519,24 @@ CsdfDumper::getWCET(Process *process) {
 bool
 CsdfDumper::checkSimplePattern(const Process *process){
 	bool isSimplePattern = true;
-	isl_set *procs_domain = process->domain->bounds;
+
 //	std::cout << "process domain: ";
 //	printer = isl_printer_print_set(printer, process->domain->bounds);
 //	printer = isl_printer_end_line(printer);
 
-	isl_set *unwrapped_procs_domain = NULL;
-	if (process->domain->controls.size() > 0) {
-		unwrapped_procs_domain = projectCtrlVars(process->domain);
-	}else{
-		unwrapped_procs_domain = isl_set_copy(procs_domain);
-	}
+	isl_set *unwrapped_procs_domain = getPDGDomain(process->domain);
+
 //	std::cout << "projected process domain: ";
 //	printer = isl_printer_print_set(printer, unwrapped_procs_domain);
 //	printer = isl_printer_end_line(printer);
-	// get unwrapped domain (without local space in the bounds)
-	if (isl_set_is_wrapping(unwrapped_procs_domain)) {
-		unwrapped_procs_domain = getUnwrappedDomain(unwrapped_procs_domain);
-	}
-	assert(unwrapped_procs_domain != NULL);
-
 
 	// check all input ports
 	Ports input_ports = process->input_ports;
 	for (int i = 0; i < input_ports.size(); ++i) {
-		isl_set *port_domain = input_ports[i]->domain->bounds;
+		isl_set *unwrapped_port_domain = getPDGDomain(input_ports[i]->domain);
 //		std::cout << "in port domain: ";
 //		printer = isl_printer_print_set(printer, input_ports[i]->domain->bounds);
 //		printer = isl_printer_end_line(printer);
-
-		// the port domain has control variable, it cannot be equal to the process domain
-		isl_set *unwrapped_port_domain = NULL;
-		if (input_ports[i]->domain->controls.size() > 0) {
-			unwrapped_port_domain = projectCtrlVars(input_ports[i]->domain);
-		} else {
-			unwrapped_port_domain = isl_set_copy(port_domain);
-		}
-		// the local space of the domain should have dimensions 0.
-		// get unwrapped domain (without local space in the bounds)
-		if (isl_set_is_wrapping(unwrapped_port_domain)) {
-			unwrapped_port_domain = getUnwrappedDomain(unwrapped_port_domain);
-		}
-		assert(unwrapped_port_domain != NULL);
-
 
 		if (isl_set_is_equal(unwrapped_port_domain, unwrapped_procs_domain) != 1) {
 			isSimplePattern = false;
@@ -658,34 +545,19 @@ CsdfDumper::checkSimplePattern(const Process *process){
 		isl_set_free(unwrapped_port_domain);
 	} // end input ports
 
-
 	if (!isSimplePattern) {
 		isl_set_free(unwrapped_procs_domain);
 		return isSimplePattern;
 	}
-//	std::cout<< "it is a simple pattern for inputs." << std::endl;
 
 
 	// check all output ports
 	Ports output_ports = process->output_ports;
 	for (int i = 0; i < output_ports.size(); ++i) {
-		isl_set *port_domain = output_ports[i]->domain->bounds;
+		isl_set *unwrapped_port_domain = getPDGDomain(output_ports[i]->domain);
 //		std::cout << "out port domain: ";
 //		printer = isl_printer_print_set(printer, output_ports[i]->domain->bounds);
 //		printer = isl_printer_end_line(printer);
-
-		// the port domain has control variable, it cannot be equal to the process domain
-		isl_set *unwrapped_port_domain = NULL;
-		if (output_ports[i]->domain->controls.size() > 0){
-			unwrapped_port_domain = projectCtrlVars(output_ports[i]->domain);
-		} else {
-			unwrapped_port_domain = isl_set_copy(port_domain);
-		}
-		// get unwrapped domain (without local space in the bounds)
-		if (isl_set_is_wrapping(unwrapped_port_domain)) {
-			unwrapped_port_domain = getUnwrappedDomain(unwrapped_port_domain);
-		}
-		assert(unwrapped_port_domain != NULL);
 
 		if (isl_set_is_equal(unwrapped_port_domain, unwrapped_procs_domain) != 1){
 			isSimplePattern = false;
@@ -694,12 +566,11 @@ CsdfDumper::checkSimplePattern(const Process *process){
 		isl_set_free(unwrapped_port_domain);
 	} // end output ports
 
+//	std::cout<< "it is a simple pattern." << std::endl;
 	isl_set_free(unwrapped_procs_domain);
 	if (!isSimplePattern) {
-		return isSimplePattern;
+			return isSimplePattern;
 	}
-
-//	std::cout<< "it is a simple pattern." << std::endl;
 
 	// simple pattern, store the pattern [1]
 	for (int i = 0; i < input_ports.size(); ++i) {
@@ -713,6 +584,7 @@ CsdfDumper::checkSimplePattern(const Process *process){
 
 	return isSimplePattern;
 }
+
 
 /* valid phases of a port must at least have one 1*/
 bool
@@ -741,6 +613,31 @@ CsdfDumper::checkPhaseValidity(const Process *process){
 }
 
 
+void
+CsdfDumper::dumpChannels(std::ostream& strm) {
+	int indent = 0;
+	Channels ppn_channels = this->ppn->getChannels();
+	strm << TABS(indent) << "edge_number:" << ppn_channels.size() << "\n";
+	// iterate over all channels
+	unsigned int edge_ed = 0;
+	for (PPNchIter eit = ppn_channels.begin();
+			eit != ppn_channels.end();
+			++eit)
+	{
+		Channel* ch = *eit;
+
+		strm << TABS(indent) << "edge:" << "\n";
+		indent++;
+		strm << TABS(indent) << "id:" << edge_ed++ << "\n";
+		strm << TABS(indent) << "name:" << isl_id_get_name(ch->name) << "\n";
+		strm << TABS(indent) << "src:" << ppn->getId(ch->from_node_name) <<
+				" " << ppn->getId(ch->from_port_name) << "\n";
+		strm << TABS(indent) << "dst:" << ppn->getId(ch->to_node_name) <<
+				" " << ppn->getId(ch->to_port_name) << "\n";
+		indent = 0;
+	}
+}
+
 // print the csdf in the StreamIT-compatible format
 void CsdfDumper::DumpCsdf(std::ostream& strm) {
 	const Processes procs = this->ppn->getProcesses();
@@ -762,7 +659,7 @@ void CsdfDumper::DumpCsdf(std::ostream& strm) {
 
 		// there are special cases in which simple patterns, such as [1],  can be derived without further processing
 		bool isSimplePattern = checkSimplePattern(process);
-//		bool isSimplePattern = false;
+////		bool isSimplePattern = false;
 		if (isSimplePattern) {
 			strm << TABS(indent) << "length:1"  << "\n";
 
@@ -824,29 +721,8 @@ void CsdfDumper::DumpCsdf(std::ostream& strm) {
 		indent = 0;
 	} // end processes
 
-
 	// write channels
-	indent = 0;
-	Channels ppn_channels = this->ppn->getChannels();
-	strm << TABS(indent) << "edge_number:" << ppn_channels.size() << "\n";
-	// iterate over all channels
-	unsigned int edge_ed = 0;
-	for (PPNchIter eit = ppn_channels.begin();
-			eit != ppn_channels.end();
-			++eit)
-	{
-		Channel* ch = *eit;
-
-		strm << TABS(indent) << "edge:" << "\n";
-		indent++;
-		strm << TABS(indent) << "id:" << edge_ed++ << "\n";
-		strm << TABS(indent) << "name:" << isl_id_get_name(ch->name) << "\n";
-		strm << TABS(indent) << "src:" << ppn->getId(ch->from_node_name) <<
-				" " << ppn->getId(ch->from_port_name) << "\n";
-		strm << TABS(indent) << "dst:" << ppn->getId(ch->to_node_name) <<
-				" " << ppn->getId(ch->to_port_name) << "\n";
-		indent = 0;
-	}
+	dumpChannels(strm);
 }
 
 static int gOutputFormat; // 1 = StreamIT, 3 = SDF3
