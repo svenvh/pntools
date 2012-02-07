@@ -1,4 +1,7 @@
 /*
+ * Copyright (c) 2012 Leiden University (LERC group at LIACS).
+ * All rights reserved.
+ *
  * 		utility.h
  *
  *  	Created on: Jan 4, 2011
@@ -29,8 +32,9 @@ int getCardinality(isl_pw_qpolynomial *pw_qpoly);
  * a wrapped set = [set] -> local[...] */
 __isl_give isl_set* getUnwrappedDomain(__isl_take isl_set *set);
 
-// retrieve the domain (without nested space, but with existential variables) from adg_domain
-__isl_give isl_set* getPDGDomain(adg_domain *adgDomain);
+// retrieve the domain (without nested space, but with existential variables) from adg_domain.
+// Tuple is preserved.
+__isl_give isl_set* getPDGDomain(const adg_domain *adgDomain);
 
 /* check if the dimensions starting from "first" and consecutive "n" in set "set1" is equal to
  * those in set "set2"

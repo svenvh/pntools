@@ -1,4 +1,7 @@
 /*
+ * Copyright (c) 2012 Leiden University (LERC group at LIACS).
+ * All rights reserved.
+ *
  * 		utility.cc
  *
  *  	Created on: Jan 4, 2011
@@ -86,7 +89,7 @@ getUnwrappedDomain(__isl_take isl_set *set){
     
     isl_map *unwrapped_set = isl_set_unwrap(set);
     
-    isl_set *ran_set = isl_map_range(isl_map_copy(unwrapped_set));
+//    isl_set *ran_set = isl_map_range(isl_map_copy(unwrapped_set));
     /*std::cout << "the range of unwrapped set: ";
     printer = isl_printer_print_set(printer, ran_set);
     printer = isl_printer_end_line(printer);
@@ -99,16 +102,31 @@ getUnwrappedDomain(__isl_take isl_set *set){
 //		fprintf(stderr, "WARNING: the local space of the set have dimensions. "
 //		"Getting unwrapped domain from the set might cause problems\n");
 //    }
-    isl_set_free(ran_set);
+//    isl_set_free(ran_set);
     
     dom_set = isl_map_domain(unwrapped_set);
+    // In principle, we should recursively unwrap the set.
+	// FIXME: currently, we assume the set is only one level nested.
+	assert(isl_set_is_wrapping(dom_set) == 0);
+    assert(isl_set_is_empty(dom_set) == 0);
     
     return dom_set;
 }
 
 
-__isl_give isl_set* getPDGDomain(adg_domain *adgDomain){
+__isl_give isl_set* getPDGDomain(const adg_domain *adgDomain){
 	isl_set *pdgDomain = isl_set_copy(adgDomain->bounds);
+
+	// if the bounds is wrapped, we need to unwrap it first to retrieve the id
+	isl_id *name = NULL;
+	if (isl_set_is_wrapping(pdgDomain)) {
+		isl_set *dom = getUnwrappedDomain(isl_set_copy(adgDomain->bounds));
+		name = isl_set_get_tuple_id(dom);
+		isl_set_free(dom);
+	} else {
+		name = isl_set_get_tuple_id(pdgDomain);
+	}
+	assert(name != NULL);
 
 	// project out control variables
 	unsigned int nrDim = isl_set_dim(adgDomain->bounds, isl_dim_set);
@@ -119,6 +137,7 @@ __isl_give isl_set* getPDGDomain(adg_domain *adgDomain){
 
 	// eliminate nested spaces (get domain of unwrapped map)
 	pdgDomain = getUnwrappedDomain(pdgDomain);
+	pdgDomain = isl_set_set_tuple_id(pdgDomain, name);
 
 	return pdgDomain;
 }
@@ -129,15 +148,43 @@ isDimsEqual(__isl_keep isl_set *set1, __isl_keep isl_set *set2,
 		unsigned int first, unsigned int n)
 {
 	bool isFullyDefined = false;
-	assert(isl_set_dim(set1, isl_dim_set) == isl_set_dim(set2, isl_dim_set));
+	isl_set *firstnSet1 = isl_set_copy(set1);
+	isl_set *firstnSet2 = isl_set_copy(set2);
+	unsigned int nrDimsSet1 = isl_set_dim(set1, isl_dim_set);
+	unsigned int nrDimsSet2 = isl_set_dim(set2, isl_dim_set);
+//	assert(nrDimsSet1 == nrDimsSet2);
 
-	isl_set *firstnSet1 = isl_set_project_out(set1, isl_dim_set, first, n);
+	if (first + n > nrDimsSet1) {
+		fprintf(stderr, "ERROR: n dimensions starting from position \"first\" cannot be retrieved. \n");
+		assert(first + n <= nrDimsSet1);
+	}
 
-	isl_set *firstnSet2 = isl_set_project_out(set1, isl_dim_set, first, n);
+	// retrieve "n" dimensions starting from "first" from set1
+	// 1. project out dimensions from 0 to first -1
+	if (first > 0) {
+		firstnSet1 = isl_set_project_out(firstnSet1, isl_dim_set, 0, first);
+	}
+	// 2. project out dimensions from "first + n" to nrDimsSet1
+	if (first + n < nrDimsSet1) {
+		firstnSet1 = isl_set_project_out(firstnSet1, isl_dim_set, first + n, nrDimsSet1 - first - n - first);
+	}
+
+	// retrieve "n" dimensions starting from "first" from set2
+
+	// 1. project out dimensions from 0 to first -1
+	if (first > 0) {
+		firstnSet2 = isl_set_project_out(firstnSet2, isl_dim_set, 0, first);
+	}
+	// 2. project out dimensions from "first + n" to nrDimsSet1
+	if (first + n < nrDimsSet1) {
+		firstnSet2 = isl_set_project_out(firstnSet2, isl_dim_set, first + n, nrDimsSet2 - first - n - first);
+	}
 
 	if (isl_set_is_equal(firstnSet1, firstnSet2)) {
 		isFullyDefined = true;
 	}
 
+	isl_set_free(firstnSet1);
+	isl_set_free(firstnSet2);
 	return isFullyDefined;
 }
