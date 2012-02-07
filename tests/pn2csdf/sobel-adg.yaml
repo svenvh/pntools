@@ -1,0 +1,876 @@
+name: sobel
+context: '{  :  }'
+iterator_map: '{ [c0, c1, c2] -> [c0, c1] }'
+iterators: [c0, c1]
+all_iterators: [c0, c1, c2]
+nodes:
+- name: ND_0
+  function:
+    name: readPixel
+    out:
+    - {var: {access: '{ ND_0[i0, i1] -> out_0ND_0[] }', type: int}, type: reference}
+    domain:
+      bounds: '{ ND_0[i0, i1] : i0 >= 1 and i0 <= 25 and i1 >= 1 and i1 <= 25 }'
+  domain:
+    bounds: '{ ND_0[i0, i1] : i0 >= 1 and i0 <= 25 and i1 >= 1 and i1 <= 25 }'
+  schedule: '{ ND_0[i0, i1] -> [i0, i1, 0] : i0 >= 1 and i0 <= 25 and i1 >= 1 and
+    i1 <= 25 }'
+  output_ports:
+  - name: ND_0OP_ED_0_0_V_0
+    node: ND_0
+    edge: ED_0
+    vars:
+    - {access: '{ ND_0[i0, i1] -> out_0ND_0[] }', type: int}
+    domain:
+      bounds: '{ ND_0[1, i1] : i1 >= 1 and i1 <= 2 }'
+  - name: ND_0OP_ED_1_0_V_0
+    node: ND_0
+    edge: ED_1
+    vars:
+    - {access: '{ ND_0[i0, i1] -> out_0ND_0[] }', type: int}
+    domain:
+      bounds: '{ ND_0[2, i1] : i1 >= 1 and i1 <= 2 }'
+  - name: ND_0OP_ED_2_0_V_0
+    node: ND_0
+    edge: ED_2
+    vars:
+    - {access: '{ ND_0[i0, i1] -> out_0ND_0[] }', type: int}
+    domain:
+      bounds: '{ ND_0[i0, i1] : i0 >= 3 and i0 <= 25 and i1 >= 1 and i1 <= 2 }'
+  - name: ND_0OP_ED_3_0_V_0
+    node: ND_0
+    edge: ED_3
+    vars:
+    - {access: '{ ND_0[i0, i1] -> out_0ND_0[] }', type: int}
+    domain:
+      bounds: '{ ND_0[1, i1] : i1 >= 3 and i1 <= 25 }'
+  - name: ND_0OP_ED_4_0_V_0
+    node: ND_0
+    edge: ED_4
+    vars:
+    - {access: '{ ND_0[i0, i1] -> out_0ND_0[] }', type: int}
+    domain:
+      bounds: '{ ND_0[2, i1] : i1 >= 3 and i1 <= 25 }'
+  - name: ND_0OP_ED_5_0_V_0
+    node: ND_0
+    edge: ED_5
+    vars:
+    - {access: '{ ND_0[i0, i1] -> out_0ND_0[] }', type: int}
+    domain:
+      bounds: '{ ND_0[i0, i1] : i0 >= 3 and i0 <= 25 and i1 >= 3 and i1 <= 25 }'
+  - name: ND_0OP_ED_31_0_V_0
+    node: ND_0
+    edge: ED_31
+    vars:
+    - {access: '{ ND_0[i0, i1] -> out_0ND_0[] }', type: int}
+    domain:
+      bounds: '{ ND_0[i0, i1] : i0 >= 1 and i0 <= 2 and i1 >= 3 and i1 <= 25 }'
+  - name: ND_0OP_ED_32_0_V_0
+    node: ND_0
+    edge: ED_32
+    vars:
+    - {access: '{ ND_0[i0, i1] -> out_0ND_0[] }', type: int}
+    domain:
+      bounds: '{ ND_0[i0, 1] : i0 >= 1 and i0 <= 2 }'
+  - name: ND_0OP_ED_32_1_V_0
+    node: ND_0
+    edge: ED_32
+    vars:
+    - {access: '{ ND_0[i0, i1] -> out_0ND_0[] }', type: int}
+    domain:
+      bounds: '{ ND_0[i0, 2] : i0 >= 1 and i0 <= 2 }'
+  - name: ND_0OP_ED_33_0_V_0
+    node: ND_0
+    edge: ED_33
+    vars:
+    - {access: '{ ND_0[i0, i1] -> out_0ND_0[] }', type: int}
+    domain:
+      bounds: '{ ND_0[i0, i1] : i0 >= 3 and i0 <= 25 and i1 >= 3 and i1 <= 25 }'
+  - name: ND_0OP_ED_34_0_V_0
+    node: ND_0
+    edge: ED_34
+    vars:
+    - {access: '{ ND_0[i0, i1] -> out_0ND_0[] }', type: int}
+    domain:
+      bounds: '{ ND_0[i0, 1] : i0 >= 3 and i0 <= 25 }'
+  - name: ND_0OP_ED_34_1_V_0
+    node: ND_0
+    edge: ED_34
+    vars:
+    - {access: '{ ND_0[i0, i1] -> out_0ND_0[] }', type: int}
+    domain:
+      bounds: '{ ND_0[i0, 2] : i0 >= 3 and i0 <= 25 }'
+- name: ND_1
+  function:
+    name: gradient
+    in:
+    - {var: {access: '{ ND_1[i0, i1] -> in_0ND_1[] }', type: int}, type: reference}
+    - {var: {access: '{ ND_1[i0, i1] -> in_1ND_1[] }', type: int}, type: reference}
+    - {var: {access: '{ ND_1[i0, i1] -> in_2ND_1[] }', type: int}, type: reference}
+    - {var: {access: '{ ND_1[i0, i1] -> in_3ND_1[] }', type: int}, type: reference}
+    - {var: {access: '{ ND_1[i0, i1] -> in_4ND_1[] }', type: int}, type: reference}
+    - {var: {access: '{ ND_1[i0, i1] -> in_5ND_1[] }', type: int}, type: reference}
+    out:
+    - {var: {access: '{ ND_1[i0, i1] -> out_6ND_1[] }', type: int}, type: reference}
+    domain:
+      bounds: '{ ND_1[i0, i1] : i0 >= 3 and i0 <= 25 and i1 >= 3 and i1 <= 25 }'
+  domain:
+    bounds: '{ ND_1[i0, i1] : i0 >= 3 and i0 <= 25 and i1 >= 3 and i1 <= 25 }'
+  schedule: '{ ND_1[i0, i1] -> [i0, i1, 1] : i0 >= 3 and i0 <= 25 and i1 >= 3 and
+    i1 <= 25 }'
+  input_ports:
+  - name: ND_1IP_ED_0_0_V_0
+    node: ND_1
+    edge: ED_0
+    vars:
+    - {access: '{ [ND_1[i0, i1] -> local[]] -> in_0ND_1[] }', type: int}
+    domain:
+      bounds: '{ [ND_1[3, i1] -> local[]] : i1 >= 3 and i1 <= 4 }'
+  - name: ND_1IP_ED_1_0_V_1
+    node: ND_1
+    edge: ED_1
+    vars:
+    - {access: '{ [ND_1[i0, i1] -> local[]] -> in_1ND_1[] }', type: int}
+    domain:
+      bounds: '{ [ND_1[3, i1] -> local[]] : i1 >= 3 and i1 <= 4 }'
+  - name: ND_1IP_ED_2_0_V_2
+    node: ND_1
+    edge: ED_2
+    vars:
+    - {access: '{ [ND_1[i0, i1] -> local[]] -> in_2ND_1[] }', type: int}
+    domain:
+      bounds: '{ [ND_1[i0, i1] -> local[]] : i0 >= 3 and i0 <= 25 and i1 >= 3 and
+        i1 <= 4 }'
+  - name: ND_1IP_ED_3_0_V_3
+    node: ND_1
+    edge: ED_3
+    vars:
+    - {access: '{ [ND_1[i0, i1] -> local[]] -> in_3ND_1[] }', type: int}
+    domain:
+      bounds: '{ [ND_1[3, i1] -> local[]] : i1 >= 3 and i1 <= 25 }'
+  - name: ND_1IP_ED_4_0_V_4
+    node: ND_1
+    edge: ED_4
+    vars:
+    - {access: '{ [ND_1[i0, i1] -> local[]] -> in_4ND_1[] }', type: int}
+    domain:
+      bounds: '{ [ND_1[3, i1] -> local[]] : i1 >= 3 and i1 <= 25 }'
+  - name: ND_1IP_ED_5_0_V_5
+    node: ND_1
+    edge: ED_5
+    vars:
+    - {access: '{ [ND_1[i0, i1] -> local[]] -> in_5ND_1[] }', type: int}
+    domain:
+      bounds: '{ [ND_1[i0, i1] -> local[]] : i0 >= 3 and i0 <= 25 and i1 >= 3 and
+        i1 <= 25 }'
+  - name: ND_1IP_ED_15_0_V_0
+    node: ND_1
+    edge: ED_15
+    vars:
+    - {access: '{ [ND_1[i0, i1] -> local[]] -> in_0ND_1[] }', type: int}
+    domain:
+      bounds: '{ [ND_1[i0, i1] -> local[]] : i0 >= 5 and i0 <= 25 and i1 >= 3 and
+        i1 <= 4 }'
+  - name: ND_1IP_ED_15_1_V_0
+    node: ND_1
+    edge: ED_15
+    vars:
+    - {access: '{ [ND_1[i0, i1] -> local[]] -> in_0ND_1[] }', type: int}
+    domain:
+      bounds: '{ [ND_1[4, i1] -> local[]] : i1 >= 3 and i1 <= 4 }'
+  - name: ND_1IP_ED_16_0_V_0
+    node: ND_1
+    edge: ED_16
+    vars:
+    - {access: '{ [ND_1[i0, i1] -> local[]] -> in_0ND_1[] }', type: int}
+    domain:
+      bounds: '{ [ND_1[i0, i1] -> local[]] : i0 >= 3 and i0 <= 25 and i1 >= 5 and
+        i1 <= 25 }'
+  - name: ND_1IP_ED_17_0_V_1
+    node: ND_1
+    edge: ED_17
+    vars:
+    - {access: '{ [ND_1[i0, i1] -> local[]] -> in_1ND_1[] }', type: int}
+    domain:
+      bounds: '{ [ND_1[i0, i1] -> local[]] : i0 >= 4 and i0 <= 25 and i1 >= 3 and
+        i1 <= 4 }'
+  - name: ND_1IP_ED_18_0_V_1
+    node: ND_1
+    edge: ED_18
+    vars:
+    - {access: '{ [ND_1[i0, i1] -> local[]] -> in_1ND_1[] }', type: int}
+    domain:
+      bounds: '{ [ND_1[i0, i1] -> local[]] : i0 >= 3 and i0 <= 25 and i1 >= 5 and
+        i1 <= 25 }'
+  - name: ND_1IP_ED_19_0_V_2
+    node: ND_1
+    edge: ED_19
+    vars:
+    - {access: '{ [ND_1[i0, i1] -> local[]] -> in_2ND_1[] }', type: int}
+    domain:
+      bounds: '{ [ND_1[i0, i1] -> local[]] : i0 >= 3 and i0 <= 25 and i1 >= 5 and
+        i1 <= 25 }'
+  - name: ND_1IP_ED_20_0_V_3
+    node: ND_1
+    edge: ED_20
+    vars:
+    - {access: '{ [ND_1[i0, i1] -> local[]] -> in_3ND_1[] }', type: int}
+    domain:
+      bounds: '{ [ND_1[i0, i1] -> local[]] : i0 >= 5 and i0 <= 25 and i1 >= 3 and
+        i1 <= 25 }'
+  - name: ND_1IP_ED_20_1_V_3
+    node: ND_1
+    edge: ED_20
+    vars:
+    - {access: '{ [ND_1[i0, i1] -> local[]] -> in_3ND_1[] }', type: int}
+    domain:
+      bounds: '{ [ND_1[4, i1] -> local[]] : i1 >= 3 and i1 <= 25 }'
+  - name: ND_1IP_ED_21_0_V_4
+    node: ND_1
+    edge: ED_21
+    vars:
+    - {access: '{ [ND_1[i0, i1] -> local[]] -> in_4ND_1[] }', type: int}
+    domain:
+      bounds: '{ [ND_1[i0, i1] -> local[]] : i0 >= 4 and i0 <= 25 and i1 >= 3 and
+        i1 <= 25 }'
+  output_ports:
+  - name: ND_1OP_ED_12_0_V_6
+    node: ND_1
+    edge: ED_12
+    vars:
+    - {access: '{ ND_1[i0, i1] -> out_6ND_1[] }', type: int}
+    domain:
+      bounds: '{ ND_1[i0, i1] : i0 >= 3 and i0 <= 25 and i1 >= 3 and i1 <= 25 }'
+  - name: ND_1OP_ED_15_0_V_1
+    node: ND_1
+    edge: ED_15
+    vars:
+    - {access: '{ ND_1[i0, i1] -> in_1ND_1[] }', type: int}
+    domain:
+      bounds: '{ ND_1[i0, i1] : i0 >= 4 and i0 <= 24 and i1 >= 3 and i1 <= 4 }'
+  - name: ND_1OP_ED_15_1_V_1
+    node: ND_1
+    edge: ED_15
+    vars:
+    - {access: '{ ND_1[i0, i1] -> in_1ND_1[] }', type: int}
+    domain:
+      bounds: '{ ND_1[3, i1] : i1 >= 3 and i1 <= 4 }'
+  - name: ND_1OP_ED_16_0_V_3
+    node: ND_1
+    edge: ED_16
+    vars:
+    - {access: '{ ND_1[i0, i1] -> in_3ND_1[] }', type: int}
+    domain:
+      bounds: '{ ND_1[i0, i1] : i0 >= 3 and i0 <= 25 and i1 >= 3 and i1 <= 23 }'
+  - name: ND_1OP_ED_17_0_V_2
+    node: ND_1
+    edge: ED_17
+    vars:
+    - {access: '{ ND_1[i0, i1] -> in_2ND_1[] }', type: int}
+    domain:
+      bounds: '{ ND_1[i0, i1] : i0 >= 3 and i0 <= 24 and i1 >= 3 and i1 <= 4 }'
+  - name: ND_1OP_ED_18_0_V_4
+    node: ND_1
+    edge: ED_18
+    vars:
+    - {access: '{ ND_1[i0, i1] -> in_4ND_1[] }', type: int}
+    domain:
+      bounds: '{ ND_1[i0, i1] : i0 >= 3 and i0 <= 25 and i1 >= 3 and i1 <= 23 }'
+  - name: ND_1OP_ED_19_0_V_5
+    node: ND_1
+    edge: ED_19
+    vars:
+    - {access: '{ ND_1[i0, i1] -> in_5ND_1[] }', type: int}
+    domain:
+      bounds: '{ ND_1[i0, i1] : i0 >= 3 and i0 <= 25 and i1 >= 3 and i1 <= 23 }'
+  - name: ND_1OP_ED_20_0_V_4
+    node: ND_1
+    edge: ED_20
+    vars:
+    - {access: '{ ND_1[i0, i1] -> in_4ND_1[] }', type: int}
+    domain:
+      bounds: '{ ND_1[i0, i1] : i0 >= 4 and i0 <= 24 and i1 >= 3 and i1 <= 25 }'
+  - name: ND_1OP_ED_20_1_V_4
+    node: ND_1
+    edge: ED_20
+    vars:
+    - {access: '{ ND_1[i0, i1] -> in_4ND_1[] }', type: int}
+    domain:
+      bounds: '{ ND_1[3, i1] : i1 >= 3 and i1 <= 25 }'
+  - name: ND_1OP_ED_21_0_V_5
+    node: ND_1
+    edge: ED_21
+    vars:
+    - {access: '{ ND_1[i0, i1] -> in_5ND_1[] }', type: int}
+    domain:
+      bounds: '{ ND_1[i0, i1] : i0 >= 3 and i0 <= 24 and i1 >= 3 and i1 <= 25 }'
+- name: ND_2
+  function:
+    name: gradient
+    in:
+    - {var: {access: '{ ND_2[i0, i1] -> in_0ND_2[] }', type: int}, type: reference}
+    - {var: {access: '{ ND_2[i0, i1] -> in_1ND_2[] }', type: int}, type: reference}
+    - {var: {access: '{ ND_2[i0, i1] -> in_2ND_2[] }', type: int}, type: reference}
+    - {var: {access: '{ ND_2[i0, i1] -> in_3ND_2[] }', type: int}, type: reference}
+    - {var: {access: '{ ND_2[i0, i1] -> in_4ND_2[] }', type: int}, type: reference}
+    - {var: {access: '{ ND_2[i0, i1] -> in_5ND_2[] }', type: int}, type: reference}
+    out:
+    - {var: {access: '{ ND_2[i0, i1] -> out_6ND_2[] }', type: int}, type: reference}
+    domain:
+      bounds: '{ ND_2[i0, i1] : i0 >= 3 and i0 <= 25 and i1 >= 3 and i1 <= 25 }'
+  domain:
+    bounds: '{ ND_2[i0, i1] : i0 >= 3 and i0 <= 25 and i1 >= 3 and i1 <= 25 }'
+  schedule: '{ ND_2[i0, i1] -> [i0, i1, 1] : i0 >= 3 and i0 <= 25 and i1 >= 3 and
+    i1 <= 25 }'
+  input_ports:
+  - name: ND_2IP_ED_22_0_V_0
+    node: ND_2
+    edge: ED_22
+    vars:
+    - {access: '{ [ND_2[i0, i1] -> local[]] -> in_0ND_2[] }', type: int}
+    domain:
+      bounds: '{ [ND_2[i0, i1] -> local[]] : i0 >= 3 and i0 <= 25 and i1 >= 5 and
+        i1 <= 25 }'
+  - name: ND_2IP_ED_22_1_V_0
+    node: ND_2
+    edge: ED_22
+    vars:
+    - {access: '{ [ND_2[i0, i1] -> local[]] -> in_0ND_2[] }', type: int}
+    domain:
+      bounds: '{ [ND_2[i0, 4] -> local[]] : i0 >= 3 and i0 <= 25 }'
+  - name: ND_2IP_ED_23_0_V_0
+    node: ND_2
+    edge: ED_23
+    vars:
+    - {access: '{ [ND_2[i0, i1] -> local[]] -> in_0ND_2[] }', type: int}
+    domain:
+      bounds: '{ [ND_2[i0, 3] -> local[]] : i0 >= 5 and i0 <= 25 }'
+  - name: ND_2IP_ED_24_0_V_1
+    node: ND_2
+    edge: ED_24
+    vars:
+    - {access: '{ [ND_2[i0, i1] -> local[]] -> in_1ND_2[] }', type: int}
+    domain:
+      bounds: '{ [ND_2[i0, i1] -> local[]] : i0 >= 3 and i0 <= 25 and i1 >= 4 and
+        i1 <= 25 }'
+  - name: ND_2IP_ED_25_0_V_1
+    node: ND_2
+    edge: ED_25
+    vars:
+    - {access: '{ [ND_2[i0, i1] -> local[]] -> in_1ND_2[] }', type: int}
+    domain:
+      bounds: '{ [ND_2[i0, 3] -> local[]] : i0 >= 5 and i0 <= 25 }'
+  - name: ND_2IP_ED_26_0_V_2
+    node: ND_2
+    edge: ED_26
+    vars:
+    - {access: '{ [ND_2[i0, i1] -> local[]] -> in_2ND_2[] }', type: int}
+    domain:
+      bounds: '{ [ND_2[i0, i1] -> local[]] : i0 >= 5 and i0 <= 25 and i1 >= 3 and
+        i1 <= 23 }'
+  - name: ND_2IP_ED_27_0_V_2
+    node: ND_2
+    edge: ED_27
+    vars:
+    - {access: '{ [ND_2[i0, i1] -> local[]] -> in_2ND_2[] }', type: int}
+    domain:
+      bounds: '{ [ND_2[i0, 24] -> local[]] : i0 >= 5 and i0 <= 25 }'
+  - name: ND_2IP_ED_28_0_V_2
+    node: ND_2
+    edge: ED_28
+    vars:
+    - {access: '{ [ND_2[i0, i1] -> local[]] -> in_2ND_2[] }', type: int}
+    domain:
+      bounds: '{ [ND_2[i0, 25] -> local[]] : i0 >= 5 and i0 <= 25 }'
+  - name: ND_2IP_ED_29_1_V_3
+    node: ND_2
+    edge: ED_29
+    vars:
+    - {access: '{ [ND_2[i0, i1] -> local[]] -> in_3ND_2[] }', type: int}
+    domain:
+      bounds: '{ [ND_2[i0, 4] -> local[]] : i0 >= 3 and i0 <= 25 }'
+  - name: ND_2IP_ED_29_0_V_3
+    node: ND_2
+    edge: ED_29
+    vars:
+    - {access: '{ [ND_2[i0, i1] -> local[]] -> in_3ND_2[] }', type: int}
+    domain:
+      bounds: '{ [ND_2[i0, i1] -> local[]] : i0 >= 3 and i0 <= 25 and i1 >= 5 and
+        i1 <= 25 }'
+  - name: ND_2IP_ED_30_0_V_4
+    node: ND_2
+    edge: ED_30
+    vars:
+    - {access: '{ [ND_2[i0, i1] -> local[]] -> in_4ND_2[] }', type: int}
+    domain:
+      bounds: '{ [ND_2[i0, i1] -> local[]] : i0 >= 3 and i0 <= 25 and i1 >= 4 and
+        i1 <= 25 }'
+  - name: ND_2IP_ED_31_0_V_2
+    node: ND_2
+    edge: ED_31
+    vars:
+    - {access: '{ [ND_2[i0, i1] -> local[]] -> in_2ND_2[] }', type: int}
+    domain:
+      bounds: '{ [ND_2[i0, i1] -> local[]] : i0 >= 3 and i0 <= 4 and i1 >= 3 and i1
+        <= 25 }'
+  - name: ND_2IP_ED_32_0_V_0
+    node: ND_2
+    edge: ED_32
+    vars:
+    - {access: '{ [ND_2[i0, i1] -> local[]] -> in_0ND_2[] }', type: int}
+    domain:
+      bounds: '{ [ND_2[i0, 3] -> local[]] : i0 >= 3 and i0 <= 4 }'
+  - name: ND_2IP_ED_32_1_V_1
+    node: ND_2
+    edge: ED_32
+    vars:
+    - {access: '{ [ND_2[i0, i1] -> local[]] -> in_1ND_2[] }', type: int}
+    domain:
+      bounds: '{ [ND_2[i0, 3] -> local[]] : i0 >= 3 and i0 <= 4 }'
+  - name: ND_2IP_ED_33_0_V_5
+    node: ND_2
+    edge: ED_33
+    vars:
+    - {access: '{ [ND_2[i0, i1] -> local[]] -> in_5ND_2[] }', type: int}
+    domain:
+      bounds: '{ [ND_2[i0, i1] -> local[]] : i0 >= 3 and i0 <= 25 and i1 >= 3 and
+        i1 <= 25 }'
+  - name: ND_2IP_ED_34_0_V_3
+    node: ND_2
+    edge: ED_34
+    vars:
+    - {access: '{ [ND_2[i0, i1] -> local[]] -> in_3ND_2[] }', type: int}
+    domain:
+      bounds: '{ [ND_2[i0, 3] -> local[]] : i0 >= 3 and i0 <= 25 }'
+  - name: ND_2IP_ED_34_1_V_4
+    node: ND_2
+    edge: ED_34
+    vars:
+    - {access: '{ [ND_2[i0, i1] -> local[]] -> in_4ND_2[] }', type: int}
+    domain:
+      bounds: '{ [ND_2[i0, 3] -> local[]] : i0 >= 3 and i0 <= 25 }'
+  output_ports:
+  - name: ND_2OP_ED_13_0_V_6
+    node: ND_2
+    edge: ED_13
+    vars:
+    - {access: '{ ND_2[i0, i1] -> out_6ND_2[] }', type: int}
+    domain:
+      bounds: '{ ND_2[i0, i1] : i0 >= 3 and i0 <= 25 and i1 >= 3 and i1 <= 25 }'
+  - name: ND_2OP_ED_22_0_V_1
+    node: ND_2
+    edge: ED_22
+    vars:
+    - {access: '{ ND_2[i0, i1] -> in_1ND_2[] }', type: int}
+    domain:
+      bounds: '{ ND_2[i0, i1] : i0 >= 3 and i0 <= 25 and i1 >= 4 and i1 <= 24 }'
+  - name: ND_2OP_ED_22_1_V_1
+    node: ND_2
+    edge: ED_22
+    vars:
+    - {access: '{ ND_2[i0, i1] -> in_1ND_2[] }', type: int}
+    domain:
+      bounds: '{ ND_2[i0, 3] : i0 >= 3 and i0 <= 25 }'
+  - name: ND_2OP_ED_23_0_V_3
+    node: ND_2
+    edge: ED_23
+    vars:
+    - {access: '{ ND_2[i0, i1] -> in_3ND_2[] }', type: int}
+    domain:
+      bounds: '{ ND_2[i0, 3] : i0 >= 3 and i0 <= 23 }'
+  - name: ND_2OP_ED_24_0_V_2
+    node: ND_2
+    edge: ED_24
+    vars:
+    - {access: '{ ND_2[i0, i1] -> in_2ND_2[] }', type: int}
+    domain:
+      bounds: '{ ND_2[i0, i1] : i0 >= 3 and i0 <= 25 and i1 >= 3 and i1 <= 24 }'
+  - name: ND_2OP_ED_25_0_V_3
+    node: ND_2
+    edge: ED_25
+    vars:
+    - {access: '{ ND_2[i0, i1] -> in_3ND_2[] }', type: int}
+    domain:
+      bounds: '{ ND_2[i0, 4] : i0 >= 3 and i0 <= 23 }'
+  - name: ND_2OP_ED_26_0_V_3
+    node: ND_2
+    edge: ED_26
+    vars:
+    - {access: '{ ND_2[i0, i1] -> in_3ND_2[] }', type: int}
+    domain:
+      bounds: '{ ND_2[i0, i1] : i0 >= 3 and i0 <= 23 and i1 >= 5 and i1 <= 25 }'
+  - name: ND_2OP_ED_27_0_V_4
+    node: ND_2
+    edge: ED_27
+    vars:
+    - {access: '{ ND_2[i0, i1] -> in_4ND_2[] }', type: int}
+    domain:
+      bounds: '{ ND_2[i0, 25] : i0 >= 3 and i0 <= 23 }'
+  - name: ND_2OP_ED_28_0_V_5
+    node: ND_2
+    edge: ED_28
+    vars:
+    - {access: '{ ND_2[i0, i1] -> in_5ND_2[] }', type: int}
+    domain:
+      bounds: '{ ND_2[i0, 25] : i0 >= 3 and i0 <= 23 }'
+  - name: ND_2OP_ED_29_0_V_4
+    node: ND_2
+    edge: ED_29
+    vars:
+    - {access: '{ ND_2[i0, i1] -> in_4ND_2[] }', type: int}
+    domain:
+      bounds: '{ ND_2[i0, i1] : i0 >= 3 and i0 <= 25 and i1 >= 4 and i1 <= 24 }'
+  - name: ND_2OP_ED_29_1_V_4
+    node: ND_2
+    edge: ED_29
+    vars:
+    - {access: '{ ND_2[i0, i1] -> in_4ND_2[] }', type: int}
+    domain:
+      bounds: '{ ND_2[i0, 3] : i0 >= 3 and i0 <= 25 }'
+  - name: ND_2OP_ED_30_0_V_5
+    node: ND_2
+    edge: ED_30
+    vars:
+    - {access: '{ ND_2[i0, i1] -> in_5ND_2[] }', type: int}
+    domain:
+      bounds: '{ ND_2[i0, i1] : i0 >= 3 and i0 <= 25 and i1 >= 3 and i1 <= 24 }'
+- name: ND_3
+  function:
+    name: absVal
+    in:
+    - {var: {access: '{ ND_3[i0, i1] -> in_0ND_3[] }', type: int}, type: reference}
+    - {var: {access: '{ ND_3[i0, i1] -> in_1ND_3[] }', type: int}, type: reference}
+    out:
+    - {var: {access: '{ ND_3[i0, i1] -> out_2ND_3[] }', type: int}, type: reference}
+    domain:
+      bounds: '{ ND_3[i0, i1] : i0 >= 3 and i0 <= 25 and i1 >= 3 and i1 <= 25 }'
+  domain:
+    bounds: '{ ND_3[i0, i1] : i0 >= 3 and i0 <= 25 and i1 >= 3 and i1 <= 25 }'
+  schedule: '{ ND_3[i0, i1] -> [i0, i1, 2] : i0 >= 3 and i0 <= 25 and i1 >= 3 and
+    i1 <= 25 }'
+  input_ports:
+  - name: ND_3IP_ED_12_0_V_0
+    node: ND_3
+    edge: ED_12
+    vars:
+    - {access: '{ [ND_3[i0, i1] -> local[]] -> in_0ND_3[] }', type: int}
+    domain:
+      bounds: '{ [ND_3[i0, i1] -> local[]] : i0 >= 3 and i0 <= 25 and i1 >= 3 and
+        i1 <= 25 }'
+  - name: ND_3IP_ED_13_0_V_1
+    node: ND_3
+    edge: ED_13
+    vars:
+    - {access: '{ [ND_3[i0, i1] -> local[]] -> in_1ND_3[] }', type: int}
+    domain:
+      bounds: '{ [ND_3[i0, i1] -> local[]] : i0 >= 3 and i0 <= 25 and i1 >= 3 and
+        i1 <= 25 }'
+  output_ports:
+  - name: ND_3OP_ED_14_0_V_2
+    node: ND_3
+    edge: ED_14
+    vars:
+    - {access: '{ ND_3[i0, i1] -> out_2ND_3[] }', type: int}
+    domain:
+      bounds: '{ ND_3[i0, i1] : i0 >= 3 and i0 <= 25 and i1 >= 3 and i1 <= 25 }'
+- name: ND_4
+  function:
+    name: writePixel
+    in:
+    - {var: {access: '{ ND_4[i0, i1] -> in_0ND_4[] }', type: int}, type: reference}
+    domain:
+      bounds: '{ ND_4[i0, i1] : i0 >= 3 and i0 <= 25 and i1 >= 3 and i1 <= 25 }'
+  domain:
+    bounds: '{ ND_4[i0, i1] : i0 >= 3 and i0 <= 25 and i1 >= 3 and i1 <= 25 }'
+  schedule: '{ ND_4[i0, i1] -> [i0, i1, 3] : i0 >= 3 and i0 <= 25 and i1 >= 3 and
+    i1 <= 25 }'
+  input_ports:
+  - name: ND_4IP_ED_14_0_V_0
+    node: ND_4
+    edge: ED_14
+    vars:
+    - {access: '{ [ND_4[i0, i1] -> local[]] -> in_0ND_4[] }', type: int}
+    domain:
+      bounds: '{ [ND_4[i0, i1] -> local[]] : i0 >= 3 and i0 <= 25 and i1 >= 3 and
+        i1 <= 25 }'
+edges:
+- name: ED_0
+  type: fifo
+  map: '{ lifted[ND_1[i0, i1] -> local[]] -> ND_0[(1), (-2 + i1)] }'
+  from_node: ND_0
+  from_port: ND_0OP_ED_0_0_V_0
+  to_node: ND_1
+  to_port: ND_1IP_ED_0_0_V_0
+  value_size: 2
+- name: ED_1
+  type: fifo
+  map: '{ lifted[ND_1[i0, i1] -> local[]] -> ND_0[(2), (-2 + i1)] }'
+  from_node: ND_0
+  from_port: ND_0OP_ED_1_0_V_0
+  to_node: ND_1
+  to_port: ND_1IP_ED_1_0_V_1
+  value_size: 2
+- name: ED_2
+  type: fifo
+  map: '{ lifted[ND_1[i0, i1] -> local[]] -> ND_0[(i0), (-2 + i1)] }'
+  from_node: ND_0
+  from_port: ND_0OP_ED_2_0_V_0
+  to_node: ND_1
+  to_port: ND_1IP_ED_2_0_V_2
+  value_size: 2
+- name: ED_3
+  type: fifo
+  map: '{ lifted[ND_1[i0, i1] -> local[]] -> ND_0[(1), (i1)] }'
+  from_node: ND_0
+  from_port: ND_0OP_ED_3_0_V_0
+  to_node: ND_1
+  to_port: ND_1IP_ED_3_0_V_3
+  value_size: 23
+- name: ED_4
+  type: fifo
+  map: '{ lifted[ND_1[i0, i1] -> local[]] -> ND_0[(2), (i1)] }'
+  from_node: ND_0
+  from_port: ND_0OP_ED_4_0_V_0
+  to_node: ND_1
+  to_port: ND_1IP_ED_4_0_V_4
+  value_size: 23
+- name: ED_5
+  type: fifo
+  map: '{ lifted[ND_1[i0, i1] -> local[]] -> ND_0[(i0), (i1)] }'
+  from_node: ND_0
+  from_port: ND_0OP_ED_5_0_V_0
+  to_node: ND_1
+  to_port: ND_1IP_ED_5_0_V_5
+  value_size: 1
+- name: ED_12
+  type: fifo
+  map: '{ lifted[ND_3[i0, i1] -> local[]] -> ND_1[(i0), (i1)] }'
+  from_node: ND_1
+  from_port: ND_1OP_ED_12_0_V_6
+  to_node: ND_3
+  to_port: ND_3IP_ED_12_0_V_0
+  value_size: 1
+- name: ED_13
+  type: fifo
+  map: '{ lifted[ND_3[i0, i1] -> local[]] -> ND_2[(i0), (i1)] }'
+  from_node: ND_2
+  from_port: ND_2OP_ED_13_0_V_6
+  to_node: ND_3
+  to_port: ND_3IP_ED_13_0_V_1
+  value_size: 1
+- name: ED_14
+  type: fifo
+  map: '{ lifted[ND_4[i0, i1] -> local[]] -> ND_3[(i0), (i1)] }'
+  from_node: ND_3
+  from_port: ND_3OP_ED_14_0_V_2
+  to_node: ND_4
+  to_port: ND_4IP_ED_14_0_V_0
+  value_size: 1
+- name: ED_15
+  type: shift register
+  map: '{ lifted[ND_1[i0, i1] -> local[]] -> ND_1[(-1 + i0), (i1)] }'
+  from_node: ND_1
+  from_port: ND_1OP_ED_15_0_V_1
+  to_node: ND_1
+  to_port: ND_1IP_ED_15_0_V_0
+  value_size: 23
+- name: ED_15
+  type: shift register
+  map: '{ lifted[ND_1[i0, i1] -> local[]] -> ND_1[(3), (i1)] }'
+  from_node: ND_1
+  from_port: ND_1OP_ED_15_1_V_1
+  to_node: ND_1
+  to_port: ND_1IP_ED_15_1_V_0
+  value_size: 23
+- name: ED_16
+  type: shift register
+  map: '{ lifted[ND_1[i0, i1] -> local[]] -> ND_1[(i0), (-2 + i1)] }'
+  from_node: ND_1
+  from_port: ND_1OP_ED_16_0_V_3
+  to_node: ND_1
+  to_port: ND_1IP_ED_16_0_V_0
+  value_size: 2
+- name: ED_17
+  type: shift register
+  map: '{ lifted[ND_1[i0, i1] -> local[]] -> ND_1[(-1 + i0), (i1)] }'
+  from_node: ND_1
+  from_port: ND_1OP_ED_17_0_V_2
+  to_node: ND_1
+  to_port: ND_1IP_ED_17_0_V_1
+  value_size: 23
+- name: ED_18
+  type: shift register
+  map: '{ lifted[ND_1[i0, i1] -> local[]] -> ND_1[(i0), (-2 + i1)] }'
+  from_node: ND_1
+  from_port: ND_1OP_ED_18_0_V_4
+  to_node: ND_1
+  to_port: ND_1IP_ED_18_0_V_1
+  value_size: 2
+- name: ED_19
+  type: shift register
+  map: '{ lifted[ND_1[i0, i1] -> local[]] -> ND_1[(i0), (-2 + i1)] }'
+  from_node: ND_1
+  from_port: ND_1OP_ED_19_0_V_5
+  to_node: ND_1
+  to_port: ND_1IP_ED_19_0_V_2
+  value_size: 2
+- name: ED_20
+  type: shift register
+  map: '{ lifted[ND_1[i0, i1] -> local[]] -> ND_1[(-1 + i0), (i1)] }'
+  from_node: ND_1
+  from_port: ND_1OP_ED_20_0_V_4
+  to_node: ND_1
+  to_port: ND_1IP_ED_20_0_V_3
+  value_size: 23
+- name: ED_20
+  type: shift register
+  map: '{ lifted[ND_1[i0, i1] -> local[]] -> ND_1[(3), (i1)] }'
+  from_node: ND_1
+  from_port: ND_1OP_ED_20_1_V_4
+  to_node: ND_1
+  to_port: ND_1IP_ED_20_1_V_3
+  value_size: 23
+- name: ED_21
+  type: shift register
+  map: '{ lifted[ND_1[i0, i1] -> local[]] -> ND_1[(-1 + i0), (i1)] }'
+  from_node: ND_1
+  from_port: ND_1OP_ED_21_0_V_5
+  to_node: ND_1
+  to_port: ND_1IP_ED_21_0_V_4
+  value_size: 23
+- name: ED_22
+  type: fifo
+  map: '{ lifted[ND_2[i0, i1] -> local[]] -> ND_2[(i0), (-1 + i1)] }'
+  from_node: ND_2
+  from_port: ND_2OP_ED_22_0_V_1
+  to_node: ND_2
+  to_port: ND_2IP_ED_22_0_V_0
+  value_size: 1
+- name: ED_22
+  type: fifo
+  map: '{ lifted[ND_2[i0, i1] -> local[]] -> ND_2[(i0), (3)] }'
+  from_node: ND_2
+  from_port: ND_2OP_ED_22_1_V_1
+  to_node: ND_2
+  to_port: ND_2IP_ED_22_1_V_0
+  value_size: 1
+- name: ED_23
+  type: shift register
+  map: '{ lifted[ND_2[i0, i1] -> local[]] -> ND_2[(-2 + i0), (3)] }'
+  from_node: ND_2
+  from_port: ND_2OP_ED_23_0_V_3
+  to_node: ND_2
+  to_port: ND_2IP_ED_23_0_V_0
+  value_size: 46
+- name: ED_24
+  type: fifo
+  map: '{ lifted[ND_2[i0, i1] -> local[]] -> ND_2[(i0), (-1 + i1)] }'
+  from_node: ND_2
+  from_port: ND_2OP_ED_24_0_V_2
+  to_node: ND_2
+  to_port: ND_2IP_ED_24_0_V_1
+  value_size: 1
+- name: ED_25
+  type: shift register
+  map: '{ lifted[ND_2[i0, i1] -> local[]] -> ND_2[(-2 + i0), (4)] }'
+  from_node: ND_2
+  from_port: ND_2OP_ED_25_0_V_3
+  to_node: ND_2
+  to_port: ND_2IP_ED_25_0_V_1
+  value_size: 45
+- name: ED_26
+  type: shift register
+  map: '{ lifted[ND_2[i0, i1] -> local[]] -> ND_2[(-2 + i0), (2 + i1)] }'
+  from_node: ND_2
+  from_port: ND_2OP_ED_26_0_V_3
+  to_node: ND_2
+  to_port: ND_2IP_ED_26_0_V_2
+  value_size: 44
+- name: ED_27
+  type: shift register
+  map: '{ lifted[ND_2[i0, i1] -> local[]] -> ND_2[(-2 + i0), (25)] }'
+  from_node: ND_2
+  from_port: ND_2OP_ED_27_0_V_4
+  to_node: ND_2
+  to_port: ND_2IP_ED_27_0_V_2
+  value_size: 45
+- name: ED_28
+  type: shift register
+  map: '{ lifted[ND_2[i0, i1] -> local[]] -> ND_2[(-2 + i0), (25)] }'
+  from_node: ND_2
+  from_port: ND_2OP_ED_28_0_V_5
+  to_node: ND_2
+  to_port: ND_2IP_ED_28_0_V_2
+  value_size: 46
+- name: ED_29
+  type: fifo
+  map: '{ lifted[ND_2[i0, i1] -> local[]] -> ND_2[(i0), (-1 + i1)] }'
+  from_node: ND_2
+  from_port: ND_2OP_ED_29_0_V_4
+  to_node: ND_2
+  to_port: ND_2IP_ED_29_0_V_3
+  value_size: 1
+- name: ED_29
+  type: fifo
+  map: '{ lifted[ND_2[i0, i1] -> local[]] -> ND_2[(i0), (3)] }'
+  from_node: ND_2
+  from_port: ND_2OP_ED_29_1_V_4
+  to_node: ND_2
+  to_port: ND_2IP_ED_29_1_V_3
+  value_size: 1
+- name: ED_30
+  type: fifo
+  map: '{ lifted[ND_2[i0, i1] -> local[]] -> ND_2[(i0), (-1 + i1)] }'
+  from_node: ND_2
+  from_port: ND_2OP_ED_30_0_V_5
+  to_node: ND_2
+  to_port: ND_2IP_ED_30_0_V_4
+  value_size: 1
+- name: ED_31
+  type: fifo
+  map: '{ lifted[ND_2[i0, i1] -> local[]] -> ND_0[(-2 + i0), (i1)] }'
+  from_node: ND_0
+  from_port: ND_0OP_ED_31_0_V_0
+  to_node: ND_2
+  to_port: ND_2IP_ED_31_0_V_2
+  value_size: 48
+- name: ED_32
+  type: fifo
+  map: '{ lifted[ND_2[i0, i1] -> local[]] -> ND_0[(-2 + i0), (1)] }'
+  from_node: ND_0
+  from_port: ND_0OP_ED_32_0_V_0
+  to_node: ND_2
+  to_port: ND_2IP_ED_32_0_V_0
+  value_size: 4
+- name: ED_32
+  type: fifo
+  map: '{ lifted[ND_2[i0, i1] -> local[]] -> ND_0[(-2 + i0), (2)] }'
+  from_node: ND_0
+  from_port: ND_0OP_ED_32_1_V_0
+  to_node: ND_2
+  to_port: ND_2IP_ED_32_1_V_1
+  value_size: 4
+- name: ED_33
+  type: fifo
+  map: '{ lifted[ND_2[i0, i1] -> local[]] -> ND_0[(i0), (i1)] }'
+  from_node: ND_0
+  from_port: ND_0OP_ED_33_0_V_0
+  to_node: ND_2
+  to_port: ND_2IP_ED_33_0_V_5
+  value_size: 2
+- name: ED_34
+  type: fifo
+  map: '{ lifted[ND_2[i0, i1] -> local[]] -> ND_0[(i0), (1)] }'
+  from_node: ND_0
+  from_port: ND_0OP_ED_34_0_V_0
+  to_node: ND_2
+  to_port: ND_2IP_ED_34_0_V_3
+  value_size: 2
+- name: ED_34
+  type: fifo
+  map: '{ lifted[ND_2[i0, i1] -> local[]] -> ND_0[(i0), (2)] }'
+  from_node: ND_0
+  from_port: ND_0OP_ED_34_1_V_0
+  to_node: ND_2
+  to_port: ND_2IP_ED_34_1_V_4
+  value_size: 2
