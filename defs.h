@@ -1,4 +1,7 @@
 /*
+ * Copyright (c) 2012 Leiden University (LERC group at LIACS).
+ * All rights reserved.
+ *
  * def.h
  *
  *  	Created on: Oct 6, 2010
@@ -24,16 +27,30 @@ typedef double THR_t;
 
 namespace adg_helper {
 
+typedef unsigned int id_t;
+typedef std::map<isl_id*, unsigned> NameId_t;
+
 //struct adg_edge;
 typedef adg_edge Channel;
 typedef std::vector<Channel*> Channels;
 typedef std::vector<Channel*>::iterator PPNchIter;
 typedef std::vector<Channel*>::const_iterator PPNchCIter;
 
+typedef adg_edge Edge;
+typedef std::vector<adg_edge*> Edges;
+
+typedef adg_node Node;
+typedef std::vector<adg_node*> Nodes;
+typedef std::vector<adg_node*>::iterator NodeIter;
+typedef std::vector<adg_node*>::const_iterator NodeCIter;
+
 typedef adg_node Process;
 typedef std::vector<Process*> Processes;
-//typedef std::vector<Process*>::iterator PPNprocessIter;
-//typedef std::vector<Process*>::const_iterator PPNprocessCIter;
+
+
+
+typedef std::vector<adg_node*> CDNode;
+typedef std::map<unsigned int, std::vector<unsigned int> > CDNodeIds;
 
 typedef adg_domain Domain;
 
