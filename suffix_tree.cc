@@ -25,7 +25,7 @@ using std::setw;
 using std::flush;
 using std::endl;
 
-
+using namespace suffix_tree;
 
 //
 // The maximum input string length this program

@@ -25,6 +25,8 @@
 // that.
 //
 
+namespace suffix_tree{
+
 class Suffix {
     public :
         int origin_node;
@@ -79,5 +81,5 @@ class Node {
         Node() { suffix_node = -1; }
         static int Count;
 };
-
+};
 #endif /* SUFFIX_TREE_H_ */
