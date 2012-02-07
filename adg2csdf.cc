@@ -426,20 +426,18 @@ CsdfDumper::computePhases(const Process *process){
 	printer = isl_printer_print_set(printer, process_var_domain);
 	printer = isl_printer_end_line(printer);*/
 
+	// scan the process domain according to lexicographical order
+	isl_set *process_dom_new = isl_set_copy(process_var_domain);
+	while(isl_set_is_empty(process_dom_new) != 1){
+		// get the lexicographical point
+		isl_set *lexmin_process_dom = isl_set_lexmin(isl_set_copy(process_dom_new));
 
-	// iterate over all input port domains
-	Ports input_ports = ppn->getInPorts(process);
-	for (int i = 0; i < input_ports.size(); ++i) {
-		isl_id *port_id = input_ports[i]->name;
-
-		assert(var_domains.count(port_id) > 0);
-		isl_set *port_var_domain = var_domains[port_id];
-
-		// scan the process domain according to lexicographical order
-		isl_set *process_dom_new = isl_set_copy(process_var_domain);
-		while(isl_set_is_empty(process_dom_new) != 1){
-			// get the lexicographical point
-			isl_set *lexmin_process_dom = isl_set_lexmin(isl_set_copy(process_dom_new));
+		// iterate over all input port domains
+		Ports input_ports = ppn->getInPorts(process);
+		for (int i = 0; i < input_ports.size(); ++i) {
+			isl_id *port_id = input_ports[i]->name;
+			assert(var_domains.count(port_id) > 0);
+			isl_set *port_var_domain = var_domains[port_id];
 
 			if (isl_set_is_subset(lexmin_process_dom, port_var_domain)) {
 				//std::cout << "1" << std::endl;
@@ -448,29 +446,14 @@ CsdfDumper::computePhases(const Process *process){
 				//std::cout << "0" << std::endl;
 				phases[port_id]->push_back(0);
 			}
+		} // end input ports
 
-			// remove lexmin point from the set
-			process_dom_new = isl_set_subtract(process_dom_new, lexmin_process_dom);
-		}
-		isl_set_free(process_dom_new);
-
-		// the length of phases of each is equal to the number of iterations of node domain
-		assert(phases[port_id]->size() == getPhaseLength(var_domains[process->name]));
-	} // end input_ports
-
-	// iterate over all output port domains
-	Ports output_ports = ppn->getOutPorts(process);
-	for (int i = 0; i < output_ports.size(); ++i) {
-		isl_id *port_id = output_ports[i]->name;
-
-		assert(var_domains.count(port_id) > 0);
-		isl_set *port_var_domain = var_domains[port_id];
-
-		// scan the process domain according to lexicographical order
-		isl_set *process_dom_new = isl_set_copy(process_var_domain);
-		while(isl_set_is_empty(process_dom_new) != 1){
-			// get the lexicographical point
-			isl_set *lexmin_process_dom = isl_set_lexmin(isl_set_copy(process_dom_new));
+		// iterate over all output port domains
+		Ports output_ports = ppn->getOutPorts(process);
+		for (int i = 0; i < output_ports.size(); ++i) {
+			isl_id *port_id = output_ports[i]->name;
+			assert(var_domains.count(port_id) > 0);
+			isl_set *port_var_domain = var_domains[port_id];
 
 			if (isl_set_is_subset(lexmin_process_dom, port_var_domain)) {
 				//std::cout << "1" << std::endl;
@@ -479,17 +462,13 @@ CsdfDumper::computePhases(const Process *process){
 				//std::cout << "0" << std::endl;
 				phases[port_id]->push_back(0);
 			}
+		} // end output ports
 
-			// remove lexmin point from the set
-			process_dom_new = isl_set_subtract(process_dom_new, lexmin_process_dom);
-		}
-		isl_set_free(process_dom_new);
 
-		// the length of phases of each is equal to the number of iterations of node domain
-		assert(phases[port_id]->size() == getPhaseLength(var_domains[process->name]));
-//		printer = isl_printer_print_set(printer, domain_port);
-//		printer = isl_printer_end_line(printer);
-	} // end output ports
+		// remove lexmin point from the set
+		process_dom_new = isl_set_subtract(process_dom_new, lexmin_process_dom);
+	}
+	isl_set_free(process_dom_new);
 }
 
 // Write phases belonging to given port to ostream.
