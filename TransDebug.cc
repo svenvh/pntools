@@ -13,6 +13,10 @@ namespace TransDebug {
     debugMode = newValue;
   }
 
+  bool isDebugMode(){
+    return debugMode;
+  }
+
   void print(const char* output){
     if(debugMode)
       cerr << output;

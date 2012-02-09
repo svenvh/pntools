@@ -58,12 +58,37 @@ void SetDivider::divide_node_by_sets(pdg::PDG* pdg, int nodeNr,SplitCommand* set
 
   // change original node
   isl_set_free(targetNode->source->set);
-  targetNode->source->set = isl_set_intersect(isl_set_copy(baseSet),next_set);
+  // check for matching spaces, if correct, apply set constraints
+  if(!compareSetSpaces(baseSet,next_set)){
+    cerr << "ERROR, the following set does not match the space of node " << setsContainer->get_nodeNr() << " :" << endl;
+    isl_set_dump(next_set);
+    cerr << "space should be:" << endl;
+    isl_space* tmpSpace = isl_set_get_space(baseSet);
+    isl_space_dump(tmpSpace);
+    // release resources
+    isl_space_free(tmpSpace);
+    targetNode->source->set = NULL;
+    isl_set_free(next_set);
+  } else
+    targetNode->source->set = isl_set_intersect(isl_set_copy(baseSet),next_set);
 
   // add new nodes
   while((next_set = setsContainer->get_next_set())!= NULL){
     newNode = procedure_copy_node(targetNode,false);
-    newNode->source = new pdg::IslSet(isl_set_intersect(isl_set_copy(baseSet),next_set));
+    // check for matching spaces, if correct, apply set constraints
+    if(!compareSetSpaces(baseSet,next_set)){
+      cerr << "ERROR, the following set does not match the space of node " << setsContainer->get_nodeNr() << " :" << endl;
+      isl_set_dump(next_set);
+      cerr << "space should be:" << endl;
+      isl_space* tmpSpace = isl_set_get_space(baseSet);
+      isl_space_dump(tmpSpace);
+      // release resources
+      isl_space_free(tmpSpace);
+      newNode->source = NULL;
+      isl_set_free(next_set);
+    } else
+      newNode->source = new pdg::IslSet(isl_set_intersect(isl_set_copy(baseSet),next_set));
+
     newNode->nr = pdg->nodes[pdg->nodes.size()-1]->nr + 1;
     pdg->nodes.push_back(newNode);
   }
@@ -352,8 +377,15 @@ void SetDivider::set_subset_constant(int value){
    set_subsets[set_subsets.size()-1]->set_constant(value);
 }
 
-
-
+// compares the space of two sets. If equal returns 1, else 0 ////////////
+int SetDivider::compareSetSpaces(isl_set* set1,isl_set* set2){
+  isl_space* space1 = isl_set_get_space(set1);
+  isl_space* space2 = isl_set_get_space(set2);
+  int result = isl_space_is_equal(space1,space2);
+  isl_space_free(space1);
+  isl_space_free(space2);
+  return result;
+}
 
 // SetSubset
 

@@ -38,6 +38,7 @@ class SetDivider {
       pdg::function_call *copy_pdg_function_call(pdg::function_call *orig, yaml::seq<pdg::access> &accesses);
       pdg::node* procedure_copy_node(pdg::node* sourceNode, bool inclSet = false);
       isl_set** split_set_by_constraints(SplitCommand* setsContainer,int& arraySize);
+      int compareSetSpaces(isl_set* set1,isl_set* set2);
 
       vector<SetSubset*> set_subsets;
       isl_set* baseSet;

@@ -286,7 +286,7 @@ int SplitCommand::modify_local_space(isl_local_space*& lSpace,char* command,int 
 
 bool SplitCommand::parseConstraintSets(int &argNr,int argc,char **argv){
  if(argNr >= argc){
-    TransDebug::stream << "Please specify sets like \"{ S_3[i,j] : i >= 1 and i <= 16 and j >= 1 and j <= 20 };{ next set }\" " << endl;
+    cerr << "Please specify sets like \"{ S_3[i,j] : i >= 1 and i <= 16 and j >= 1 and j <= 20 };{ next set }\" " << endl;
     return false;
  }
 
@@ -300,10 +300,12 @@ bool SplitCommand::parseConstraintSets(int &argNr,int argc,char **argv){
 
    // debug info
    TransDebug::stream << split_pos << ": singleSet string:" << singleSet << endl;
-   isl_set* tmpSet;
-   tmpSet = isl_set_read_from_str(pdg->ctx  , singleSet.c_str());
-   TransDebug::set_dump(tmpSet);
-   isl_set_free(tmpSet);
+   if(TransDebug::isDebugMode()){
+     isl_set* tmpSet;
+     tmpSet = isl_set_read_from_str(pdg->ctx  , singleSet.c_str());
+     TransDebug::set_dump(tmpSet);
+     isl_set_free(tmpSet);
+   }
 
    current_pos = split_pos + 1;
  } // while

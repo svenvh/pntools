@@ -13,6 +13,7 @@ using namespace std;
 
 namespace TransDebug{
   void setDebugMode(bool);
+  bool isDebugMode();
   void print(const char*);
   void set_dump(isl_set*);
   void constraint_dump(isl_constraint*);
