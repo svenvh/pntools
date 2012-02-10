@@ -138,9 +138,9 @@ Specifying Transformations
 
 Transformations are applied on the PDG output by c2pdg.
 
-Split node 0 in two nodes. One intersected with { S_0[i] : i >= 5 } and the other with { S_0[j,i] : j > 45}. The space of each specified set should match the space of the corresponding node domain.
+Suppose that split node 0 with domain { S_0[i] :10 >= i >= 1 } in two nodes is to be performed. One intersected with { S_0[i] : i >= 5 } and the other with { S_0[i] : i < 5}. The space of each specified set should match the space of the corresponding node domain.
 
-    ./pdgtrans --domain-split --node 0 --sets "{ S_0[i] : i >= 5 }; { S_0[j,i] : j > 45}" < splitjoin.yaml
+    ./pdgtrans --domain-split --node 0 --sets "{ S_0[i] : i >= 5 }; { S_0[i] : i < 5}" < splitjoin.yaml
 
 Split a 6-dimensional node 0 in 10*12*5 parts, where each of these new nodes is a unique offset combination of modulo 10 12 and 5 of dim 3, 4 and 5 respectively:
 
@@ -148,6 +148,8 @@ Split a 6-dimensional node 0 in 10*12*5 parts, where each of these new nodes is 
 
 Plane cut by specifying cuts using PolyLib notation. One specifies the hyperplanes that divide the node domain as equalities.
 In the following example we split node 1 into four parts:
+
+
 * One with dim 0 lower or equal than 5 - 1.
 * One with dim 0 between 5 and 10 - 1.
 * One with dim 0 between 10 and 15 - 1.
