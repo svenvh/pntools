@@ -1,3 +1,7 @@
+/* Debug and error reporting helper for pdgtrans
+ * Author: Wouter de Zwijger
+ */
+
 #include "TransReport.h"
 
 namespace TransDebug {
@@ -68,7 +72,7 @@ namespace TransDebug {
   DebugStreamObject stream;
 }
 
-namespace Error {
+namespace TransError {
   void found();
   bool isFound();
 

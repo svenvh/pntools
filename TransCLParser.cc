@@ -17,7 +17,7 @@ TransCLParser::~TransCLParser(){
 void TransCLParser::parseAll(int argc, char** argv){
   // execute all given arguments
   int argumentNr = 1;
-  while(argumentNr < argc && !Error::isFound())
+  while(argumentNr < argc && !TransError::isFound())
     argumentNr = parseCommand(argumentNr,argc, argv);
 }
 
@@ -32,7 +32,7 @@ int TransCLParser::parseCommand(int argNr,int argc,char** argv){
       else if(commandReader->get_c_type() == SplitCommand::constraint_sets)
         domain_split_sets(commandReader);
       else
-        Error::stream << "unknown constraint type given";
+        TransError::stream << "unknown constraint type given";
       break;
     case SplitCommand::plane_split:
       if(commandReader->get_c_type() == SplitCommand::constraint_conditions)
@@ -40,20 +40,20 @@ int TransCLParser::parseCommand(int argNr,int argc,char** argv){
       else if(commandReader->get_c_type() == SplitCommand::constraint_factors)
         plane_split_factors(commandReader);
       else
-        Error::stream << "unknown constraint type given, plane-split requires --conditions or --factors";
+        TransError::stream << "unknown constraint type given, plane-split requires --conditions or --factors";
       break;
     case SplitCommand::modulo_split:
       if(commandReader->get_c_type() == SplitCommand::constraint_factors)
         modulo_split_factors(commandReader);
       else
-        Error::stream << "The --modulo-split method currently does not support this constraint type. Currently supported: --factors";
+        TransError::stream << "The --modulo-split method currently does not support this constraint type. Currently supported: --factors";
       break;
     case SplitCommand::debug_mode:
       TransDebug::setDebugMode(true);
       TransDebug::print("debug mode is on!\n");
       break;
     default:
-      Error::stream << endl << "Undefined command!";
+      TransError::stream << endl << "Undefined command!";
       break;
   }
 

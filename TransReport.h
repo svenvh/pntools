@@ -1,3 +1,7 @@
+/* Debug and error reporting helper for pdgtrans
+ * Author: Wouter de Zwijger
+ */
+
 #include <iostream>
 #include <sstream>
 
@@ -32,7 +36,7 @@ namespace TransDebug{
 
 
 
-namespace Error {
+namespace TransError {
   void found();
   bool isFound();
   bool print();

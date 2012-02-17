@@ -28,7 +28,7 @@ int SplitCommand::parseCommand(int argNr,int argc,char** argv){
     return argNr + 1;
   }else {
     method = invalid;
-    Error::stream << "command '" << argv[argNr] << "' is not a valid command!" << endl;
+    TransError::stream << "command '" << argv[argNr] << "' is not a valid command!" << endl;
     return argNr + 1;
   }
 
@@ -56,7 +56,7 @@ int SplitCommand::parseCommand(int argNr,int argc,char** argv){
       newSeq = true;
       break;
     case constraint_hyperplanes:
-      Error::stream << "Hyperplanes as constraints is not yet implemented, please use conditions or sets instead" << endl;
+      TransError::stream << "Hyperplanes as constraints is not yet implemented, please use conditions or sets instead" << endl;
       return argNr;
 
       break;
@@ -73,7 +73,7 @@ int SplitCommand::parseCommand(int argNr,int argc,char** argv){
       factor_it = factors.begin();
       break;
     default:
-      Error::stream << "Unsupported condition type, please use one that is defined" << endl;
+      TransError::stream << "Unsupported condition type, please use one that is defined" << endl;
       break;
   }
 
@@ -98,12 +98,12 @@ SplitCommand::~SplitCommand(){
 
 bool SplitCommand::parseNodeNr(int &argNr,int argc,char **argv){
   if(argNr >= argc-1){
-    Error::stream << "invallid number of arguments to specify node nr. use '--node 0' to specify node nr 0" << endl;
+    TransError::stream << "invallid number of arguments to specify node nr. use '--node 0' to specify node nr 0" << endl;
     return false;
   }
 
   if(strcmp(argv[argNr],"--node")){
-    Error::stream << "please specify node nr after split method. For instance '--domain-split --node 0 ect..'" << endl;
+    TransError::stream << "please specify node nr after split method. For instance '--domain-split --node 0 ect..'" << endl;
     return false;
   }
   // save nodeNr
@@ -117,7 +117,7 @@ bool SplitCommand::parseNodeNr(int &argNr,int argc,char **argv){
 
 bool SplitCommand::parseConstraintType(int &argNr,int argc,char **argv){
   if(argNr >= argc){
-    Error::stream << "Please specify constraint type. Example: --constraints, --hyperplanes, --sets, --factors" << endl;
+    TransError::stream << "Please specify constraint type. Example: --constraints, --hyperplanes, --sets, --factors" << endl;
     return false;
   }
 
@@ -130,7 +130,7 @@ bool SplitCommand::parseConstraintType(int &argNr,int argc,char **argv){
   }else if(!strcmp(argv[argNr],"--factors")){
     conditionType = constraint_factors;
   } else {
-    Error::stream << "Please specify constraint type. Example: \n --conditions \n --hyperplanes \n --sets \n --factors" << endl;
+    TransError::stream << "Please specify constraint type. Example: \n --conditions \n --hyperplanes \n --sets \n --factors" << endl;
     return false;
   }
 
@@ -142,7 +142,7 @@ bool SplitCommand::parseConstraintType(int &argNr,int argc,char **argv){
 
 bool SplitCommand::parseConstraintList(int &argNr,int argc,char **argv){
  if(argNr >= argc){
-    Error::stream << "Please specify constraint(s) like \"1 3 4 2, 1 4 5 2; 1 3 4 2\" " << endl;
+    TransError::stream << "Please specify constraint(s) like \"1 3 4 2, 1 4 5 2; 1 3 4 2\" " << endl;
     return false;
  }
 
@@ -286,7 +286,7 @@ int SplitCommand::modify_local_space(isl_local_space*& lSpace,char* command,int 
 
 bool SplitCommand::parseConstraintSets(int &argNr,int argc,char **argv){
  if(argNr >= argc){
-    Error::stream << "Please specify sets like \"{ S_3[i,j] : i >= 1 and i <= 16 and j >= 1 and j <= 20 };{ next set }\" " << endl;
+    TransError::stream << "Please specify sets like \"{ S_3[i,j] : i >= 1 and i <= 16 and j >= 1 and j <= 20 };{ next set }\" " << endl;
     return false;
  }
 
@@ -322,7 +322,7 @@ bool SplitCommand::parseConstraintSets(int &argNr,int argc,char **argv){
 
 bool SplitCommand::parseConstraintFactors(int &argNr,int argc,char **argv){
  if(argNr >= argc){
-    Error::stream << "Please specify factors like \"1,3,4" << endl;
+    TransError::stream << "Please specify factors like \"1,3,4" << endl;
     return false;
  }
 
