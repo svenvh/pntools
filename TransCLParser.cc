@@ -17,7 +17,7 @@ TransCLParser::~TransCLParser(){
 void TransCLParser::parseAll(int argc, char** argv){
   // execute all given arguments
   int argumentNr = 1;
-  while(argumentNr < argc)
+  while(argumentNr < argc && !Error::isFound())
     argumentNr = parseCommand(argumentNr,argc, argv);
 }
 
@@ -32,7 +32,7 @@ int TransCLParser::parseCommand(int argNr,int argc,char** argv){
       else if(commandReader->get_c_type() == SplitCommand::constraint_sets)
         domain_split_sets(commandReader);
       else
-        cerr << "unknown constraint type given";
+        Error::stream << "unknown constraint type given";
       break;
     case SplitCommand::plane_split:
       if(commandReader->get_c_type() == SplitCommand::constraint_conditions)
@@ -40,20 +40,20 @@ int TransCLParser::parseCommand(int argNr,int argc,char** argv){
       else if(commandReader->get_c_type() == SplitCommand::constraint_factors)
         plane_split_factors(commandReader);
       else
-        cerr << "unknown constraint type given, plane-split requires --conditions or --factors";
+        Error::stream << "unknown constraint type given, plane-split requires --conditions or --factors";
       break;
     case SplitCommand::modulo_split:
       if(commandReader->get_c_type() == SplitCommand::constraint_factors)
         modulo_split_factors(commandReader);
       else
-        cerr << "The --modulo-split method currently does not support this constraint type. Currently supported: --factors";
+        Error::stream << "The --modulo-split method currently does not support this constraint type. Currently supported: --factors";
       break;
     case SplitCommand::debug_mode:
       TransDebug::setDebugMode(true);
       TransDebug::print("debug mode is on!\n");
       break;
     default:
-      cerr << "Undefined command!";
+      Error::stream << endl << "Undefined command!";
       break;
   }
 
@@ -119,7 +119,7 @@ void TransCLParser::plane_split_constraints(SplitCommand* command){
 
     // add to splitter class
     TransDebug::print("maximal constraint");
-    isl_constraint_dump(tmpC);
+    TransDebug::constraint_dump(tmpC);
     setSplitter.add_subset_constraint(tmpC);
 
 
@@ -141,7 +141,7 @@ void TransCLParser::plane_split_constraints(SplitCommand* command){
       // add to splitter class
       setSplitter.add_subset_constraint(tmpC);
       TransDebug::print("minimal constraint");
-      isl_constraint_dump(tmpC);
+      TransDebug::constraint_dump(tmpC);
     }
 
     if(biggerC != NULL)
@@ -169,8 +169,8 @@ void TransCLParser::plane_split_constraints(SplitCommand* command){
 
   // add to splitter class
   setSplitter.add_subset_constraint(tmpC);
-  cerr << "minimal constraint";
-  isl_constraint_dump(tmpC);
+  TransDebug::stream << "minimal constraint";
+  TransDebug::constraint_dump(tmpC);
 
   // free resources
   isl_constraint_free(biggerC);
@@ -477,7 +477,7 @@ int TransCLParser::find_split_point_by_target(int targetLeft, isl_set* baseSet, 
 bool TransCLParser::split_set_on_int(__isl_take isl_set* originalSet, int splitInt, int dim, __isl_give isl_set*& firstPart, __isl_give isl_set*& secondPart) {
 
   TransDebug::stream << "Original set:" << splitInt << endl;
-  isl_set_dump(originalSet);
+  TransDebug::set_dump(originalSet);
 
 
   // split set by adding constrains
@@ -516,8 +516,8 @@ bool TransCLParser::split_set_on_int(__isl_take isl_set* originalSet, int splitI
   }
 
   TransDebug::stream << "split Int:" << splitInt << endl;
-  isl_set_dump(firstPart);
-  isl_set_dump(secondPart);
+  TransDebug::set_dump(firstPart);
+  TransDebug::set_dump(secondPart);
 
   return true;
 }

@@ -38,7 +38,7 @@ void SetDivider::divide_node_by_sets(SplitCommand* setsContainer){
   if(storedPdg != NULL)
     divide_node_by_sets(storedPdg, storedNodeNr, setsContainer);
   else
-    cerr << "cant call SetDivider::divide_node_by_sets(); pdg and nodeNr are not set." << endl;
+    Error::stream << "cant call SetDivider::divide_node_by_sets(); pdg and nodeNr are not set." << endl;
 }
 
 // sets are stored in splitCommand class
@@ -52,7 +52,7 @@ void SetDivider::divide_node_by_sets(pdg::PDG* pdg, int nodeNr,SplitCommand* set
   next_set = setsContainer->get_next_set();
 
   if(next_set == NULL){
-    cerr << "no sets to split on defined!";
+    Error::stream << "no sets to split on defined!";
     return;
   }
 
@@ -60,11 +60,10 @@ void SetDivider::divide_node_by_sets(pdg::PDG* pdg, int nodeNr,SplitCommand* set
   isl_set_free(targetNode->source->set);
   // check for matching spaces, if correct, apply set constraints
   if(!compareSetSpaces(baseSet,next_set)){
-    cerr << "ERROR, the following set does not match the space of node " << setsContainer->get_nodeNr() << " :" << endl;
-    isl_set_dump(next_set);
-    cerr << "space should be:" << endl;
+    Error::stream << "Set "<< next_set <<" does not match the space of node " << setsContainer->get_nodeNr() << endl;
     isl_space* tmpSpace = isl_set_get_space(baseSet);
-    isl_space_dump(tmpSpace);
+    Error::stream << "space should be:" << tmpSpace << endl;
+
     // release resources
     isl_space_free(tmpSpace);
     targetNode->source->set = NULL;
@@ -77,11 +76,10 @@ void SetDivider::divide_node_by_sets(pdg::PDG* pdg, int nodeNr,SplitCommand* set
     newNode = procedure_copy_node(targetNode,false);
     // check for matching spaces, if correct, apply set constraints
     if(!compareSetSpaces(baseSet,next_set)){
-      cerr << "ERROR, the following set does not match the space of node " << setsContainer->get_nodeNr() << " :" << endl;
-      isl_set_dump(next_set);
-      cerr << "space should be:" << endl;
+      Error::stream << "Set "<< next_set <<" does not match the space of node " << setsContainer->get_nodeNr() << endl;
       isl_space* tmpSpace = isl_set_get_space(baseSet);
-      isl_space_dump(tmpSpace);
+      Error::stream << "space should be:" << tmpSpace << endl;
+
       // release resources
       isl_space_free(tmpSpace);
       newNode->source = NULL;
@@ -99,7 +97,7 @@ void SetDivider::divide_node_by_subsets() {
   if(storedPdg != NULL)
     divide_node_by_subsets(storedPdg, storedNodeNr);
   else
-    cerr << "cant call SetDivider::divide_node_by_subsets(); pdg and nodeNr are not set." << endl;
+    Error::stream << "Cant call SetDivider::divide_node_by_subsets(); pdg and nodeNr are not set." << endl;
 }
 
 // split given node in N individual nodes, where the resulting sets of the nodes is split on set_subsets.
@@ -132,7 +130,7 @@ void SetDivider::divide_node_by_constraints(SplitCommand* setsContainer) {
   if(storedPdg != NULL)
     divide_node_by_constraints(storedPdg, storedNodeNr, setsContainer);
   else
-    cerr << "cant call SetDivider::divide_node_by_constraints(); pdg and nodeNr are not set." << endl;
+    Error::stream << "cant call SetDivider::divide_node_by_constraints(); pdg and nodeNr are not set." << endl;
 }
 
 // split given node in N individual nodes, where the resulting sets of the nodes is split on set_subsets.
