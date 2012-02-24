@@ -1,10 +1,16 @@
 /*
+ *	Copyright (c) 2012 Leiden University (LERC group at LIACS).
+ * 	All rights reserved.
+ *
  * Implementation of Tarjan's algorithm - Environment class & implementation of Tarjan alg.
  * Part of the Advanced Compilers & Architectures course / "Groot seminarium" 2007
  * Adapted for use in PNTools.
  *
  * Author:        Sven v. Haastregt
- * Last modified: 2011-01-07
+ *
+ *
+ * History:
+ *      24-02-12    :   updated for ADG data structure (Teddy Zhai).
  */
 
 #include "tarjan.h"
@@ -33,9 +39,9 @@ Node::Node() {
 
 // Dump the minus set:
 void Node::DumpMinusSet() {
-  printf("Minusset of node %d: ", id);
+  printf("Minusset of node %s: ", isl_id_get_name(id));
   for (unsigned int i = 0; i < minusset.size(); i++) {
-    printf("%d%s ", minusset[i]->id, i == minusset.size()-1 ? "" : ",");
+    printf("%s%s ", isl_id_get_name(minusset[i]->id), i == minusset.size()-1 ? "" : ",");
   }
   printf("\n");
 }
@@ -43,9 +49,9 @@ void Node::DumpMinusSet() {
 
 // Dump the associations made to this node:
 void Node::DumpAssociations() {
-  printf("Associations of root node %d: ", id);
+  printf("Associations of root node %s: ", isl_id_get_name(id));
   for (unsigned int i = 0; i < associations.size(); i++) {
-    printf("%d%s ", associations[i]->id, i == associations.size()-1 ? "" : ",");
+    printf("%s%s ", isl_id_get_name(associations[i]->id), i == associations.size()-1 ? "" : ",");
   }
   printf("\n");
 }
@@ -152,31 +158,58 @@ void TarjanClass::importPPN() {
   Edge *edge;
   Node *node;
 
-  this->nNodes = this->ppnref->getNodes().size();
-  this->nEdges = this->ppnref->getEdges().size();
+  this->nNodes = this->adgRef->getNodes().size();
+  this->nEdges = this->adgRef->getEdges().size();
   
   // Create nodes
   for (int i = 0; i < nNodes; i++) {
     node = new Node;
-    node->id = this->ppnref->getNodes()[i]->nr;
+    node->id = this->adgRef->getNodes()[i]->name;
     nodes.push_back(node);
   }
   
   // Read edges
+  adg_helper::Edges adgEdges = this->adgRef->getEdges();
   for (int i = 0; i < nEdges; i++) {
     edge = new Edge;
-    edge->from = nodes[this->ppnref->getEdges()[i]->from_node->nr];
-    edge->to = nodes[this->ppnref->getEdges()[i]->to_node->nr];
+    edge->from	= getTarjanNode(adgEdges[i]->from_node_name);
+    edge->to 	= 	getTarjanNode(adgEdges[i]->to_node_name);
     edges.push_back(edge);
   }
   
 }
 
 
+// get Tarjan node from adg node by isl_id
+Node*
+TarjanClass::getTarjanNode(isl_id* name){
+	for (int i = 0; i < this->nodes.size(); ++i) {
+		if (nodes[i]->id != name) continue;
+
+		return nodes[i];
+	}
+
+	// should not reach here
+	fprintf(stderr, "Tarjan node with name: %s is not found!!", isl_id_get_name(name));
+}
+
+// get adg node from Tarjan node by isl_id
+adg_node*
+TarjanClass::getADGNode(isl_id* name){
+	adg_helper::Nodes nodes = this->adgRef->getNodes();
+	for (int i = 0; i < nodes.size(); ++i) {
+		if (nodes[i]->name != name) continue;
+
+		return nodes[i];
+	}
+
+	// should not reach here
+	fprintf(stderr, "ADG node with name: %s is not found!!", isl_id_get_name(name));
+}
 
 
 // The actual (recursive) algorithm
-void TarjanClass::tarjansAlgorithm(Node *v, ppn::PPNgraphSCCs &foundSCCs) {
+void TarjanClass::tarjansAlgorithm(Node *v, adg_helper::ADGgraphSCCs &foundSCCs) {
   Node *vv;
 
   v->dfs = max_dfs;
@@ -201,14 +234,14 @@ void TarjanClass::tarjansAlgorithm(Node *v, ppn::PPNgraphSCCs &foundSCCs) {
   
   if (v->lowlink == v->dfs) {
     //printf("SCC:");
-    ppn::PPNprocesses scc;
+    adg_helper::Nodes scc;
     do {
       vv = S.top();
       S.pop();
       vv->onstack = false;
       //printf(" %d%s", vv->id, (vv == v)?"":",");
-      ppn::node *nd = this->ppnref->getNodeFromNr(vv->id);
-      scc.push_back(nd);
+      adg_helper::Node *adgNd = getADGNode(vv->id);
+      scc.push_back(adgNd);
     } while (vv != v);
     if (scc.size() > 1) {
       // Only report SCCs with at least 2 nodes
@@ -221,10 +254,11 @@ void TarjanClass::tarjansAlgorithm(Node *v, ppn::PPNgraphSCCs &foundSCCs) {
 
 
 // Execute Tarjan's algorithm; public function
-ppn::PPNgraphSCCs TarjanClass::runTarjansAlgorithm(ppn::PPN *ppn) {
-  ppn::PPNgraphSCCs foundSCCs;
+adg_helper::ADGgraphSCCs
+TarjanClass::runTarjansAlgorithm(adg_helper::ADG_helper *adgHelper) {
+  adg_helper::ADGgraphSCCs foundSCCs;
   max_dfs = 0;
-  this->ppnref = ppn;
+  this->adgRef = adgHelper;
   importPPN();
   tarjansAlgorithm(nodes[0], foundSCCs);
   cleanup();

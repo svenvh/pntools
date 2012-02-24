@@ -32,21 +32,35 @@ public:
 	virtual ~ADG_helper();
 
 	Processes getProcesses();
+	Nodes getNodes();
 	Node* getNode(isl_id *name);
 	Node* getNode(id_t id);
+	Nodes getSourceNodes();
+	Nodes getSinkNodes();
 
 	Channels getChannels();
 	Channel* getChannel(isl_id *name);
 
+	Edges getEdges();
 	Edge* getEdge(isl_id *name);
+	Edges getNodeEdges(const Node *node);
+	Edges getSelfEdges(const Node *node);
+
 
 	unsigned getId(const Process *process);
 	unsigned getId(const Port *port);
 	unsigned getId(isl_id *name);
+	unsigned getIdfromName(isl_id*);
 	unsigned getNewId();
 
 	__isl_give isl_set* getProcessDomainBound(const Node*);
+	__isl_give isl_set* getNodeDomainBound(const Node*);
 	__isl_give isl_set* getCDNodeDomainBound(const CDNode*);
+
+	Port* getSrcPort(Edge *edge);
+	Port* getSnkPort(Edge *edge);
+
+	Port* getPort(isl_id *name);
 
 	Ports getInPorts(const Process *process);
 	Ports getInPorts(const CDNode *cdNode);
@@ -54,17 +68,24 @@ public:
 	Ports getOutPorts(const Process *process);
 	Ports getOutPorts(const CDNode *cdNode);
 
+
+	Ports getConnectedPort(Port*);
+
 	__isl_give isl_set* getPortDomainBound(const Port *port);
 
 	std::vector<adg_param*> getParameters();
 
 	bool isSelfEdge(Edge *ch, const CDNode *cdNode);
+	bool isSelfEdge(Edge *ch);
+
 
 	// topological analysis
 	bool isChain();
 	bool isChain(const Processes &processes);
 	bool isTree();
 	bool isTree(const Processes &processes);
+
+	ADGgraphSCCs getSCCs();
 };
 
 } // end namespace adg_helper

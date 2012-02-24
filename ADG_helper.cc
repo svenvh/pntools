@@ -12,9 +12,12 @@
 
 #include "isl/set.h"
 
+#include "tarjan.h"
 #include "ADG_helper.h"
 
 using namespace adg_helper;
+
+namespace adg_helper {
 
 ADG_helper::ADG_helper(adg *adg, isl_ctx *ctx) {
 	this->ppn = adg;
@@ -71,10 +74,27 @@ ADG_helper::ADG_helper(adg *adg, CDNodeIds &cdNodeIds, isl_ctx *ctx) {
 		}
 	}
 
+	/* initialize CDNodes */
+	// initialize new names for CDNodes
+//	for (int i = 0; i < cdNodeIds.size(); ++i) {
+//		CDNode cdNode = cdNodeIds[i];
+//		isl_id *nodeName = NULL;
+//		char* cdNodeNameChar;
+//		for (int j = 0; j < cdNode.size(); ++j) {
+//			// get each id of Node in the CDNode
+//			const char* nameChar = isl_id_get_name(cdNode[j]->name);
+//			strcat(cdNodeNameChar, nameChar);
+//		}
+//	}
+
+
+
+
 }
 
 ADG_helper::~ADG_helper() {
-	// TODO Auto-generated destructor stub
+	// destructor for CDNodes
+
 }
 
 unsigned
@@ -101,6 +121,15 @@ ADG_helper::getNewId(){
 	return adg_ids.size() + 1;
 }
 
+unsigned
+ADG_helper::getIdfromName(isl_id *name){
+//	int name_int = -1;
+//	if (sscanf(name_char, "ND_%d", &name_int) != 1) {
+//		fprintf(stderr, "ERROR: the integer id in node name can not be retrieved.");
+//	}
+//	assert(name_int >= 0);
+}
+
 Channels
 ADG_helper::getChannels(){
 		return this->ppn->edges;
@@ -123,6 +152,11 @@ ADG_helper::getChannel(isl_id *name){
 	fprintf(stderr, "channel with name: %s is not found!!", name_char);
 }
 
+Edges
+ADG_helper::getEdges(){
+	return this->ppn->edges;
+}
+
 Edge*
 ADG_helper::getEdge(isl_id *name){
 	Edges edges = ppn->edges;
@@ -138,8 +172,43 @@ ADG_helper::getEdge(isl_id *name){
 	fprintf(stderr, "edge with name: %s is not found!!", isl_id_get_name(name));
 }
 
+Edges
+ADG_helper::getSelfEdges(const Node *node){
+	Edges edges;
+
+	Ports in_ports = node->input_ports;
+	for (int i = 0; i < in_ports.size(); ++i) {
+		Edge *edge = getEdge(in_ports[i]->edge_name);
+		if ( isSelfEdge(edge) ) {
+			edges.push_back(edge);
+		}
+	}
+
+	return edges;
+}
+
+Edges
+ADG_helper::getNodeEdges(const Node *node){
+	Edges edges;
+
+//	Ports in_ports = node->input_ports;
+//	for (int i = 0; i < in_ports.size(); ++i) {
+//		Edge *edge = getEdge(in_ports[i]->edge_name);
+//		if ( isSelfEdge(edge) ) {
+//			edges.push_back(edge);
+//		}
+//	}
+
+	return edges;
+}
+
 Processes
 ADG_helper::getProcesses(){
+	return this->ppn->nodes;
+}
+
+Nodes
+ADG_helper::getNodes(){
 	return this->ppn->nodes;
 }
 
@@ -177,11 +246,86 @@ ADG_helper::getNode(id_t id){
 
 }
 
+Nodes
+ADG_helper::getSourceNodes(){
+	Nodes srcNodes;
+
+	for (int i = 0; i < ppn->nodes.size(); ++i) {
+		Ports ports = getInPorts(ppn->nodes[i]);
+
+		if (ports.size() == 0) {
+			srcNodes.push_back(ppn->nodes[i]);
+		}
+	}
+
+	return srcNodes;
+}
+
+Nodes
+ADG_helper::getSinkNodes(){
+	Nodes snkNodes;
+
+	for (int i = 0; i < ppn->nodes.size(); ++i) {
+		Ports ports = getOutPorts(ppn->nodes[i]);
+
+		if (ports.size() == 0) {
+			snkNodes.push_back(ppn->nodes[i]);
+		}
+	}
+
+	return snkNodes;
+}
+
 __isl_give isl_set*
 ADG_helper::getProcessDomainBound(const Process *process){
 	isl_set *process_domain = isl_set_copy(process->domain->bounds);
 
 	return process_domain;
+}
+
+__isl_give isl_set*
+ADG_helper::getNodeDomainBound(const Node *node){
+	isl_set *nodeDom= isl_set_copy(node->domain->bounds);
+
+	return nodeDom;
+}
+
+Port*
+ADG_helper::getPort(isl_id *name){
+
+}
+
+Port*
+ADG_helper::getSrcPort(Edge *edge){
+	isl_id *port_name = edge->from_port_name;
+	Node *node = getNode(edge->from_node_name);
+	Ports out_ports = node->output_ports;
+//	PortIter::pit = find(in_ports.begin(), in_ports.end(), edge->from_port_name);
+	for (int i = 0; i < out_ports.size(); ++i) {
+		if (out_ports[i]->name != port_name) continue;
+
+		return out_ports[i];
+	}
+
+	fprintf(stderr, "ERROR: source port: %s of edge %s dose not exit.",
+			isl_id_get_name(edge->from_port_name), isl_id_get_name(edge->name));
+}
+
+
+Port*
+ADG_helper::getSnkPort(Edge *edge){
+	isl_id *port_name = edge->to_port_name;
+	Node *node = getNode(edge->to_node_name);
+	Ports in_ports = node->input_ports;
+//	PortIter::pit = find(in_ports.begin(), in_ports.end(), edge->from_port_name);
+	for (int i = 0; i < in_ports.size(); ++i) {
+		if (in_ports[i]->name != port_name) continue;
+
+		return in_ports[i];
+	}
+
+	fprintf(stderr, "ERROR: source port: %s of edge %s dose not exit.",
+			isl_id_get_name(edge->from_port_name), isl_id_get_name(edge->name));
 }
 
 Ports
@@ -195,6 +339,10 @@ ADG_helper::getOutPorts(const Process *process){
 	return process->output_ports;
 }
 
+Ports
+ADG_helper::getConnectedPort(Port* port){
+	// get
+}
 
 __isl_give isl_set*
 ADG_helper::getPortDomainBound(const Port *port){
@@ -213,11 +361,22 @@ bool
 ADG_helper::isChain(){
 	bool isChain = true;
 
-	Processes processes = this->ppn->nodes;
-
+	Nodes processes = this->ppn->nodes;
+	Nodes srcNodes = getSourceNodes();
+	Nodes snkNodes = getSinkNodes();
 	// if each process has at most one input/output port, then adg is a chain
 	for (int i = 0; i < processes.size(); ++i) {
-		Process *process = processes[i];
+		Node *process = processes[i];
+
+		// skip source and sink nodes
+		NodeIter nit = find(srcNodes.begin(), srcNodes.end(), process);
+		if (nit != srcNodes.end()) {
+			continue;
+		}
+		nit = find(snkNodes.begin(), snkNodes.end(), process);
+		if (nit != snkNodes.end()) {
+			continue;
+		}
 
 		Ports in_ports = process->input_ports;
 		if (in_ports.size() > 1) {
@@ -234,6 +393,7 @@ ADG_helper::isChain(){
 			}
 		}
 
+		// if several output ports exist, it is not a chain for sure
 		Ports out_ports = process->output_ports;
 		if (out_ports.size() > 1) {
 			return false;
@@ -292,6 +452,17 @@ ADG_helper::getCDNodeDomainBound(const CDNode *cdNode){
 	}
 
 	return boundCdNode;
+}
+
+bool
+ADG_helper::isSelfEdge(Edge *ch){
+	bool isSelfEdge = true;
+
+	if (ch->from_node_name != ch->to_node_name) {
+		isSelfEdge = false;
+	}
+
+	return isSelfEdge;
 }
 
 bool
@@ -359,3 +530,15 @@ ADG_helper::getOutPorts(const CDNode *cdNode){
 
 	return ports;
 }
+
+
+ADGgraphSCCs
+ADG_helper::getSCCs(){
+	ADGgraphSCCs ret;
+	Tarjan::TarjanClass tc;
+	ret = tc.runTarjansAlgorithm(this);
+
+	 return ret;
+}
+
+} // end namespace adg_helper
