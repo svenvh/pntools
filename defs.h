@@ -48,45 +48,43 @@ typedef adg_node Process;
 typedef std::vector<Process*> Processes;
 
 
-
 typedef std::vector<adg_node*> CDNode;
-typedef std::map<unsigned int, std::vector<unsigned int> > CDNodeIds;
+// one unique id in the original ADG as the key, and a set of ids in the original ADG
+// as the value
+typedef std::vector<std::vector<unsigned int> > CDNodeIds;
 
 typedef adg_domain Domain;
 
 typedef adg_port Port;
 typedef std::vector<adg_port*> Ports;
-typedef std::vector<adg_port*>::iterator PPNportIter;
-typedef std::vector<adg_port*>::iterator PPNportCIter;
+typedef std::vector<adg_port*>::iterator PortIter;
+typedef std::vector<adg_port*>::iterator PortCIter;
 
 
 typedef adg_param Parameter;
 typedef std::vector<adg_param*> Parameters;
 
-//typedef std::vector<pdg::node*> PPNgraphSCC;
-//typedef PPNgraphSCC::iterator PPNgraphSCCIter;
-//typedef PPNgraphSCC::const_iterator PPNgraphSCCCIter;
-//
-//typedef std::vector<PPNprocesses> PPNgraphSCCs;
-//typedef PPNgraphSCCs::iterator PPNgraphSCCsIter;
-//typedef PPNgraphSCCs::const_iterator PPNgraphSCCsCIter;
-//
-//
-//typedef std::vector<pdg::node*> PPNgraphCycle;
-//typedef PPNgraphCycle::iterator PPNgraphCycleIter;
-//typedef PPNgraphCycle::const_iterator PPNgraphCycleCIter;
-//
-//typedef vector<PPNprocesses> PPNgraphCycles;
-//typedef PPNgraphCycles::iterator PPNgraphIter;
-//typedef PPNgraphCycles::const_iterator PPNgraphCIter;
+typedef std::vector<adg_node*> ADGgraphSCC;
+typedef ADGgraphSCC::iterator ADGgraphSCCIter;
+typedef ADGgraphSCC::const_iterator ADGgraphSCCCIter;
 
-// partitioning
-typedef enum PartType{Modulo, PlainCut} PartType ;
+typedef std::vector<Nodes> ADGgraphSCCs;
+typedef ADGgraphSCCs::iterator ADGgraphSCCsIter;
+typedef ADGgraphSCCs::const_iterator ADGgraphSCCsCIter;
 
-// Direction vector used for plain-cut: indicate how to cut the iteration domain
-typedef vector<int> Direction;
+typedef std::vector<adg_node*> ADGgraphCycle;
+typedef ADGgraphCycle::iterator ADGgraphCycleIter;
+typedef ADGgraphCycle::const_iterator ADGgraphCycleCIter;
+
 
 } // namespace
 
+namespace pdg{
+namespace pdg_helper{
 
+typedef std::vector<node*> pNodes_t;
+typedef std::vector<dependence*> pDeps_t;
+
+}
+}
 #endif /* DEFS_H_ */
