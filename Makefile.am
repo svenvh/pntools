@@ -56,7 +56,7 @@ adgstat_SOURCES = adgstat.cc
 
 pdgtrans_LDADD = $(ISALIB) @SYCK_LIBS@ $(BARVINOKLIB)
 pdgtrans_SOURCES = \
-	TransDebug.cc TransDebug.h \
+	TransReport.cc TransReport.h \
 	SetDivider.cc SetDivider.h \
 	SplitCommand.cc SplitCommand.h \
 	TransCLParser.cc TransCLParser.h \

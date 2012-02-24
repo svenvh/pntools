@@ -37,12 +37,16 @@ int main(int argc, char * argv[])
   parser.parseAll(argc, argv);
 
   pdg->add_history_line("pdgtrans", argc, argv);
-  pdg->Dump(out);
+  
+  // dump new tree in case no error has occured
+  if(!TransError::print()){
+    pdg->Dump(out);
+  }
 
   pdg->free();
   delete pdg;
 
   isl_ctx_free(ctx);
 
-  return 0;
+  return TransError::isFound();
 }
