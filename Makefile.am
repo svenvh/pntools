@@ -17,11 +17,10 @@ BARVINOKLIB = $(BARVINOKDIR)/libbarvinok.la
 
 ### Libraries
 
-## comment tarjan temporarily
-#	tarjan.cc \
-#	tarjan.h
 lib_LTLIBRARIES = libadg_helper.la
 libadg_helper_la_SOURCES = \
+	tarjan.cc \
+	tarjan.h  \
 	ADG_helper.cc \
 	ADG_helper.h 
 libadg_helper_la_LIBADD = $(ISADIR)/libpdg.la $(ISLLIB) $(ADGLIB)
