@@ -298,9 +298,9 @@ int main(int argc, char * argv[])
 	PRINTER = isl_printer_set_output_format(PRINTER, ISL_FORMAT_ISL);
 
 
-	ADG_helper adg_helper(csdf_adg, ctx);
+	ADG_helper *adg_helper = new ADG_helper(csdf_adg, ctx);
 
-	Parameters params = adg_helper.getParameters();
+	Parameters params = adg_helper->getParameters();
 	if (params.size() > 0) {
 		fprintf(stderr, "PPN with parameters has no equivalent CSDF\n");
 		delete csdf_adg;
@@ -314,7 +314,7 @@ int main(int argc, char * argv[])
 				"         please put impldata.xml in the current directory or in ~/.daedalus\n");
 	}
 
-	CsdfDumper *dumper = new CsdfDumper(&adg_helper, implTable, ctx);
+	CsdfDumper *dumper = new CsdfDumper(adg_helper, implTable, ctx);
 //	if (gOutputFormat == 3) {
 //		dumper->dumpCsdf3(cout);
 //	}else{
@@ -327,6 +327,7 @@ int main(int argc, char * argv[])
 
 	isl_printer_free(PRINTER);
 	delete csdf_adg;
+	delete adg_helper;
 	isl_ctx_free(ctx);
 
 	return 0;
