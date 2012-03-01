@@ -204,17 +204,22 @@ ADG_helper::getSelfEdges(const Node *node){
 	return edges;
 }
 
+// Returns all edges that have the given node as source or destination.
+// This includes selfedges.
 Edges
 ADG_helper::getNodeEdges(const Node *node){
 	Edges edges;
 
-//	Ports in_ports = node->input_ports;
-//	for (int i = 0; i < in_ports.size(); ++i) {
-//		Edge *edge = getEdge(in_ports[i]->edge_name);
-//		if ( isSelfEdge(edge) ) {
-//			edges.push_back(edge);
-//		}
-//	}
+	int n = this->ppn->edges.size();
+	for (int i = 0; i < n; i++) {
+		Edge *edge = this->ppn->edges[i];
+		if (isl_id_cmp(edge->from_node_name, node->name) == 0) {
+			edges.push_back(edge);
+		}
+		else if (isl_id_cmp(edge->to_node_name, node->name) == 0) {
+			edges.push_back(edge);
+		}
+	}
 
 	return edges;
 }

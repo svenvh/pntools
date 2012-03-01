@@ -51,7 +51,8 @@ Upate: 30.Nov.2011: We start to adapt all tools to the latest isa version.
 * Authors: Sven van Haastregt, Teddy Zhai
 * Notes:   Implemented, needs further verification.
 * Input:   `XXX-adg.yaml`
-* Output:  `YYY.gph` (Extended [StreamIt](http://groups.csail.mit.edu/cag/streamit/) format, see "Graph Formats" below)
+* Output:  `YYY.xml` (SDF3 format) or
+           `YYY.gph` (Extended [StreamIt](http://groups.csail.mit.edu/cag/streamit/) format). See "Graph Formats" below.
 * Tested:  ISA 0.11
 
 ### adgstat

@@ -9,7 +9,7 @@
  *
  */
 
-
+#include <cstring>
 #include "barvinok/barvinok.h"
 
 #include "isa/yaml.h"
@@ -199,4 +199,8 @@ isDimsEqual(__isl_keep isl_set *set1, __isl_keep isl_set *set2,
 	isl_set_free(firstnSet1);
 	isl_set_free(firstnSet2);
 	return isFullyDefined;
+}
+
+int isl_id_cmp(__isl_keep isl_id *s1, __isl_keep isl_id *s2) {
+	return strcmp(isl_id_get_name(s1), isl_id_get_name(s2));
 }

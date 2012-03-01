@@ -47,11 +47,11 @@ public:
     CsdfDumper(ADG_helper *adg_helper, ImplementationTable *t, isl_ctx *ctx);
     ~CsdfDumper();
     void DumpCsdf(std::ostream &strm);
-//    void dumpCsdf3(std::ostream &strm);
+    void dumpCsdf3(std::ostream &strm);
 
 
 private:
-//    void writePortCsdf3(std::string name, std::string type, std::ostream &strm);
+    void writePortCsdf3(__isl_keep isl_id *name, std::string type, std::ostream &strm);
     unsigned getWCET(Process *process);
 
     bool checkPhaseValidity(const Process *process);
@@ -80,12 +80,91 @@ void printTest(adg_domain *adgdomain){
 	std::cout << "filters: " << adgdomain->filters.size() << std::endl;
 }
 
+// Dumps PPN in SDF3 CSDF format.
+void CsdfDumper::dumpCsdf3(std::ostream& strm) {
+  const Processes nodes = this->ppn->getNodes();
+  const Channels edges = this->ppn->getEdges();
+
+  std::ostringstream csdfProps;
+
+  strm << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+       << "<sdf3 type=\"csdf\" version=\"1.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:noNamespaceSchemaLocation=\"http://www.es.ele.tue.nl/sdf3/xsd/sdf3-csdf.xsd\">\n"
+       << "  <applicationGraph name='ppn2csdf'>\n"
+       << "    <csdf name='graph' type='csdfgraph'>\n";
+
+  for (unsigned int i = 0; i < nodes.size(); i++){
+    Process* process = nodes[i];
+    this->var_domains = this->ppn->findVariantDomain2(process);
+    this->phases = this->ppn->computePhases(process);
+
+    // Write list of actors and their ports
+    strm << "      <actor name='" << isl_id_get_name(process->name) << "' type='x'>\n";
+    Channels processEdges = this->ppn->getNodeEdges(process);
+    for (PPNchIter eit = processEdges.begin(); eit != processEdges.end(); ++eit) {
+      Edge *ch = *eit;
+      if (isl_id_cmp(ch->from_node_name, process->name) == 0) {
+        writePortCsdf3(ch->from_port_name, "out", strm);
+      }
+      if (ch->to_node_name == process->name) {
+        writePortCsdf3(ch->to_port_name, "in", strm);
+      }
+    }
+    strm << "      </actor>\n";
+
+    // While we're iterating over the actors also fill CSDF properties
+    csdfProps << "      <actorProperties actor='" << isl_id_get_name(process->name) << "'>\n"
+              << "        <processor type='proc_0' default='true'>\n"
+              << "          <executionTime time='";
+    int wcet = getWCET(process);
+    for (int xi = 0; xi < this->ppn->getPhaseLength((*var_domains)[process->name]); xi++) {
+      if (xi != 0) csdfProps << ",";
+      csdfProps << wcet;
+    }
+    csdfProps << "' />\n";
+    csdfProps << "        </processor>\n"
+              << "      </actorProperties>\n";
+  }
+
+  strm << "\n";
+
+  // Write channels
+  for (unsigned int i = 0; i < edges.size(); i++){
+    Edge *e = edges[i];
+    strm << "      <channel name='" << isl_id_get_name(e->name) << "' "
+         <<        "srcActor='" << isl_id_get_name(e->from_node_name) << "' "
+         <<        "srcPort='" << isl_id_get_name(e->from_port_name) << "' "
+         <<        "dstActor='" << isl_id_get_name(e->to_node_name) << "' "
+         <<        "dstPort='" << isl_id_get_name(e->to_port_name) << "' "
+         <<        "initialTokens='0' "
+         << "/>\n";
+  }
+
+  strm << "\n";
+
+  // Write the CSDF properties that we collected earlier
+  strm << "    </csdf>\n"
+       << "    <csdfProperties>\n"
+       << csdfProps.str()
+       << "    </csdfProperties>\n"
+       << "  </applicationGraph>\n"
+       << "</sdf3>\n";
+}
 
 
 // Returns the WCET of a process
 unsigned
 CsdfDumper::getWCET(Process *process) {
   return implTable->getMetric( IM_DELAY_WORST, isl_id_get_name(process->function->name) );
+}
+
+// Writes a port in SDF3 format
+void CsdfDumper::writePortCsdf3(__isl_keep isl_id *name, std::string type, std::ostream &strm) {
+  strm << "        <port type='" << type << "' "
+       << (type.compare("in") == 0 ? " " : "")
+       <<          "name='" << isl_id_get_name(name) << "' "
+       <<          "rate='";
+  this->ppn->writePhase(name, strm, ',');
+  strm << "' />\n";
 }
 
 
@@ -247,6 +326,7 @@ static int gOutputFormat; // 1 = StreamIT, 3 = SDF3
 void printUsage() {
   fprintf(stderr, "Usage: adg2csdf [options] < [adg].yaml\n");
   fprintf(stderr, "Supported options:\n");
+  fprintf(stderr, "  -3     Dump in SDF3 format\n");
   fprintf(stderr, "  -s     Dump in StreamIT format [default]\n");
 }
 
@@ -256,10 +336,6 @@ int parseCommandline(int argc, char ** argv)
   gOutputFormat = 1;
   for (int i = 1; i < argc; i++) {
     if (strcmp(argv[i], "-3") == 0) {
-    	// currently not supported
-    	fprintf(stderr, "Currently generating csdf in the sdf3 format is not supported yet!\n");
-    	return 1;
-
       gOutputFormat = 3;
       return 0;
     }
@@ -273,7 +349,7 @@ int parseCommandline(int argc, char ** argv)
     }
   }
 
-  return 1;
+  return 0;
 }
 
 
@@ -281,10 +357,10 @@ int main(int argc, char * argv[])
 {
 	FILE *in = stdin;
 
-//	if (parseCommandline(argc, argv) == 1) {
-//		printUsage();
-//		exit(1);
-//	}
+	if (parseCommandline(argc, argv) == 1) {
+		printUsage();
+		exit(1);
+	}
 
 	isl_ctx *ctx;
 	ctx = isl_ctx_alloc();
@@ -315,12 +391,12 @@ int main(int argc, char * argv[])
 	}
 
 	CsdfDumper *dumper = new CsdfDumper(adg_helper, implTable, ctx);
-//	if (gOutputFormat == 3) {
-//		dumper->dumpCsdf3(cout);
-//	}else{
-//		assert(gOutputFormat == 1);
+	if (gOutputFormat == 3) {
+		dumper->dumpCsdf3(cout);
+	}
+	else{
 		dumper->DumpCsdf(cout);
-//	}
+	}
 
 	delete dumper;
 	delete implTable;

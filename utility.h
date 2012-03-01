@@ -42,4 +42,6 @@ __isl_give isl_set* getPDGDomain(const adg_domain *adgDomain);
 bool isDimsEqual(__isl_keep isl_set *set1, __isl_keep isl_set *set2,
 		unsigned int first, unsigned int n);
 
+int isl_id_cmp(__isl_keep isl_id *s1, __isl_keep isl_id *s2);
+
 #endif /* UTILITY_H_ */
