@@ -35,6 +35,7 @@ using namespace adg_helper;
 
 isl_printer *PRINTER;
 
+
 /// Csdf Dumper class
 class CsdfDumper {
 	ADG_helper *ppn;
@@ -373,22 +374,26 @@ int main(int argc, char * argv[])
 	PRINTER = isl_printer_to_file(ctx, stdout);
 	PRINTER = isl_printer_set_output_format(PRINTER, ISL_FORMAT_ISL);
 
-
 	ADG_helper *adg_helper = new ADG_helper(csdf_adg, ctx);
 
 	Parameters params = adg_helper->getParameters();
 	if (params.size() > 0) {
 		fprintf(stderr, "PPN with parameters has no equivalent CSDF\n");
-		delete csdf_adg;
-		isl_ctx_free(ctx);
 		exit(1);
 	}
 
+	ADGgraphSCCs sCCs = adg_helper->getSCCs();
+	if (sCCs.size() > 0) {
+		fprintf(stderr, "WARNING: PPN is a cyclic graph.\n");
+	}
+
+	// load implementation-dependent information
 	ImplementationTable *implTable = new ImplementationTable();
 	if (!implTable->loadDefaultFile()) {
 		fprintf(stderr, "Warning: Could not load implementation data from default files;\n"
 				"         please put impldata.xml in the current directory or in ~/.daedalus\n");
 	}
+
 
 	CsdfDumper *dumper = new CsdfDumper(adg_helper, implTable, ctx);
 	if (gOutputFormat == 3) {
