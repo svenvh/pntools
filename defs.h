@@ -82,9 +82,16 @@ typedef ADGgraphCycle::const_iterator ADGgraphCycleCIter;
 
 namespace pdg_helper{
 
+typedef pdg::node pNode_t;
 typedef std::vector<pdg::node*> pNodes_t;
+
+typedef pdg::dependence pDep_t;
 typedef std::vector<pdg::dependence*> pDeps_t;
 typedef std::vector<isl_map*> pRelations_t;
 typedef std::vector<isl_id*> pIds_t;
+
+typedef std::vector<pdg::node*> PDGgraphSCC;
+typedef std::vector<pNodes_t> PDGgraphSCCs;
+
 }
 #endif /* DEFS_H_ */
