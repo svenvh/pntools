@@ -73,6 +73,15 @@ int getCardinality(__isl_keep isl_pw_qpolynomial *pwqp){
 	return count;
 }
 
+// Count number of points in an isl_set s
+int getCardinality(__isl_keep isl_set *set) {
+	isl_pw_qpolynomial *card_pwqp = isl_set_card(isl_set_copy(set));
+	unsigned int card = getCardinality(card_pwqp);
+	isl_pw_qpolynomial_free(card_pwqp);
+
+	return card;
+}
+
 
 __isl_give isl_set*
 getUnwrappedDomain(__isl_take isl_set *set){

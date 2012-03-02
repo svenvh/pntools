@@ -50,6 +50,14 @@ adg2csdf_SOURCES = \
 	utility.cc utility.h \
 	adg2csdf.cc
 
+adgromgen_LDADD = libadg_helper.la $(ISALIB) $(ADGLIB) @libxml2_LIBS@ @SYCK_LIBS@ $(BARVINOKLIB)
+adgromgen_SOURCES = \
+	suffix_tree.cc suffix_tree.h \
+	ImplementationTable.cc \
+	ImplementationTable.h \
+	utility.cc utility.h \
+	adgromgen.cc
+
 adgstat_LDADD = $(ADGLIB)
 adgstat_SOURCES = adgstat.cc
 
@@ -72,7 +80,7 @@ plamapgen_SOURCES = plamapgen.cc
 
 
 
-bin_PROGRAMS = adg2csdf adgstat pdgtrans visset plamapgen
+bin_PROGRAMS = adg2csdf adgromgen adgstat pdgtrans visset plamapgen
 
 include local.am
 

@@ -922,11 +922,7 @@ ADG_helper::findVariantDomain2(const Process *process){
  */
 unsigned int
 ADG_helper::getPhaseLength(__isl_keep isl_set *var_domain){
-  isl_pw_qpolynomial *var_domain_qwpq =  isl_set_card(isl_set_copy(var_domain));
-  unsigned int var_domain_card = getCardinality(var_domain_qwpq);
-  isl_pw_qpolynomial_free(var_domain_qwpq);
-
-  return var_domain_card;
+  return getCardinality(var_domain);
 }
 
 
