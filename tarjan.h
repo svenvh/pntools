@@ -10,7 +10,8 @@
  *
  *
  * History:
- *      24-02-12    :   updated for ADG data structure (Teddy Zhai).
+ *      24-02-12    	:   updated for ADG data structure (Teddy Zhai).
+ *      2-03-12    	:   made this independent of adg/pdg structure (Teddy Zhai).
  */
 
 #ifndef _TARJAN_H_
@@ -20,8 +21,6 @@
 #include <stack>
 
 #include "isl/id.h"
-
-#include "ADG_helper.h"
 
 using namespace std;
 
@@ -55,32 +54,30 @@ class Edge {
     bool visited;
 };
 
+class Graph {
+public:
+	std::vector<Node*> nodes;
+	std::vector<Edge*> edges;
+};
+
+typedef std::vector<std::vector<Node*> > SCCs_t;
+
 class TarjanClass {
   public:
     // Constructor:
     TarjanClass();
-  
+
+	TarjanClass(Graph*);
+
     // Destructor:
     ~TarjanClass();
+
+    void runTarjansAlgorithm(Node *v, SCCs_t &foundSCCs);
     
-    // Returns SCCs w/ size >= 2 using Tarjan's algorithm:
-    adg_helper::ADGgraphSCCs runTarjansAlgorithm(adg_helper::ADG_helper*);
+    // Cleanup
+	void cleanup();
 
   private:
-    // Obsolete: Read the input file:
-    void importPPN();
-
-    // get Tarjan node from adg node by isl_id
-    Node* getTarjanNode(isl_id*);
-
-    // get adg node from Tarjan node by isl_id
-    adg_node* getADGNode(isl_id*);
-
-    // The actual recursive algorithm
-    void tarjansAlgorithm(Node *v, adg_helper::ADGgraphSCCs &foundSCCs);
-
-    // Cleanup
-    void cleanup();
 
     // Algorithm data:
     int nNodes;
@@ -89,9 +86,6 @@ class TarjanClass {
     // The graph:
     vector<Edge*> edges;
     vector<Node*> nodes;
-
-    // Pointer to original ADG
-    adg_helper::ADG_helper *adgRef;
 
     // Tarjan state vars:
     int max_dfs;
