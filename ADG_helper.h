@@ -18,9 +18,23 @@
 
 namespace adg_helper {
 
+struct ind_dims_t {
+	unsigned int dims;
+	int nr_ind_dim;
+	std::map<unsigned int, bool> dim_dep_map;
+};
+
+typedef std::map<std::string, std::vector<short>* > phaseMap_t;
+
+typedef std::map<isl_id*, isl_set*> var_domain_t;
+
+typedef std::map<isl_id*, std::vector<short>* > phases_t;
+
 class ADG_helper {
 	isl_ctx *ctx;
 	adg* ppn;
+	phases_t phases;
+	var_domain_t var_domains;
 	CDNodeIds cdNodeIds;
 
 	NameId_t adg_ids; // used for csdf data structure
@@ -86,6 +100,15 @@ public:
 	bool isTree(const Processes &processes);
 
 	ADGgraphSCCs getSCCs();
+
+	// Phase/pattern computation
+	void initPhases();
+	void writePhase(isl_id *portName, std::ostream &strm, char sep);
+	int getCommonPortsDims(__isl_keep isl_set *process_domain, Ports &ports, ind_dims_t &ind_dims);
+	var_domain_t *findVariantDomain2(const Process *process);
+	unsigned int getPhaseLength(__isl_keep isl_set *var_domain);
+	phases_t *computePhases(const Process *process);
+	bool checkSimplePattern(const Process *process);
 };
 
 } // end namespace adg_helper
