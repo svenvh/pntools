@@ -28,6 +28,8 @@ int getCardinality(isl_ctx *ctx, pdg::UnionSet *s);
 
 int getCardinality(isl_pw_qpolynomial *pw_qpoly);
 
+int getCardinality(__isl_keep isl_set *set);
+
 /* get the set  from a wrapped set without nested space.
  * a wrapped set = [set] -> local[...] */
 __isl_give isl_set* getUnwrappedDomain(__isl_take isl_set *set);
