@@ -55,6 +55,13 @@ Upate: 30.Nov.2011: We start to adapt all tools to the latest isa version.
            `YYY.gph` (Extended [StreamIt](http://groups.csail.mit.edu/cag/streamit/) format). See "Graph Formats" below.
 * Tested:  ISA 0.11
 
+### adgromgen
+* Purpose: Generate ROM tables from an ADG.
+* Author:  Sven van Haastregt
+* Input:   `XXX.adg`
+* Output:  VHDL fragments (to be consumed by the ESPAM ISE visitor).
+* Tested:  `isa-0.11-229-g049a7f9`
+
 ### adgstat
 * Purpose: Dump some statistics about an ADG, such as channel implementation cost estimates.
 * Author:  Sven van Haastregt
