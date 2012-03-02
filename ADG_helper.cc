@@ -557,8 +557,64 @@ ADG_helper::getOutPorts(const CDNode *cdNode){
 ADGgraphSCCs
 ADG_helper::getSCCs(){
 	ADGgraphSCCs ret;
-	Tarjan::TarjanClass tc;
-	ret = tc.runTarjansAlgorithm(this);
+
+	/* Initialize tarjan graph using adg */
+	// 1. Create nodes
+	std::vector<Tarjan::Node*> tarjanNodes;
+	Nodes adgNodes = getNodes();
+	for (int i = 0; i < adgNodes.size(); i++) {
+		Tarjan::Node *tNode = new Tarjan::Node;
+		tNode->id = adgNodes[i]->name;
+		tarjanNodes.push_back(tNode);
+	}
+
+	// 2. Create edges
+	std::vector<Tarjan::Edge*> tarjanEdges;
+	Edges adgEdges = getEdges();
+	for (int i = 0; i < adgEdges.size(); i++) {
+		Tarjan::Edge *tEdge = new Tarjan::Edge;
+		// get tarjan node by isl_id
+		for (int j = 0; j < tarjanNodes.size(); ++j) {
+			if (tarjanNodes[j]->id == adgEdges[i]->from_node_name) {
+				tEdge->from	= tarjanNodes[j];
+			}
+			if (tarjanNodes[j]->id == adgEdges[i]->to_node_name) {
+				tEdge->to 		= tarjanNodes[j];
+			}
+		}
+		if (tEdge->from == NULL || tEdge->to == NULL) {
+			fprintf(stderr, "ERROR: Initializing Tarjan edge with adge edge: %s is not successful!!\n",
+					isl_id_get_name(adgEdges[i]->name));
+			return ret;
+		}
+
+		tarjanEdges.push_back(tEdge);
+	}
+
+	// 3. initialize graph
+	Tarjan::Graph *tarjanGraph = new Tarjan::Graph;
+	tarjanGraph->nodes = tarjanNodes;
+	tarjanGraph->edges = tarjanEdges;
+
+	//std::cout << "run tarjan" <<std::endl;
+	Tarjan::SCCs_t foundSCCs;
+	Tarjan::TarjanClass tc(tarjanGraph);
+	tc.runTarjansAlgorithm(tarjanNodes[0], foundSCCs);
+	//std::cout << "finish tarjan" <<std::endl;
+
+	/* convert found SCCs in tarjan data structure back to ADG data structure */
+	for (int i = 0; i < foundSCCs.size(); ++i) {
+		ADGgraphSCC adgSCC;
+		std::vector<Tarjan::Node*> tarjanSCC = foundSCCs[i];
+		for (int j = 0; j < tarjanSCC.size(); ++j) {
+			Node *adgNode = getNode(tarjanSCC[j]->id);
+			adgSCC.push_back(adgNode);
+		}
+		ret.push_back(adgSCC);
+	}
+
+	// delete the allocated tarjan nodes and edges
+	delete tarjanGraph;
 
 	 return ret;
 }
