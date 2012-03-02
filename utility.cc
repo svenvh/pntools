@@ -149,6 +149,8 @@ __isl_give isl_set* getPDGDomain(const adg_domain *adgDomain){
 //	isl_set_print(pdgDomain, stdout, 0, ISL_FORMAT_ISL);
 //	std::cout << std::endl;
 	pdgDomain = getUnwrappedDomain(pdgDomain);
+
+	// the original id (tuple name etc.) should be preserved.
 	pdgDomain = isl_set_set_tuple_id(pdgDomain, name);
 
 	return pdgDomain;
