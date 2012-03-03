@@ -209,9 +209,9 @@ CsdfDumper::dumpChannels(std::ostream& strm) {
 	{
 		Edge* ch = *eit;
 
-		if (ppn->isSelfEdge(ch)) {
-			continue;
-		}
+//		if (ppn->isSelfEdge(ch)) {
+//			continue;
+//		}
 
 		strm << TABS(indent) << "edge:" << "\n";
 		indent++;
@@ -227,16 +227,16 @@ CsdfDumper::dumpChannels(std::ostream& strm) {
 
 // print the csdf in the StreamIT-compatible format
 void CsdfDumper::DumpCsdf(std::ostream& strm) {
-	const Processes procs = this->ppn->getProcesses();
+	const Nodes procs = this->ppn->getNodes();
 
 	unsigned int indent = 0;
 	const unsigned int nd_nr = procs.size();
 
 	strm<< TABS(indent) << "node_number:" << nd_nr << "\n";
 
-	// iterate over all processes
+	// iterate over all nodes
 	for (unsigned int i = 0; i < procs.size(); i++){
-		Process* process = procs[i];
+		Node* process = procs[i];
 
 		strm<< TABS(indent) << "node:\n";
 		indent++;
@@ -246,7 +246,6 @@ void CsdfDumper::DumpCsdf(std::ostream& strm) {
 
 		// there are special cases in which simple patterns, such as [1],  can be derived without further processing
 		bool isSimplePattern = this->ppn->checkSimplePattern(process);
-////		bool isSimplePattern = false;
 		if (isSimplePattern) {
 			strm << TABS(indent) << "length:1"  << "\n";
 
@@ -263,10 +262,9 @@ void CsdfDumper::DumpCsdf(std::ostream& strm) {
 				strm << wcet;
 				if (wc < this->ppn->getPhaseLength((*var_domains)[process->name])) strm << " ";
 			}
-		} // isSImplePattern
+		} // isSImplePattern ?
 
 		strm << "\n";
-
 
 		strm << TABS(indent) << "port_number:" << process->input_ports.size() + process->output_ports.size() <<"\n";
 		// iterator over input ports of the process
@@ -277,9 +275,9 @@ void CsdfDumper::DumpCsdf(std::ostream& strm) {
 			Port *port = *pit;
 
 			// ignore the port associated with a self-edge
-			if (ppn->isSelfEdge(ppn->getEdge(port->edge_name))) {
-				continue;
-			}
+//			if (ppn->isSelfEdge(ppn->getEdge(port->edge_name))) {
+//				continue;
+//			}
 
 			strm << TABS(indent) << "port:\n";
 			indent++;
@@ -300,9 +298,9 @@ void CsdfDumper::DumpCsdf(std::ostream& strm) {
 			Port *port = *pit;
 
 			// ignore the port associated with a self-edge
-			if (ppn->isSelfEdge(ppn->getEdge(port->edge_name))) {
-				continue;
-			}
+//			if (ppn->isSelfEdge(ppn->getEdge(port->edge_name))) {
+//				continue;
+//			}
 
 			strm << TABS(indent) << "port:\n";
 			indent++;
@@ -314,7 +312,6 @@ void CsdfDumper::DumpCsdf(std::ostream& strm) {
 			strm << "\n";
 			indent--;
 		}
-
 		indent = 0;
 	} // end processes
 
