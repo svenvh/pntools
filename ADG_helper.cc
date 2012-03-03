@@ -620,8 +620,8 @@ ADG_helper::getSCCs(){
 }
 
 
-//// Phase/pattern computation
-
+//// Phase/pattern computation:
+//// Currently it is mainly used for CSDF and controller logic simplification
 void ADG_helper::initPhases() {
   // Allocate phases for each port
   for (unsigned int i = 0; i < getChannels().size(); ++i) {
@@ -706,11 +706,6 @@ check_ind_dims(__isl_take isl_basic_set *domain_bset, void *user){
 
   ind_dims_t *ind_dims = (ind_dims_t *)user;
 
-  /*std::cout << "nr. dim:" << nr_dims << std::endl;
-  std::cout << "the domain: ";
-  PRINTER = isl_printer_print_basic_set(PRINTER, domain_bset);
-  PRINTER = isl_printer_end_line(PRINTER);*/
-
   int rt = isl_basic_set_foreach_constraint(domain_bset, &check_ind_constratint, ind_dims);
   assert(rt == 0);
 
@@ -721,7 +716,6 @@ check_ind_dims(__isl_take isl_basic_set *domain_bset, void *user){
   if (ind_dims->dim_dep_map[0] == false) {
     // The first dimension is independent.
     first_dim = 0;
-//    std::cout << "first dim. to project out is:" << first_dim << std::endl;
   }
 
   // port domain shoud be live in the same space with node domain
@@ -752,20 +746,18 @@ check_ind_dims(__isl_take isl_basic_set *domain_bset, void *user){
   return 0;
 }
 
+
 int
 ADG_helper::getCommonPortsDims(__isl_keep isl_set *process_domain, Ports &ports, ind_dims_t &ind_dims){
   int nr_common_dims = INT_MAX;
 
   for (int i = 0; i < ports.size(); ++i) {
     // ignore self-edges
-    if (isSelfEdge(getEdge(ports[i]->edge_name))) {
-      continue;
-    }
+//    if (isSelfEdge(getEdge(ports[i]->edge_name))) {
+//      continue;
+//    }
 
     isl_set *port_domain = getPDGDomain(ports[i]->domain);
-//    std::cout << "in port domain: ";
-//    PRINTER = isl_printer_print_set(PRINTER, port_domain);
-//    PRINTER = isl_printer_end_line(PRINTER);
 
     ind_dims.nr_ind_dim = -1;
     // find the variant domain of this port domain and store in "ind_dims->var_domain"
@@ -813,16 +805,13 @@ ADG_helper::getCommonPortsDims(__isl_keep isl_set *process_domain, Ports &ports,
 
 
 var_domain_t *
-ADG_helper::findVariantDomain2(const Process *process){
+ADG_helper::findVariantDomain2(const Node *process){
   isl_set *process_domain = getPDGDomain(process->domain);
-//  std::cout << "process domain: ";
-//  PRINTER = isl_printer_print_set(PRINTER, process_domain);
-//  PRINTER = isl_printer_end_line(PRINTER);
 
   /* step 1: check the dependences between dimensions in each port domain.
    *  if a outer-dimension depends on a certain inner-dimension,
    *  no pattern can be found at the outer-dimension.
-   *  NOTE: while(1) is naturally handled.
+   *  NOTE: while(1) is therefore naturally handled.
    *  */
   int nr_common_dims = INT_MAX;
   struct ind_dims_t ind_dims;
@@ -833,20 +822,17 @@ ADG_helper::findVariantDomain2(const Process *process){
   Ports input_ports = getInPorts(process);
   nr_common_dims = getCommonPortsDims(process_domain, input_ports, ind_dims);
 
-//  // iterate over all output port domains
+  // iterate over all output port domains
   Ports output_ports = getOutPorts(process);
   int nr_common_out_dims = getCommonPortsDims(process_domain, output_ports, ind_dims);
   if (nr_common_dims > nr_common_out_dims) {
     nr_common_dims = nr_common_out_dims;
   }
   // number should be between 0 and number of dimensions of the process domain
-//  std::cout << "nr common dimension in variant domains: " << nr_common_dims << std::endl;
+  //std::cout << "nr common dimension in variant domains: " << nr_common_dims << std::endl;
 
 
   // process the process domain and store its processed variant domain
-//  std::cout << "process domain :";
-//  PRINTER = isl_printer_print_set(PRINTER, process_domain);
-//  PRINTER = isl_printer_end_line(PRINTER);
   if (nr_common_dims > 0) {
     // NOTE: currently the tuple is removed if certain dimensions of a set is projected out.
     // Therefore, we need id to reset it in the new set
@@ -859,10 +845,6 @@ ADG_helper::findVariantDomain2(const Process *process){
     // no common variant domain is found
     var_domains[process->name] = process_domain;
   }
-//  std::cout << "process variant domain :";
-//  PRINTER = isl_printer_print_set(PRINTER, var_domains[process->name]);
-//  PRINTER = isl_printer_end_line(PRINTER);
-
 
   // for each input port, project out independent dimensions from the port domain
   for (int i = 0; i < input_ports.size(); ++i) {
@@ -883,17 +865,14 @@ ADG_helper::findVariantDomain2(const Process *process){
     } else {
       var_domains[input_ports[i]->name] = port_domain;
     }
-//    std::cout << "in port variant domain :";
-//    PRINTER = isl_printer_print_set(PRINTER, var_domains[input_ports[i]->name]);
-//    PRINTER = isl_printer_end_line(PRINTER);
-  }
+  } // end input ports
 
   // for each output port, project out independent dimensions from the port domain
   for (int i = 0; i < output_ports.size(); ++i) {
     // ignore self-edges
-    if (isSelfEdge(getEdge(output_ports[i]->edge_name))) {
-      continue;
-    }
+//    if (isSelfEdge(getEdge(output_ports[i]->edge_name))) {
+//      continue;
+//    }
 
     isl_set *port_domain = getPDGDomain(output_ports[i]->domain);
 
@@ -907,9 +886,6 @@ ADG_helper::findVariantDomain2(const Process *process){
     } else {
       var_domains[output_ports[i]->name] = port_domain;
     }
-//    std::cout << "-->port variant domain :";
-//    PRINTER = isl_printer_print_set(PRINTER, var_domains[output_ports[i]->name]);
-//    PRINTER = isl_printer_end_line(PRINTER);
   }
 
   assert(var_domains.empty() == false);
@@ -926,17 +902,17 @@ ADG_helper::getPhaseLength(__isl_keep isl_set *var_domain){
 }
 
 
-/* compute phases for each port of the process according to the max variant domain
- * */
+/* compute phases for each port of the process according to obtained variant domain:
+ * It scans a node variant domain according to the lexicographic order. If a port variant domain
+ * belongs to  the node variant domain, then rate 1 is generated. Otherwise, rate 0 is generated.
+ *  */
 phases_t *
-ADG_helper::computePhases(const Process *process){
-  // variant domains should be generated before hand
+ADG_helper::computePhases(const Node *process){
+  // variant (node/port) domains should be generated before hand
   assert(var_domains.size() > 0);
   assert(var_domains.count(process->name) > 0);
   isl_set *process_var_domain = var_domains[process->name];
-  /*std::cout << "process variant domain: ";
-  PRINTER = isl_printer_print_set(PRINTER, process_var_domain);
-  PRINTER = isl_printer_end_line(PRINTER);*/
+
 
   // scan the process domain according to lexicographical order
   isl_set *process_dom_new = isl_set_copy(process_var_domain);
@@ -989,32 +965,23 @@ ADG_helper::computePhases(const Process *process){
 /* check if the process has a simple consumption/production pattern, such as [1].
  * Basic idea is that, if all input/output port domains are equal to process domain,
  * all consumption/production patterns have only one phase with rate 1.
- *
- * If the process has a simple consumption/production pattern, store the pattern [1] for all input/output ports */
+ * If the process has a simple consumption/production pattern, store the pattern [1]
+ * for all input and output ports */
 bool
 ADG_helper::checkSimplePattern(const Process *process){
   bool isSimplePattern = true;
-//  std::cout << "process domain: ";
-//  PRINTER = isl_printer_print_set(PRINTER, process->domain->bounds);
-//  PRINTER = isl_printer_end_line(PRINTER);
 
   isl_set *unwrapped_procs_domain = getPDGDomain(process->domain);
-//  std::cout << "projected process domain: ";
-//  PRINTER = isl_printer_print_set(PRINTER, unwrapped_procs_domain);
-//  PRINTER = isl_printer_end_line(PRINTER);
 
   // check all input ports
   Ports input_ports = process->input_ports;
   for (int i = 0; i < input_ports.size(); ++i) {
     // ignore self-edges first
-    if (isSelfEdge(getEdge(input_ports[i]->edge_name))) {
-      continue;
-    }
+//    if (isSelfEdge(getEdge(input_ports[i]->edge_name))) {
+//      continue;
+//    }
 
     isl_set *unwrapped_port_domain = getPDGDomain(input_ports[i]->domain);
-//    std::cout << "in port domain: ";
-//    PRINTER = isl_printer_print_set(PRINTER, input_ports[i]->domain->bounds);
-//    PRINTER = isl_printer_end_line(PRINTER);
 
     if (isl_set_is_equal(unwrapped_port_domain, unwrapped_procs_domain) != 1) {
       isSimplePattern = false;
@@ -1033,14 +1000,11 @@ ADG_helper::checkSimplePattern(const Process *process){
   Ports output_ports = process->output_ports;
   for (int i = 0; i < output_ports.size(); ++i) {
     // ignore self-edges first
-    if (isSelfEdge(getEdge(output_ports[i]->edge_name))) {
-      continue;
-    }
+//    if (isSelfEdge(getEdge(output_ports[i]->edge_name))) {
+//      continue;
+//    }
 
     isl_set *unwrapped_port_domain = getPDGDomain(output_ports[i]->domain);
-//    std::cout << "out port domain: ";
-//    PRINTER = isl_printer_print_set(PRINTER, output_ports[i]->domain->bounds);
-//    PRINTER = isl_printer_end_line(PRINTER);
 
     if (isl_set_is_equal(unwrapped_port_domain, unwrapped_procs_domain) != 1){
       isSimplePattern = false;
@@ -1049,27 +1013,27 @@ ADG_helper::checkSimplePattern(const Process *process){
     isl_set_free(unwrapped_port_domain);
   } // end output ports
 
-//  std::cout<< "it is a simple pattern." << std::endl;
+
   isl_set_free(unwrapped_procs_domain);
   if (!isSimplePattern) {
       return isSimplePattern;
   }
 
-  // simple pattern, store the pattern [1]
+  /* A simple pattern exists, therefore store the pattern [1] */
   for (int i = 0; i < input_ports.size(); ++i) {
     // ignore self-edges first
-    if (isSelfEdge(getEdge(input_ports[i]->edge_name))) {
-      continue;
-    }
+//    if (isSelfEdge(getEdge(input_ports[i]->edge_name))) {
+//      continue;
+//    }
 
     isl_id *port_id = input_ports[i]->name;
     phases[port_id]->push_back(1);
   }
   for (int i = 0; i < output_ports.size(); ++i) {
     // ignore self-edges first
-    if (isSelfEdge(getEdge(output_ports[i]->edge_name))) {
-      continue;
-    }
+//    if (isSelfEdge(getEdge(output_ports[i]->edge_name))) {
+//      continue;
+//    }
 
     isl_id *port_id = output_ports[i]->name;
     phases[port_id]->push_back(1);
@@ -1082,6 +1046,8 @@ ADG_helper::checkSimplePattern(const Process *process){
 // Requires that computePhases has been called before.
 void
 ADG_helper::writePhase(isl_id *portName, std::ostream &strm, char sep){
+	assert(phases.count(portName) > 0);
+
 	std::vector<short> *phases_port = phases[portName];
 	int len_phases = phases_port->size();
 	assert(len_phases > 0);
