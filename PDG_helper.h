@@ -31,6 +31,9 @@ public:
 
 	pNodes_t getNodes();
 	pNode_t* getNode(const std::string&);
+	pNode_t* getSourceNode(const pDep_t*);
+	pNode_t* getSnkNode(const pDep_t*);
+
 	void getSrcSnkNodes(pNodes_t*, pNodes_t*);
 	pNodes_t getDataflowNodes();
 

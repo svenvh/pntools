@@ -46,7 +46,15 @@ PDG_helper::getNodes(){
 
 pNode_t*
 PDG_helper::getNode(const std::string &name){
+	pNodes_t nodes = _pdg->nodes.v;
+	for (int i = 0; i < nodes.size(); ++i) {
+		if (name == nodes[i]->name->s) {
+			return nodes[i];
+		}
+	}
 
+	// should not reach here
+	fprintf(stderr, "ERROR: node with name: %s is not found.", name.c_str());
 }
 
 __isl_give isl_id*
@@ -94,6 +102,45 @@ PDG_helper::getSrcSnkNodes(pNodes_t* srcNodes, pNodes_t* snkNodes){
 			snkNodes->push_back(nodes[i]);
 		}
 	}
+}
+
+pNode_t*
+PDG_helper::getSourceNode(const pDep_t *dep){
+	pNode_t *rt = NULL;
+
+	isl_map *depMap = isl_map_copy(dep->relation->map);
+
+	// get range of the relation
+	isl_set *ranMap = isl_map_range(depMap);
+
+	isl_id *name = isl_set_get_tuple_id(ranMap);
+	std::string name_str(isl_id_get_name(name));
+	rt = getNode(name_str);
+
+	isl_set_free(ranMap);
+	isl_id_free(name);
+	assert(rt != NULL);
+	return rt;
+}
+
+pNode_t*
+PDG_helper::getSnkNode(const pDep_t *dep){
+	pNode_t *rt = NULL;
+
+	isl_map *depMap = isl_map_copy(dep->relation->map);
+
+	// get range of the relation
+	isl_set *domMap = isl_map_domain(depMap);
+
+	isl_id *name = isl_set_get_tuple_id(domMap);
+	std::string name_str(isl_id_get_name(name));
+
+	rt = getNode(name_str);
+
+	isl_set_free(domMap);
+	isl_id_free(name);
+	assert(rt != NULL);
+	return rt;
 }
 
 pNodes_t
