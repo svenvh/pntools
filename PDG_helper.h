@@ -25,6 +25,8 @@ class PDG_helper {
 
 	std::map<isl_id*, pNode_t*> _nodesMap;
 
+	pNodes_t _srcNodes;
+	pNodes_t _snkNodes;
 public:
 	PDG_helper(isl_ctx *ctx, PDG *pdg);
 	virtual ~PDG_helper();
@@ -34,12 +36,16 @@ public:
 	pNode_t* getSourceNode(const pDep_t*);
 	pNode_t* getSnkNode(const pDep_t*);
 
+	bool isSourceNode(const pNode_t*);
+	bool isSinkNode(const pNode_t*);
+
 	void getSrcSnkNodes(pNodes_t*, pNodes_t*);
 	pNodes_t getDataflowNodes();
 
 	__isl_give isl_id* getNameISL(const pNode_t*);
 
 	pDeps_t getDependences();
+	bool isSelfDependence(const pDep_t*);
 
 	// topology
 	bool isChain();

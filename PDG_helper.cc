@@ -28,6 +28,10 @@ PDG_helper::PDG_helper(isl_ctx *ctx, PDG *pdg) {
 		isl_id *name = getNameISL(nodes[i]);
 		_nodesMap[name] = nodes[i];
 	}
+
+	/* initialize source and sink nodes */
+	getSrcSnkNodes(&(_srcNodes), &(_snkNodes));
+	assert(_srcNodes.size() > 0 && _snkNodes.size());
 }
 
 PDG_helper::~PDG_helper() {
@@ -68,9 +72,28 @@ PDG_helper::getNameISL(const pNode_t *pdgNode){
 	return name;
 }
 
-pDeps_t
-PDG_helper::getDependences(){
-	return _pdg->dependences.v;
+
+
+bool
+PDG_helper::isSourceNode(const pNode_t *node){
+	for (int i = 0; i < _srcNodes.size(); ++i) {
+		if (node->name->s ==_srcNodes[i]->name->s ) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool
+PDG_helper::isSinkNode(const pNode_t *node){
+	for (int i = 0; i < _snkNodes.size(); ++i) {
+		if (node->name->s ==_snkNodes[i]->name->s ) {
+			return true;
+		}
+	}
+
+	return false;
 }
 
 void
@@ -111,13 +134,13 @@ PDG_helper::getSourceNode(const pDep_t *dep){
 	isl_map *depMap = isl_map_copy(dep->relation->map);
 
 	// get range of the relation
-	isl_set *ranMap = isl_map_range(depMap);
+	isl_set *domMap = isl_map_domain(depMap);
 
-	isl_id *name = isl_set_get_tuple_id(ranMap);
+	isl_id *name = isl_set_get_tuple_id(domMap);
 	std::string name_str(isl_id_get_name(name));
 	rt = getNode(name_str);
 
-	isl_set_free(ranMap);
+	isl_set_free(domMap);
 	isl_id_free(name);
 	assert(rt != NULL);
 	return rt;
@@ -130,14 +153,14 @@ PDG_helper::getSnkNode(const pDep_t *dep){
 	isl_map *depMap = isl_map_copy(dep->relation->map);
 
 	// get range of the relation
-	isl_set *domMap = isl_map_domain(depMap);
+	isl_set *ranMap = isl_map_range(depMap);
 
-	isl_id *name = isl_set_get_tuple_id(domMap);
+	isl_id *name = isl_set_get_tuple_id(ranMap);
 	std::string name_str(isl_id_get_name(name));
 
 	rt = getNode(name_str);
 
-	isl_set_free(domMap);
+	isl_set_free(ranMap);
 	isl_id_free(name);
 	assert(rt != NULL);
 	return rt;
@@ -183,6 +206,20 @@ PDG_helper::isChain(){
 bool
 PDG_helper::isTree(){
 
+}
+
+pDeps_t
+PDG_helper::getDependences(){
+	return _pdg->dependences.v;
+}
+
+bool
+PDG_helper::isSelfDependence(const pDep_t* dep){
+	if (getSourceNode(dep) == getSnkNode(dep)) {
+		return true;
+	} else {
+		return false;
+	}
 }
 
 PDGgraphSCCs
