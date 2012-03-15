@@ -60,7 +60,7 @@ void ADGROMGenerator::dumpVhdlROM(std::ostream &strm, Node *node, Ports &ports) 
          << "  constant rom_LOW    : natural := 0;\n"
          << "  constant rom_HIGH   : natural := " << phaseLength-1 << ";\n"
          << "  constant outer_LOW  : natural := 0;\n"
-         << "  constant outer_HIGH : natural := " << phaseRepeat << ";\n"
+         << "  constant outer_HIGH : natural := " << phaseRepeat-1 << ";\n"
          << "  signal rom_addr : integer range rom_LOW to rom_HIGH;\n"
          << "  signal outer_i  : integer range outer_LOW to outer_HIGH;\n"
          << "  signal rom_data : std_logic_vector(N_IN_PORTS-1 downto 0);\n"
