@@ -29,7 +29,7 @@ class ADGROMGenerator {
   private:
     ADG_helper *adg;                  // Associated ADG
     phases_t *phases;                 // Computed phases
-    void dumpVhdlROM(std::ostream &strm, Node *node, Ports &ports);
+    void dumpVhdlROM(std::ostream &strm, Node *node, Ports &ports, bool isWriteUnit);
 };
 
 
@@ -46,7 +46,8 @@ ADGROMGenerator::~ADGROMGenerator() {
 
 
 // Prints ROM in VHDL for a list of ports
-void ADGROMGenerator::dumpVhdlROM(std::ostream &strm, Node *node, Ports &ports) {
+void ADGROMGenerator::dumpVhdlROM(std::ostream &strm, Node *node, Ports &ports, bool isWriteUnit) {
+  const char *portCountVarName = isWriteUnit ? "N_OUT_PORTS" : "N_IN_PORTS";
   if (ports.size() > 0) {
     // Compute number of times that ROM pattern should be repeated during runtime
     int phaseLength = (*this->phases)[ports[0]->name]->size();
@@ -63,9 +64,9 @@ void ADGROMGenerator::dumpVhdlROM(std::ostream &strm, Node *node, Ports &ports) 
          << "  constant outer_HIGH : natural := " << phaseRepeat-1 << ";\n"
          << "  signal rom_addr : integer range rom_LOW to rom_HIGH;\n"
          << "  signal outer_i  : integer range outer_LOW to outer_HIGH;\n"
-         << "  signal rom_data : std_logic_vector(N_IN_PORTS-1 downto 0);\n"
+         << "  signal rom_data : std_logic_vector(" << portCountVarName << "-1 downto 0);\n"
          << "  signal sl_done  : std_logic;\n"
-         << "  type ctrl_rom_type is array (rom_LOW to rom_HIGH) of std_logic_vector(N_IN_PORTS-1 downto 0);\n"
+         << "  type ctrl_rom_type is array (rom_LOW to rom_HIGH) of std_logic_vector(" << portCountVarName << "-1 downto 0);\n"
          << "  signal ctrl_rom : ctrl_rom_type := (";
 
     // Generate a word in the ROM for each phase.
@@ -97,6 +98,7 @@ void ADGROMGenerator::dumpVhdlROM(std::ostream &strm, Node *node, Ports &ports) 
     }
     strm << "\n";
   }
+  strm << "END\n";
 }
 
 
@@ -113,11 +115,11 @@ void ADGROMGenerator::generateROMs(std::ostream &strm) {
 
     // Write tag and dump ROM for read unit
     strm << isl_id_get_name(node->name) << ".EVAL_LOGIC_RD:" << "\n";
-    dumpVhdlROM(strm, node, node->input_ports);
+    dumpVhdlROM(strm, node, node->input_ports, false);
 
     // Write tag and dump ROM for write unit
     strm << isl_id_get_name(node->name) << ".EVAL_LOGIC_WR:" << "\n";
-    dumpVhdlROM(strm, node, node->output_ports);
+    dumpVhdlROM(strm, node, node->output_ports, true);
   }
 }
 
