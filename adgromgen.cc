@@ -64,6 +64,7 @@ void ADGROMGenerator::dumpVhdlROM(std::ostream &strm, Node *node, Ports &ports) 
          << "  signal rom_addr : integer range rom_LOW to rom_HIGH;\n"
          << "  signal outer_i  : integer range outer_LOW to outer_HIGH;\n"
          << "  signal rom_data : std_logic_vector(N_IN_PORTS-1 downto 0);\n"
+         << "  signal sl_done  : std_logic;\n"
          << "  type ctrl_rom_type is array (rom_LOW to rom_HIGH) of std_logic_vector(N_IN_PORTS-1 downto 0);\n"
          << "  signal ctrl_rom : ctrl_rom_type := (";
 
