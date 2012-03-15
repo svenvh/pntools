@@ -53,7 +53,7 @@ void ADGROMGenerator::dumpVhdlROM(std::ostream &strm, Node *node, Ports &ports) 
     isl_set *node_domain = getPDGDomain(node->domain);
     int domainCard = getCardinality(node_domain);
     isl_set_free(node_domain);
-    int phaseRepeat = phaseLength / domainCard;
+    int phaseRepeat = domainCard / phaseLength;
 
     // Write VHDL declarations
     strm << "  -- ROM Address range\n"
