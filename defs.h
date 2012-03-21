@@ -60,6 +60,8 @@ typedef std::vector<adg_port*> Ports;
 typedef std::vector<adg_port*>::iterator PortIter;
 typedef std::vector<adg_port*>::iterator PortCIter;
 
+typedef adg_arg Arg;
+typedef std::vector<adg_arg *> Args;
 
 typedef adg_param Parameter;
 typedef std::vector<adg_param*> Parameters;

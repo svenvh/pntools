@@ -27,6 +27,10 @@ class ADGROMGenerator {
     void generateROMs(std::ostream &strm);
 
   private:
+    Ports sortPorts(const Args &args, Ports &ports);
+    bool isReusePort(const Port *port);
+    void appendReusePorts(Ports &sortedList, Ports &outPorts);
+
     ADG_helper *adg;                  // Associated ADG
     phases_t *phases;                 // Computed phases
     void dumpVhdlROM(std::ostream &strm, Node *node, Ports &ports, bool isWriteUnit);
@@ -92,6 +96,7 @@ void ADGROMGenerator::dumpVhdlROM(std::ostream &strm, Node *node, Ports &ports, 
     strm << "  );\n";
 
     // Dump order of ports
+    // This is used as a safety check by ESPAM, to ensure that this tool and ESPAM use the same port order.
     strm << "  -- Order:";
     for (Ports::reverse_iterator pit = ports.rbegin(); pit != ports.rend(); ++pit) {
       strm << " " << isl_id_get_name((*pit)->name);
@@ -99,6 +104,56 @@ void ADGROMGenerator::dumpVhdlROM(std::ostream &strm, Node *node, Ports &ports, 
     strm << "\n";
   }
   strm << "END\n";
+}
+
+
+// Sorts the ports of a node in the same way as ESPAM's CompaanHWNodeIseVisitor.
+// We sort by iterating over the list of arguments and finding the corresponding ports for
+// each argument.
+Ports ADGROMGenerator::sortPorts(const Args &args, Ports &ports) {
+  Ports r;
+  for (Args::const_iterator vi = args.begin(); vi != args.end(); ++vi) {
+    const Arg *arg = *vi;
+    isl_id *argName = isl_pw_multi_aff_get_tuple_id(arg->var->access, isl_dim_out);
+
+    for (Ports::iterator pi = ports.begin(); pi != ports.end(); ++pi) {
+      Port *port = *pi;
+      assert(port->vars.size() == 1);
+      isl_id *portArgName = isl_pw_multi_aff_get_tuple_id(port->vars[0]->access, isl_dim_out);
+      if (argName == portArgName) {
+        r.push_back(port);
+      }
+      isl_id_free(portArgName);
+    }
+    isl_id_free(argName);
+  }
+  return r;
+}
+
+
+// Returns true if port is a reuse port.
+// That is, if the associated var starts with "in", then it is probably a reuse port.
+bool ADGROMGenerator::isReusePort(const Port *port) {
+  bool ret = false;
+  isl_id *varName = isl_pw_multi_aff_get_tuple_id(port->vars[0]->access, isl_dim_out);
+  if (strncmp(isl_id_get_name(varName), "in", 2) == 0) {
+    ret = true;
+  }
+  isl_id_free(varName);
+  return ret;
+}
+
+
+// Appends the reuse ports to the already sorted list of output ports.
+// This resembles the order of ports derived by ESPAM's CompaanHWNodeIseVisitor.
+void ADGROMGenerator::appendReusePorts(Ports &sortedList, Ports &outPorts) {
+  for (Ports::iterator pi = outPorts.begin(); pi != outPorts.end(); ++pi) {
+    Port *port = *pi;
+    assert(port->vars.size() == 1);
+    if (isReusePort(port)) {
+      sortedList.push_back(port);
+    }
+  }
 }
 
 
@@ -115,11 +170,14 @@ void ADGROMGenerator::generateROMs(std::ostream &strm) {
 
     // Write tag and dump ROM for read unit
     strm << isl_id_get_name(node->name) << ".EVAL_LOGIC_RD:" << "\n";
-    dumpVhdlROM(strm, node, node->input_ports, false);
+    Ports inports = sortPorts(node->function->in, node->input_ports);
+    dumpVhdlROM(strm, node, inports, false);
 
     // Write tag and dump ROM for write unit
     strm << isl_id_get_name(node->name) << ".EVAL_LOGIC_WR:" << "\n";
-    dumpVhdlROM(strm, node, node->output_ports, true);
+    Ports outports = sortPorts(node->function->out, node->output_ports);
+    appendReusePorts(outports, node->output_ports);
+    dumpVhdlROM(strm, node, outports, true);
   }
 }
 
