@@ -99,7 +99,8 @@ void CsdfDumper::dumpCsdf3(std::ostream& strm) {
     this->phases = this->ppn->computePhases(process);
 
     // Write list of actors and their ports
-    strm << "      <actor name='" << isl_id_get_name(process->name) << "' type='x'>\n";
+    strm << "      <actor name='" << isl_id_get_name(process->name) << "'"
+         << " type='" << isl_id_get_name(process->function->name) << "'>\n";
     Channels processEdges = this->ppn->getNodeEdges(process);
     for (PPNchIter eit = processEdges.begin(); eit != processEdges.end(); ++eit) {
       Edge *ch = *eit;
