@@ -244,6 +244,7 @@ void CsdfDumper::DumpCsdf(std::ostream& strm) {
 
 		strm << TABS(indent) << "id:" << ppn->getId(process) << "\n";
 		strm << TABS(indent) << "name:" << isl_id_get_name(process->name) << "\n";
+		strm << TABS(indent) << "function:" << isl_id_get_name(process->function->name) << "\n";
 
 		// there are special cases in which simple patterns, such as [1],  can be derived without further processing
 		bool isSimplePattern = this->ppn->checkSimplePattern(process);

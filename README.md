@@ -110,6 +110,7 @@ Graph Formats
     node:
 	    id:0
 	    name:ND_0
+	    function:producer
 	    length:1
 	    wcet:5
 	    port_number:1
@@ -120,6 +121,7 @@ Graph Formats
     node:
 	    id:1
 	    name:ND_1
+	    function:consumer
 	    length:1
 	    wcet:2
 	    port_number:1
