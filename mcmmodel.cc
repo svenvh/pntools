@@ -135,7 +135,17 @@ void McmModelDumper::dump(std::ostream& strm) {
   for (unsigned int i = 0; i < pdg->dependences.size(); i++) {
     pdg::dependence *dep = pdg->dependences[i];
     char channelName[16];
-    int channelSize = dep->value_size->v * getDependenceCardinality(dep);
+    int channelSize;
+
+    if (dep->reordering == 0 && dep->value_size) {
+      // FIFO with integer (non-parametric) size
+      channelSize = dep->value_size->v * getDependenceCardinality(dep);
+    }
+    else {
+      // Assume worst-case
+      fprintf(stderr, "ED_%d: Assuming channel size of %d\n", i, getDependenceCardinality(dep));
+      channelSize = getDependenceCardinality(dep) * getDependenceCardinality(dep);
+    }
 
     // "Real" edge
     snprintf(channelName, sizeof(channelName), "ED_%d", i);
