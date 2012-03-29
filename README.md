@@ -69,6 +69,13 @@ Upate: 30.Nov.2011: We start to adapt all tools to the latest isa version.
 * Output:  plaintext
 * Tested:  `isa-0.11-196-g2af2525`
 
+### mcmmodel
+* Purpose: Derive an MCM modeling graph from a PDG (and later perhaps also ADG).
+* Authors: Hristo Nikolov, Sven van Haastregt
+* Input:   `XXXpn.yaml`
+* Output:  `YYY.sdf` (SDF3 format)
+* Tested:  `isa-0.11-229-g049a7f9`
+
 ### pdgtrans
 * Purpose: Transform a PDG.
 * Authors: Wouter de Zwijger, Sven van Haastregt

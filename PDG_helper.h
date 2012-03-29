@@ -35,6 +35,7 @@ public:
 	pNodes_t getDataflowNodes();
 
 	__isl_give isl_id* getNameISL(const pNode_t*);
+	std::string getFunctionName(pdg::node const *node);
 
 	pDeps_t getDependences();
 

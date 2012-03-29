@@ -60,6 +60,10 @@ PDG_helper::getNameISL(const pNode_t *pdgNode){
 	return name;
 }
 
+std::string PDG_helper::getFunctionName(pdg::node const *node) {
+	return node->statement->top_function->name->s;
+}
+
 pDeps_t
 PDG_helper::getDependences(){
 	return _pdg->dependences.v;
