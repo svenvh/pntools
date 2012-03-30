@@ -73,7 +73,6 @@ PDG_helper::getNameISL(const pNode_t *pdgNode){
 }
 
 
-
 bool
 PDG_helper::isSourceNode(const pNode_t *node){
 	for (int i = 0; i < _srcNodes.size(); ++i) {
@@ -95,6 +94,12 @@ PDG_helper::isSinkNode(const pNode_t *node){
 
 	return false;
 }
+
+
+std::string PDG_helper::getFunctionName(pdg::node const *node) {
+	return node->statement->top_function->name->s;
+}
+
 
 void
 PDG_helper::getSrcSnkNodes(pNodes_t* srcNodes, pNodes_t* snkNodes){
