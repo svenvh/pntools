@@ -306,5 +306,32 @@ PDG_helper::getSCCs(){
 	return ret;
 }
 
+bool
+PDG_helper::isInSCC(const pdg_helper::pDep_t *dep){
+	PDGgraphSCCs SCCs = getSCCs();
+
+	pdg_helper::pNode_t *srcNode = getSourceNode(dep);
+	pdg_helper::pNode_t *snkNode =getSnkNode(dep);
+
+	for (int i = 0; i < SCCs.size(); ++i) {
+		pdg_helper::PDGgraphSCC SCC = SCCs[i];
+		bool isSouce = false;
+		bool isSnk	   = false;
+		for (int j = 0; j < SCC.size(); ++j) {
+			if (srcNode->name->s == SCC[j]->name->s) {
+				isSouce = true;
+			}
+			if (snkNode->name->s == SCC[j]->name->s) {
+				isSnk = true;
+			}
+		} // end SCC
+		if (isSouce && isSnk) {
+			return true;
+		}
+	} // end SCCs
+
+	return false;
+}
+
 } // namespace pdg_helper
 

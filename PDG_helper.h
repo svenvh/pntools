@@ -54,6 +54,8 @@ public:
 
 	PDGgraphSCCs getSCCs();
 
+	bool isInSCC(const pdg_helper::pDep_t *dep);
+
 };
 
 }
