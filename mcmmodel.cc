@@ -35,6 +35,7 @@ class McmModelDumper {
     void writeChannel(std::ostream &strm);
     int getDependenceCardinality(pdg::dependence const *dep);
     unsigned getWCET(pdg::node const *node);
+    unsigned getII(pdg::node const *node);
     std::string getPortName(int n, const char *direction);
     std::string getBackedgePortName(int n, const char *direction);
 
@@ -200,6 +201,12 @@ int McmModelDumper::getDependenceCardinality(pdg::dependence const *dep) {
 // Returns the WCET of a process
 unsigned McmModelDumper::getWCET(pdg::node const *node) {
   return implTable->getMetric( IM_DELAY_WORST, this->pdgHelper->getFunctionName(node)) ;
+}
+
+
+// Returns the II of a process
+unsigned McmModelDumper::getII(pdg::node const *node) {
+  return implTable->getMetric(IM_II, this->pdgHelper->getFunctionName(node));
 }
 
 
