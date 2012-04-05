@@ -32,6 +32,9 @@ PDG_helper::PDG_helper(isl_ctx *ctx, PDG *pdg) {
 	/* initialize source and sink nodes */
 	getSrcSnkNodes(&(_srcNodes), &(_snkNodes));
 	assert(_srcNodes.size() > 0 && _snkNodes.size());
+
+	/* initialize SCCs */
+	_SCCs = getSCCs();
 }
 
 PDG_helper::~PDG_helper() {
@@ -308,13 +311,11 @@ PDG_helper::getSCCs(){
 
 bool
 PDG_helper::isInSCC(const pdg_helper::pDep_t *dep){
-	PDGgraphSCCs SCCs = getSCCs();
-
 	pdg_helper::pNode_t *srcNode = getSourceNode(dep);
 	pdg_helper::pNode_t *snkNode =getSnkNode(dep);
 
-	for (int i = 0; i < SCCs.size(); ++i) {
-		pdg_helper::PDGgraphSCC SCC = SCCs[i];
+	for (int i = 0; i < this->_SCCs.size(); ++i) {
+		pdg_helper::PDGgraphSCC SCC = this->_SCCs[i];
 		bool isSouce = false;
 		bool isSnk	   = false;
 		for (int j = 0; j < SCC.size(); ++j) {

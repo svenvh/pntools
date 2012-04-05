@@ -27,6 +27,8 @@ class PDG_helper {
 
 	pNodes_t _srcNodes;
 	pNodes_t _snkNodes;
+
+	PDGgraphSCCs _SCCs;
 public:
 	PDG_helper(isl_ctx *ctx, PDG *pdg);
 	virtual ~PDG_helper();
