@@ -31,6 +31,7 @@ class McmModelDumper {
     void dump(std::ostream &strm);
 
   private:
+    void determineBackedgeBitmap(std::vector<bool> &depsBitmap);
     void writePort(pdg::dependence const *dep, std::string name, std::string type, std::ostream &strm);
     void writeChannel(std::ostream &strm);
     int getDependenceCardinality(pdg::dependence const *dep);
@@ -61,10 +62,35 @@ McmModelDumper::~McmModelDumper() {
 }
 
 
+// Returns a bitmap containing for each dependence whether we should add a backedge or not.
+// We only add backedges for feed-forward dependences.
+void McmModelDumper::determineBackedgeBitmap(std::vector<bool> &depsBitmap) {
+  depsBitmap.clear();
+  for (unsigned int j = 0; j < pdg->dependences.size(); j++) {
+    pdg::dependence *dep = pdg->dependences[j];
+    bool addEdge = true;
+
+    // Don't add backedge for selfloops
+    if (dep->from == dep->to)
+      addEdge = false;
+
+    // Don't add backedge if it's inside an SCC
+    if (this->pdgHelper->isInSCC(dep))
+      addEdge = false;
+
+    depsBitmap.push_back(addEdge);
+  }
+}
+
+
+
 // Dumps MCM model for PDG in SDF3 SDF format.
 void McmModelDumper::dump(std::ostream& strm) {
   std::ostringstream sdfProps;
   std::ostringstream selfLoopChannels;
+
+  std::vector<bool> addBackedge;
+  determineBackedgeBitmap(addBackedge);
 
   strm << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
        << "<sdf3 type=\"sdf\" version=\"1.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:noNamespaceSchemaLocation=\"http://www.es.ele.tue.nl/sdf3/xsd/sdf3-sdf.xsd\">\n"
@@ -103,8 +129,8 @@ void McmModelDumper::dump(std::ostream& strm) {
     for (unsigned int j = 0; j < pdg->dependences.size(); j++) {
       pdg::dependence *dep = pdg->dependences[j];
 
-      // Don't add backedge for selfloops
-      if (dep->from == dep->to)
+      // Skip if we don't want a backedge
+      if (addBackedge[j] == false)
         continue;
 
       if (dep->from == node) {
@@ -158,19 +184,17 @@ void McmModelDumper::dump(std::ostream& strm) {
          <<        "initialTokens='" << (dep->from==dep->to ? channelSize : 0) << "' "
          << "/>\n";
 
-    // Don't add backedge for selfloops
-    if (dep->from == dep->to)
-      continue;
-
-    // Corresponding backedge
-    snprintf(channelName, sizeof(channelName), "BE_%d", i);
-    strm << "      <channel name='" << channelName << "' "
-         <<        "srcActor='" << dep->to->name->s << "' "
-         <<        "srcPort='" << getBackedgePortName(i, "out") << "' "
-         <<        "dstActor='" << dep->from->name->s << "' "
-         <<        "dstPort='" << getBackedgePortName(i, "in") << "' "
-         <<        "initialTokens='" << channelSize << "' "
-         << "/>\n";
+    if (addBackedge[i]) {
+      // Corresponding backedge
+      snprintf(channelName, sizeof(channelName), "BE_%d", i);
+      strm << "      <channel name='" << channelName << "' "
+           <<        "srcActor='" << dep->to->name->s << "' "
+           <<        "srcPort='" << getBackedgePortName(i, "out") << "' "
+           <<        "dstActor='" << dep->from->name->s << "' "
+           <<        "dstPort='" << getBackedgePortName(i, "in") << "' "
+           <<        "initialTokens='" << channelSize << "' "
+           << "/>\n";
+    }
   }
 
   // Write the selfloop channels
