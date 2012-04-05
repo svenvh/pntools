@@ -139,7 +139,7 @@ void McmModelDumper::dump(std::ostream& strm) {
 
     if (dep->reordering == 0 && dep->value_size) {
       // FIFO with integer (non-parametric) size
-      channelSize = dep->value_size->v * getDependenceCardinality(dep);
+      channelSize = (1+dep->value_size->v) * getDependenceCardinality(dep);
     }
     else {
       // Assume worst-case
