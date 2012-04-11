@@ -23,6 +23,13 @@
 
 using namespace pdg_helper;
 
+// Classification of an edge in MCM model
+enum McmChannelType {
+  FEEDFORWARD,        // Connects an SCC to another SCC
+  FEEDBACK,           // Connects two processes in the same SCC
+  SELFLOOP            // Connects process to itself
+};
+
 //// MCM Model Dumper class
 class McmModelDumper {
   public:
@@ -31,7 +38,7 @@ class McmModelDumper {
     void dump(std::ostream &strm);
 
   private:
-    void determineBackedgeBitmap(std::vector<bool> &depsBitmap);
+    void determineChannelTypes(std::vector<McmChannelType> &channelTypes);
     void writePort(pdg::dependence const *dep, std::string name, std::string type, std::ostream &strm);
     void writeChannel(std::ostream &strm);
     int getDependenceCardinality(pdg::dependence const *dep);
@@ -62,23 +69,22 @@ McmModelDumper::~McmModelDumper() {
 }
 
 
-// Returns a bitmap containing for each dependence whether we should add a backedge or not.
-// We only add backedges for feed-forward dependences.
-void McmModelDumper::determineBackedgeBitmap(std::vector<bool> &depsBitmap) {
-  depsBitmap.clear();
+// Returns a vector containing for each dependence the type of the channel in the SDF graph.
+void McmModelDumper::determineChannelTypes(std::vector<McmChannelType> &channelTypes) {
+  channelTypes.clear();
   for (unsigned int j = 0; j < pdg->dependences.size(); j++) {
     pdg::dependence *dep = pdg->dependences[j];
-    bool addEdge = true;
+    McmChannelType type = FEEDFORWARD;
 
-    // Don't add backedge for selfloops
-    if (dep->from == dep->to)
-      addEdge = false;
+    if (dep->from == dep->to) {
+      type = SELFLOOP;
+    }
+    else if (this->pdgHelper->isInSCC(dep)) {
+      type = FEEDBACK;
+    }
 
-    // Don't add backedge if it's inside an SCC
-    if (this->pdgHelper->isInSCC(dep))
-      addEdge = false;
-
-    depsBitmap.push_back(addEdge);
+    channelTypes.push_back(type);
+    fprintf(stderr, "%2d -> %2d: %d\n", dep->from->nr, dep->to->nr, type);
   }
 }
 
@@ -89,8 +95,8 @@ void McmModelDumper::dump(std::ostream& strm) {
   std::ostringstream sdfProps;
   std::ostringstream selfLoopChannels;
 
-  std::vector<bool> addBackedge;
-  determineBackedgeBitmap(addBackedge);
+  std::vector<McmChannelType> channelTypes;
+  determineChannelTypes(channelTypes);
 
   strm << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
        << "<sdf3 type=\"sdf\" version=\"1.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:noNamespaceSchemaLocation=\"http://www.es.ele.tue.nl/sdf3/xsd/sdf3-sdf.xsd\">\n"
@@ -130,7 +136,7 @@ void McmModelDumper::dump(std::ostream& strm) {
       pdg::dependence *dep = pdg->dependences[j];
 
       // Skip if we don't want a backedge
-      if (addBackedge[j] == false)
+      if (channelTypes[j] != FEEDFORWARD)
         continue;
 
       if (dep->from == node) {
@@ -166,7 +172,16 @@ void McmModelDumper::dump(std::ostream& strm) {
 
     if (dep->reordering == 0 && dep->value_size) {
       // FIFO with integer (non-parametric) size
-      channelSize = (1+dep->value_size->v) * getDependenceCardinality(dep);
+      if (channelTypes[i] == SELFLOOP) {
+        channelSize = dep->value_size->v * getDependenceCardinality(dep);
+      }
+      else if (channelTypes[i] == FEEDFORWARD) {
+        channelSize = (1+dep->value_size->v) * getDependenceCardinality(dep);
+      }
+      else if (channelTypes[i] == FEEDBACK) {
+        channelSize = -1;
+        fprintf(stderr, "Feedback edges detected, please update the initial tokens manually!\n");
+      }
     }
     else {
       // Assume worst-case
@@ -181,10 +196,10 @@ void McmModelDumper::dump(std::ostream& strm) {
          <<        "srcPort='" << getPortName(i, "out") << "' "
          <<        "dstActor='" << dep->to->name->s << "' "
          <<        "dstPort='" << getPortName(i, "in") << "' "
-         <<        "initialTokens='" << (dep->from==dep->to ? channelSize : 0) << "' "
+         <<        "initialTokens='" << (channelTypes[i]==FEEDFORWARD ? 0 : channelSize) << "' "
          << "/>\n";
 
-    if (addBackedge[i]) {
+    if (channelTypes[i] == FEEDFORWARD) {
       // Corresponding backedge
       snprintf(channelName, sizeof(channelName), "BE_%d", i);
       strm << "      <channel name='" << channelName << "' "
