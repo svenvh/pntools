@@ -44,6 +44,9 @@ public:
 	void getSrcSnkNodes(pNodes_t*, pNodes_t*);
 	pNodes_t getDataflowNodes();
 
+	// Returns all edges connecting from -> to.
+	pDeps_t getEdges(pdg::node const *from, pdg::node const *to);
+
 	__isl_give isl_id* getNameISL(const pNode_t*);
 	std::string getFunctionName(pdg::node const *node);
 
@@ -57,6 +60,9 @@ public:
 	PDGgraphSCCs getSCCs();
 
 	bool isInSCC(const pdg_helper::pDep_t *dep);
+
+	// Returns true if node1 fires before node2
+	bool firesBefore(pdg::node const *node1, pdg::node const *node2);
 
 };
 

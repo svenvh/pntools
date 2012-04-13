@@ -206,6 +206,18 @@ PDG_helper::getDataflowNodes(){
 	return dataflowNodes;
 }
 
+// Returns all edges connecting from -> to.
+pDeps_t PDG_helper::getEdges(pdg::node const *from, pdg::node const *to) {
+  pDeps_t edges;
+	for (int i = 0; i < _pdg->dependences.size(); i++) {
+		pdg::dependence *dep = _pdg->dependences[i];
+		if (dep->from == from && dep->to == to) {
+			edges.push_back(dep);
+		}
+	}
+	return edges;
+}
+
 bool
 PDG_helper::isChain(){
 
@@ -331,6 +343,75 @@ PDG_helper::isInSCC(const pdg_helper::pDep_t *dep){
 		}
 	} // end SCCs
 
+	return false;
+}
+
+// Lexicographic comparison of two points
+int isl_point_compare(__isl_keep isl_point *point1, __isl_keep isl_point *point2) {
+	isl_int v1, v2;
+	isl_int_init(v1);
+	isl_int_init(v2);
+	int cmp = 0;
+	int pos = 0;
+	while (point1 && point2) {
+		if (isl_point_get_coordinate(point1, isl_dim_set, pos, &v1) &&
+		    isl_point_get_coordinate(point2, isl_dim_set, pos, &v2)) {
+			cmp = isl_int_cmp(v1, v2);
+			if (cmp != 0) {
+				break;
+			}
+		}
+		else {
+			break;
+		}
+		pos++;
+	}
+	isl_int_clear(v1);
+	isl_int_clear(v2);
+	return cmp;
+}
+
+// Returns true if node1 fires before node2
+// TODO: current implementation is a quick hack: it should work in some common cases, but it is not correct in all cases (especially when
+// "complex" array access patterns are used, e.g. a[i-j] instead of just a[i]).
+bool PDG_helper::firesBefore(pdg::node const *node1, pdg::node const *node2) {
+	// First try comparing the prefixes
+	int prefixLength = min(node1->prefix.size(), node2->prefix.size());
+	for (int i = 0; i < prefixLength; i++) {
+		int cmp = node1->prefix[i] - node2->prefix[i];
+		if (cmp < 0) {
+			fprintf(stderr, "Assuming %s executes before %s, please verify this!\n", getFunctionName(node1).c_str(), getFunctionName(node2).c_str());
+			return true;
+		}
+		else if (cmp > 0) {
+			fprintf(stderr, "Assuming %s executes after %s, please verify this!\n", getFunctionName(node1).c_str(), getFunctionName(node2).c_str());
+			return false;
+		}
+	}
+
+	// If prefixes are equal, compare the lexicographic minima from both domains
+	if (node1->prefix.size() == node2->prefix.size()) {
+		isl_set *s1 = node1->source->get_isl_set();
+		isl_set *s2 = node2->source->get_isl_set();
+		s1 = isl_set_lexmin(s1);
+		s2 = isl_set_lexmin(s2);
+		isl_point *p1 = isl_set_sample_point(s1);
+		isl_point *p2 = isl_set_sample_point(s2);
+		if (isl_point_compare(p1, p2) < 0) {
+			fprintf(stderr, "Assuming %s executes before %s, please verify this!\n", getFunctionName(node1).c_str(), getFunctionName(node2).c_str());
+			isl_point_free(p1);
+			isl_point_free(p2);
+			return true;
+		}
+		isl_point_free(p1);
+		isl_point_free(p2);
+		return false;
+	}
+	else {
+		// This case should never occur.
+		fprintf(stderr, "Unhandled case for %s and %s\n", getFunctionName(node1).c_str(), getFunctionName(node2).c_str());
+		return false;
+	}
 	return false;
 }
 

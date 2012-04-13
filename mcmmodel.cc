@@ -39,6 +39,7 @@ class McmModelDumper {
 
   private:
     void determineChannelTypes(std::vector<McmChannelType> &channelTypes);
+    int getFeedbackChannelSize(pdg::dependence const *dep);
     void writePort(pdg::dependence const *dep, std::string name, std::string type, std::ostream &strm);
     void writeChannel(std::ostream &strm);
     int getDependenceCardinality(pdg::dependence const *dep);
@@ -84,10 +85,27 @@ void McmModelDumper::determineChannelTypes(std::vector<McmChannelType> &channelT
     }
 
     channelTypes.push_back(type);
-    fprintf(stderr, "%2d -> %2d: %d\n", dep->from->nr, dep->to->nr, type);
   }
 }
 
+
+// Returns channel size for a feedback channel
+int McmModelDumper::getFeedbackChannelSize(pdg::dependence const *dep) {
+  bool putInitialTokens = this->pdgHelper->firesBefore(dep->from, dep->to);
+  if (putInitialTokens) {
+    pDeps_t reverseEdges = this->pdgHelper->getEdges(dep->to, dep->from);
+    int maxRevEdge = 0;
+    for (int i = 0; i < reverseEdges.size(); i++) {
+      if (reverseEdges[i]->value_size->v > maxRevEdge) {
+        maxRevEdge = reverseEdges[i]->value_size->v;
+      }
+    }
+    return maxRevEdge;
+  }
+  else {
+    return 0;
+  }
+}
 
 
 // Dumps MCM model for PDG in SDF3 SDF format.
@@ -179,8 +197,7 @@ void McmModelDumper::dump(std::ostream& strm) {
         channelSize = (1+dep->value_size->v) * getDependenceCardinality(dep);
       }
       else if (channelTypes[i] == FEEDBACK) {
-        channelSize = -1;
-        fprintf(stderr, "Feedback edges detected, please update the initial tokens manually!\n");
+        channelSize = getFeedbackChannelSize(dep) * getDependenceCardinality(dep);
       }
     }
     else {
