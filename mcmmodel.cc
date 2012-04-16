@@ -175,8 +175,9 @@ void McmModelDumper::dump(std::ostream& strm) {
     int points = getCardinality(domain);
     isl_set_free(domain);
     sdfProps << (points*wcet);
-    sdfProps << "' />\n";
-    sdfProps << "        </processor>\n"
+    sdfProps << "' />"
+             << "  <!-- " << points << " * " << wcet << " -->\n"
+             << "        </processor>\n"
              << "      </actorProperties>\n";
   }
 
