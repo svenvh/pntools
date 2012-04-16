@@ -198,7 +198,7 @@ void McmModelDumper::dump(std::ostream& strm) {
         channelSize = (1+dep->value_size->v) * getDependenceCardinality(dep);
       }
       else if (channelTypes[i] == FEEDBACK) {
-        channelSize = getFeedbackChannelSize(dep) * getDependenceCardinality(dep);
+        channelSize = (1+getFeedbackChannelSize(dep)) * getDependenceCardinality(dep);
       }
     }
     else {
