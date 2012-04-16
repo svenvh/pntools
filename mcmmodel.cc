@@ -43,6 +43,8 @@ class McmModelDumper {
     void writePort(pdg::dependence const *dep, std::string name, std::string type, std::ostream &strm);
     void writeChannel(std::ostream &strm);
     int getDependenceCardinality(pdg::dependence const *dep);
+    unsigned int getReadLatency(pdg::node const *node);
+    unsigned int getWriteLatency(pdg::node const *node);
     unsigned getWCET(pdg::node const *node);
     unsigned getII(pdg::node const *node);
     std::string getPortName(int n, const char *direction);
@@ -170,13 +172,15 @@ void McmModelDumper::dump(std::ostream& strm) {
     sdfProps << "      <actorProperties actor='" << node->name->s << "'>\n"
              << "        <processor type='proc_0' default='true'>\n"
              << "          <executionTime time='";
+    int rlat = getReadLatency(node);
+    int wlat = getWriteLatency(node);
     int wcet = getWCET(node);
     isl_set *domain = node->source->get_isl_set();
     int points = getCardinality(domain);
     isl_set_free(domain);
-    sdfProps << (points*wcet);
+    sdfProps << (points*(rlat+wcet+wlat));
     sdfProps << "' />"
-             << "  <!-- " << points << " * " << wcet << " -->\n"
+             << "  <!-- " << points << " * (" << rlat << "+" << wcet << "+" << wlat << ") -->\n"
              << "        </processor>\n"
              << "      </actorProperties>\n";
   }
@@ -254,12 +258,22 @@ int McmModelDumper::getDependenceCardinality(pdg::dependence const *dep) {
   return card;
 }
 
+// Returns read latency of a node
+unsigned int McmModelDumper::getReadLatency(pdg::node const *node) {
+  // For now we assume reads take one clock cycle
+  return 1;
+}
+
+// Returns write latency of a node
+unsigned int McmModelDumper::getWriteLatency(pdg::node const *node) {
+  // For now we assume writes take one clock cycle
+  return 1;
+}
 
 // Returns the WCET of a process
 unsigned McmModelDumper::getWCET(pdg::node const *node) {
   return implTable->getMetric( IM_DELAY_WORST, this->pdgHelper->getFunctionName(node)) ;
 }
-
 
 // Returns the II of a process
 unsigned McmModelDumper::getII(pdg::node const *node) {
