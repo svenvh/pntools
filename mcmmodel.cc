@@ -196,13 +196,13 @@ void McmModelDumper::dump(std::ostream& strm) {
     if (dep->reordering == 0 && dep->value_size) {
       // FIFO with integer (non-parametric) size
       if (channelTypes[i] == SELFLOOP) {
-        channelSize = dep->value_size->v * getDependenceCardinality(dep);
+        channelSize = dep->value_size->v;
       }
       else if (channelTypes[i] == FEEDFORWARD) {
-        channelSize = (1+dep->value_size->v) * getDependenceCardinality(dep);
+        channelSize = (1+dep->value_size->v);
       }
       else if (channelTypes[i] == FEEDBACK) {
-        channelSize = (1+getFeedbackChannelSize(dep)) * getDependenceCardinality(dep);
+        channelSize = (1+getFeedbackChannelSize(dep));
       }
     }
     else {
@@ -302,12 +302,8 @@ void McmModelDumper::writePort(pdg::dependence const *dep, std::string name, std
   // Set padding to nicely align columns regardless of whether it's "in" or "out".
   const char *padding = (type.compare("in") == 0 ? " " : "");
 
-  // Port rate is the number of tokens transferred for regular channels and their backedges,
-  // or 1 for autoconcurrency-limiting selfloops (for which no pdg::dependence exists).
+  // Port rate is always one, since we derive an HSDF graph
   int rate = 1;
-  if (dep) {
-    rate = getDependenceCardinality(dep);
-  }
 
   strm << "        <port type='" << type << "' " << padding
        <<          "name='" << name << "' " << padding
