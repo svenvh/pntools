@@ -26,6 +26,7 @@ m4/ltversion.m4
 tags
 
 # Tools
+pdgcharact
 adg2csdf
 adgromgen
 adgstat
